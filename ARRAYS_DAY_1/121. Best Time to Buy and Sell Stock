@@ -1,0 +1,168 @@
+You are given an array prices where prices[i] is the price of a given stock on the ith day.
+
+You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock.
+
+Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.
+
+ 
+
+Example 1:
+
+Input: prices = [7,1,5,3,6,4]
+Output: 5
+Explanation: Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6-1 = 5.
+Note that buying on day 2 and selling on day 1 is not allowed because you must buy before you sell.
+Example 2:
+
+Input: prices = [7,6,4,3,1]
+Output: 0
+Explanation: In this case, no transactions are done and the max profit = 0.
+ 
+
+Constraints:
+
+1 <= prices.length <= 105
+0 <= prices[i] <= 104
+
+
+MY_SOLUTION
+===================================================================================================================================
+
+
+// BRUTE-BETTER-OPTIMISED
+
+First attempt - simple brute force solution (just coded up problem definition):
+
+// O(n^2) time, O(1) space
+public int maxProfit(int[] prices) {
+    int profit = 0;
+    for (int i = 0; i < prices.length; i++) {
+        for (int j = i; j >= 0; j--) {
+            profit = Math.max(profit, prices[i]-prices[j]);
+        }
+    }
+    return profit;
+}
+Second attempt - tried to solve iterating over array two times:
+
+first pass - from left to right and saving current minimum in additional array
+
+second pass - from right to left finding maximum of current profit and previous maximum profit
+
+// O(n) time, O(n) space
+public int maxProfit(int[] prices) {
+    int[] minPrices = new int[prices.length];
+    int currentMinPrice = prices.length > 0 ? prices[0] : 0;
+    for (int i = 0; i < prices.length; i++) {
+        currentMinPrice = Math.min(currentMinPrice, prices[i]);
+        minPrices[i] = currentMinPrice;
+    }
+    
+    int currentMaxPrice = prices.length > 0 ? prices[prices.length - 1] : 0;
+    int profit = currentMaxPrice - currentMinPrice;
+    for (int i = prices.length - 1; i >= 0 ; i--) {
+        currentMaxPrice = Math.max(currentMaxPrice, prices[i]);
+        profit = Math.max(profit, currentMaxPrice - minPrices[i]);
+    }
+    return profit;
+}
+Third attempt - finally figured out, that keeping current minimum in separate array is really not required:
+
+// O(n) time, O(1) space
+public int maxProfit(int[] prices) {
+    int currentMinPrice = prices.length > 0 ? prices[0] : 0;
+    int profit = 0;
+    for (int i = 0; i < prices.length; i++) {
+        currentMinPrice = Math.min(currentMinPrice, prices[i]);
+        profit = Math.max(profit, prices[i] - currentMinPrice); 
+    }
+    return profit;
+}
+
+==========================================================================================================================================
+Approach:
+
+Create a variable maxPro and mark it as 0.
+Create a variable minPrice and mark it as max_value.
+Run a for loop from 0 to n.
+Update the minPrice if it is greater than the current element of the array
+Take the difference of the minPrice with the current element of the array and compare and maintain it in maxPro.
+Return the maxPro.
+
+
+class Solution {
+    public int maxProfit(int[] prices) {
+        int minPrice = Integer.MAX_VALUE;
+        int maxProfit = 0;
+        int size = prices.length;
+        
+        for(int i = 0; i < size; i++){
+            if(prices[i] < minPrice){
+                minPrice = prices[i];
+            }
+            else if(prices[i] - minPrice > maxProfit){
+                maxProfit = prices[i] - minPrice;
+            }
+        }
+        return maxProfit;
+    }
+}
+
+==========================================================================================================================================
+
+
+TWO POINTERS
+
+/*
+		Input: prices = [7,1,5,3,6,4]
+
+			maxProfit = 0
+
+				[7, 1, 5, 3, 6, 4]    maxProfit = 0
+				 i  j     
+
+			   [7, 1, 5, 3, 6, 4]     maxProfit = MAX(0,4)
+				   i  j     
+
+				[7, 1, 5, 3, 6, 4]    maxProfit = MAX(4,2)
+					i     j     
+
+				[7, 1, 5, 3, 6, 4]    maxProfit = MAX(5,4)
+					i        j     
+
+				[7, 1, 5, 3, 6, 4]    maxProfit = MAX(5,3)
+					i           j     
+
+	   Output: 5
+
+		ALGORITHM
+			STEP 1: create maxProfit variable 
+			STEP 2: set pointer I to 0
+			STEP 3: loop over every item in the array starting from i+1
+					-> if(prices[i] < prices[j]) calulcate the purchase and update maxProfit
+					->  else move i to j 
+			STEP 4: return maxProfit
+
+	*/
+  
+  
+  class Solution {
+    public int maxProfit(int[] prices) {
+
+		int maxProfit = 0;
+		int i = 0;
+
+		for(int j = 1; j < prices.length; j++) {
+		
+			if(prices[i] < prices[j]) {
+				maxProfit = Math.max(maxProfit, prices[j] - prices[i]);
+			}
+			else {
+				i = j;
+			}
+		}
+
+		return maxProfit;
+	}
+}
+
