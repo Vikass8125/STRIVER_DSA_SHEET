@@ -1,0 +1,168 @@
+Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.
+
+ 
+
+Example 1:
+
+Input: intervals = [[1,3],[2,6],[8,10],[15,18]]
+Output: [[1,6],[8,10],[15,18]]
+Explanation: Since intervals [1,3] and [2,6] overlap, merge them into [1,6].
+Example 2:
+
+Input: intervals = [[1,4],[4,5]]
+Output: [[1,5]]
+Explanation: Intervals [1,4] and [4,5] are considered overlapping.
+ 
+
+Constraints:
+
+1 <= intervals.length <= 104
+intervals[i].length == 2
+0 <= starti <= endi <= 104
+
+
+MY_SOLUTION
+
+Solution 1: Brute force
+
+Approach: First check whether the array is sorted or not.If not sort the array. 
+Now linearly iterate over the array and then check for all of its next intervals whether they are overlapping with the interval at the current index. 
+Take a new data structure and insert the overlapped interval. If while iterating if the interval lies in the interval present in the data structure simply 
+continue and move to the next interval.
+
+===================================================================================================================================================================
+
+Our task in this question is to merge the intervals which can merge:
+
+Only those intervals can merge whose start lies between the start and end of other interval .
+I1 = [1,5] and I2 = [2,8] ,these intervals can merge as the start of I2 is lies between then interval range of I1
+Now inorder to know adjacent interval which can possibly merge we will sort all interval on the basis of start
+Steps :
+
+Take some initial range ( taking 0th index interval as initial range)
+Now, start iterating from 1 index in intervals array
+if its start lies in intial range , then increase your range by
+					 end =  Math.max(end,interval[i][1])                       `		 
+if there is no intersection of this interval with our range then add this range in ans arraylis and intialize new range by current index interval
+
+===================================================================================================================================================================
+
+Solution 2: Optimal approach
+
+Approach: Linearly iterate over the array if the data structure is empty insert the interval in the data structure. 
+If the last element in the data structure overlaps with the current interval we merge the intervals by updating the last element in the data structure, and 
+if the current interval does not overlap with the last element in the data structure simply insert it into the data structure.
+
+Intuition: Since we have sorted the intervals, the intervals which will be merging are bound to be adjacent. We kept on merging simultaneously as 
+we were traversing through the array and when the element was non-overlapping we simply inserted the element in our data structure.
+
+===================================================================================================================================================================
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        List<int[]> result = new ArrayList<>();
+        
+        if(intervals.length == 0 || intervals == null){
+            return result.toArray(new int[0][]);
+        }
+        
+        Arrays.sort(intervals,(a,b) -> a[0] - b[0]);
+        
+        int start = intervals[0][0];
+        int end = intervals[0][1];
+        
+        for(int[] i : intervals){
+            if(i[0] <= end){
+                end = Math.max(end,i[1]);
+            }
+            else{
+                result.add(new int[]{start,end});
+                start = i[0];
+                end = i[1];
+            }
+            
+        }
+        result.add(new int[]{start,end});
+        return result.toArray(new int[0][]);
+        
+        
+    }
+}
+
+
+===================================================================================================================================================================
+class Solution {
+   public int[][] merge(int[][] intervals) {
+       
+   	// sort our intervals 
+     Arrays.sort(intervals, (o1,o2)->o1[0]-o2[0]);
+  
+       ArrayList<int[]> ans  =  new ArrayList<>();
+   	// intial range 
+       int start  =  intervals[0][0];
+       int end =  intervals[0][1]; 
+       
+       int  i =1;
+       while(i<intervals.length){
+           int s = intervals[i][0];
+           int e = intervals[i][1];
+           // next interval start is smaller than prev end and array is sorted
+           // so these two internal can merge
+           if( s<=end  ) { 
+               // so merge both intervals 
+               end =  Math.max(end,e);
+           }
+           else{ // if merge not possible , then insert prev interval into list
+               ans.add(new int[]{start,end});
+               start = s;
+               end =  e;                
+           }
+          i++;
+       }
+       
+       ans.add(new int[] {start,end});
+   	
+   	  int arr[][] =  new int[ans.size()][];
+           for(int i=0;i<ans.size();i++) {
+           	int a[] =  new int[2];
+           	for(int j=0;j<2;j++) {
+           		a[j] =  ans.get(i).get(j);
+           	}
+           	arr[i] =  a;
+           }
+           
+           return   arr;
+   	
+   	 // or 
+   	 //  return ans.toArray(new int[0][]);
+       
+       
+       
+   }
+}
+
+===================================================================================================================================================================
+
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if(intervals == null || intervals.length == 0)
+            return intervals;
+        
+        // sort intervals by starting value
+        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+        
+		// if end of previous interval is more than the start of current interval then there is a overlap
+        LinkedList<int[]> mergedIntervals = new LinkedList<>();
+        for(int[] curr : intervals) {
+            //  if list empty or no overlap simply add current interval
+            if(mergedIntervals.isEmpty() || mergedIntervals.getLast()[1] < curr[0])
+                mergedIntervals.add(curr);
+            // else if overlap exists then merge curren tinterval with the previous interval
+            else 
+                mergedIntervals.getLast()[1] = Math.max(mergedIntervals.getLast()[1], curr[1]);
+        }
+        
+        return mergedIntervals.toArray(new int[0][]);
+    }
+}
