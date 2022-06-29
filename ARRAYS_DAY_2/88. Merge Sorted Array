@@ -1,0 +1,204 @@
+You are given two integer arrays nums1 and nums2, sorted in non-decreasing order, and two integers m and n, representing the number of elements in nums1 and nums2 respectively.
+
+Merge nums1 and nums2 into a single array sorted in non-decreasing order.
+
+The final sorted array should not be returned by the function, but instead be stored inside the array nums1. To accommodate this, nums1 has a length of m + n, where the first m elements denote the elements that should be merged, and the last n elements are set to 0 and should be ignored. nums2 has a length of n.
+
+ 
+
+Example 1:
+
+Input: nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+Output: [1,2,2,3,5,6]
+Explanation: The arrays we are merging are [1,2,3] and [2,5,6].
+The result of the merge is [1,2,2,3,5,6] with the underlined elements coming from nums1.
+Example 2:
+
+Input: nums1 = [1], m = 1, nums2 = [], n = 0
+Output: [1]
+Explanation: The arrays we are merging are [1] and [].
+The result of the merge is [1].
+Example 3:
+
+Input: nums1 = [0], m = 0, nums2 = [1], n = 1
+Output: [1]
+Explanation: The arrays we are merging are [] and [1].
+The result of the merge is [1].
+Note that because m = 0, there are no elements in nums1. The 0 is only there to ensure the merge result can fit in nums1.
+ 
+
+Constraints:
+
+nums1.length == m + n
+nums2.length == n
+0 <= m, n <= 200
+1 <= m + n <= 200
+-109 <= nums1[i], nums2[j] <= 109
+
+
+
+MY_SOLUTION
+
+Logic
+We'd like to attempt this question in-place because all the space we need is already provided by our first array; 
+there's no need to create extra space. We'd like to use a two-pointer 
+approach but it can get quite messy dealing with certain cases. Since our extra space starts at the end of the first 
+array, let's see if we can do this by iterating backwards!
+
+Three Pointers:
+Let's use three pointers for this operation:
+
+The main pointer, i, will be starting from the end of the first array and will work its way to index 0.
+The pointer for the first array, a, and;
+The pointer for the second array, b, will be used for comparing the two sorted arrays and deciding what value to place at i next.
+We'll decide which value at index a or b is larger, place that value at index i, and decrement either a or b depending on which was larger. 
+This sounds a bit confusing so I've illustrated below how this would work with two example arrays:
+
+
+
+===============================================================================================================================================
+// BRUJTE FORCE  // O(NLOGN),O(1)
+class Solution {
+    //public void merge(int[] nums1, int m, int[] nums2, int n) {
+       /* m = m+n;
+        for(int i = 0; i < n; i++){
+            nums1[i + m - n] = nums2[i];
+        }
+        Arrays.sort(nums1); */
+        
+        /*
+===============================================================================================================================================        
+        // OPTIMISED // O(N),O(1)
+        int len1 = m - 1;
+        int len2 = n - 1;
+        int finalLen = m + n - 1;
+        
+        while(len1 >= 0 && len2 >= 0){
+            if(nums1[len1] > nums2[len2]){
+                nums1[finalLen--] = nums1[len1--];
+            }
+            else
+                nums1[finalLen--] = nums2[len2--];
+        }
+        
+        
+        while(len2 >= 0){
+            nums1[finalLen--] = nums2[len2--];
+        }
+        */
+ 
+===============================================================================================================================================       
+        // // OPTIMISED // O(N),O(1)
+        
+    public void merge(int[] a, int aLength, int[] b, int bLength) {
+    int aIndex = aLength - 1;  // initialize to the end of a, not including empty space
+    int bIndex = bLength - 1;  // initialize to end of b
+    int insertAt = aLength + bLength - 1;  // initialize to end of a, including empty space
+    while (bIndex >= 0)  // looping over b, because once we're out of b's, the a's remaining are already sorted (since input is sorted)
+        if (aIndex >= 0 && a[aIndex] >= b[bIndex])  // a >= b
+            a[insertAt--] = a[aIndex--];  // insert value from a, then shift indexes for a and insert
+        else  // b < a
+            a[insertAt--] = b[bIndex--];  // insert value from b, then shift indexes for b and insert
+}
+        
+   // }
+}
+
+===============================================================================================================================================       
+
+Solution 3: Gap method-
+
+Approach:
+
+Initially take the gap as (m+n)/2;
+Take as a pointer1 = 0 and pointer2 = gap.
+Run a Loop from pointer1 &  pointer2 to  m+n and whenever arr[pointer2]<arr[pointer1], just swap those.
+After completion of the loop reduce the gap as gap=gap/2.
+Repeat the process until gap>0.
+===============================================================================================================================================       
+
+The idea: We start comparing elements that are far from each other rather than adjacent. 
+For every pass, we calculate the gap and compare the elements towards the right of the gap. 
+Every pass, the gap reduces to the ceiling value of dividing by 2.
+
+// Java program for Merging two sorted arrays
+// with O(1) extra space
+ 
+public class MergeTwoSortedArrays {
+ 
+    // Function to find next gap.
+    private static int nextGap(int gap)
+    {
+        if (gap <= 1)
+            return 0;
+        return (gap / 2) + (gap % 2);
+    }
+ 
+    private static void merge(int[] arr1,
+                              int[] arr2, int n,
+                              int m)
+    {
+        int i, j, gap = n + m;
+        for (gap = nextGap(gap); gap > 0;
+             gap = nextGap(gap))
+        {
+            // comparing elements in the first
+            // array.
+            for (i = 0; i + gap < n; i++)
+                if (arr1[i] > arr1[i + gap])
+                {
+                    int temp = arr1[i];
+                    arr1[i] = arr1[i + gap];
+                    arr1[i + gap] = temp;
+                }
+ 
+            // comparing elements in both arrays.
+            for (j = gap > n ? gap - n : 0;
+                 i < n && j < m;
+                 i++, j++)
+                if (arr1[i] > arr2[j])
+                {
+                    int temp = arr1[i];
+                    arr1[i] = arr2[j];
+                    arr2[j] = temp;
+                }
+ 
+            if (j < m)
+            {
+                // comparing elements in the
+                // second array.
+                for (j = 0; j + gap < m; j++)
+                    if (arr2[j] > arr2[j + gap])
+                    {
+                        int temp = arr2[j];
+                        arr2[j] = arr2[j + gap];
+                        arr2[j + gap] = temp;
+                    }
+            }
+        }
+    }
+ ===============================================================================================================================================       
+
+    // Driver Code
+    public static void main(String[] args)
+    {
+        int[] a1 = { 10, 27, 38, 43, 82 };
+        int[] a2 = { 3, 9 };
+ 
+        // Function Call
+        merge(a1, a2, a1.length, a2.length);
+ 
+        System.out.print("First Array: ");
+        for (int i = 0; i < a1.length; i++) {
+            System.out.print(a1[i] + " ");
+        }
+ 
+        System.out.println();
+ 
+        System.out.print("Second Array: ");
+        for (int i = 0; i < a2.length; i++) {
+            System.out.print(a2[i] + " ");
+        }
+    }
+}
+ 
