@@ -1,0 +1,133 @@
+Given an array of integers nums containing n + 1 integers where each integer is in the range [1, n] inclusive.
+
+There is only one repeated number in nums, return this repeated number.
+
+You must solve the problem without modifying the array nums and uses only constant extra space.
+
+ 
+
+Example 1:
+
+Input: nums = [1,3,4,2,2]
+Output: 2
+Example 2:
+
+Input: nums = [3,1,3,4,2]
+Output: 3
+ 
+
+Constraints:
+
+1 <= n <= 105
+nums.length == n + 1
+1 <= nums[i] <= n
+All the integers in nums appear only once except for precisely one integer which appears two or more times.
+ 
+
+Follow up:
+
+How can we prove that at least one duplicate number must exist in nums?
+Can you solve the problem in linear runtime complexity?
+
+MY_SOUTION
+
+Solution: Slow and Faster Pointer
+
+Approach:
+
+We will use two pointers with different steps forward. The process is as follows:-
+
+We will take two pointers, namely fast and slow. Fast pointer takes 2 steps ahead and slow pointer takes 2 points ahead.
+Iterate through the list until the fast pointer is equal to NULL. 
+This is because NULL indicates that there is no cycle present in the given list.
+Cycle can be detected when fast and slow pointers collide.
+
+class Solution {
+    public int findDuplicate(int[] nums) {
+        //BRUTE FORCE -> SORT THE ARRAY AND CHECK FOR DUPLICATES (ARR[I] == ARR[I+1])
+       /*
+        int len = nums.length;
+        Arrays.sort(nums);
+        for(int i = 0; i < len - 1; i++){
+            if(nums[i] == nums[i+1]) return nums[i];
+        }
+        return 0;
+        */
+===============================================================================================================================================
+        
+        // OPTIMISED -> CYCLE SORT (TWO PASSES)
+        // PLACE THE ELEMENT AT ITS CORRECT INDEX
+        /*
+        int index = 0;
+        int len = nums.length;
+        while(index < len){
+            int corrIndex = nums[index] - 1;
+            if(nums[index] != nums[corrIndex]){
+                swap(nums,index,corrIndex);
+            }
+            else{
+                index++;
+            }
+        }
+        
+        for(int i = 0; i < len; i++){
+            if(nums[i] != i+1) return nums[i];
+            
+        }
+        return 0;
+    }
+    */
+    
+===============================================================================================================================================
+        // OPTIMISED -> CYCLE SORT (ONE PASSES)
+        /*
+        int index = 0;
+        while(index < nums.length){
+            if(nums[index] != index + 1){
+                int corrIndex = nums[index] - 1;
+                if(nums[index] != nums[corrIndex]){
+                swap(nums,index,corrIndex);
+                }
+                else{
+                    return nums[index];
+                }
+                
+            }
+            else{
+                index++;
+            }
+        
+        
+        }
+        return -1;
+    }
+    
+    
+    
+    
+    static void swap(int[] arr, int first, int second){
+        int temp = arr[first];
+        arr[first] = arr[second];
+        arr[second] = temp;
+    }
+    */
+    
+===============================================================================================================================================
+    // MOST OPTIMISED ->L.LIST CYCLE (FAST AND SLOW)
+        int slow = nums[0];
+        int fast = nums[0];
+        
+        do{
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+        }while(slow != fast);
+        
+        fast = nums[0];
+        
+        while(fast != slow){
+            slow = nums[slow];
+            fast = nums[fast];
+        }
+        return slow;
+    }
+}
