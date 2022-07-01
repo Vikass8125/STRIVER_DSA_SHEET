@@ -1,0 +1,175 @@
+Given an integer array of size n, find all elements that appear more than ⌊ n/3 ⌋ times.
+
+ 
+
+Example 1:
+
+Input: nums = [3,2,3]
+Output: [3]
+Example 2:
+
+Input: nums = [1]
+Output: [1]
+Example 3:
+
+Input: nums = [1,2]
+Output: [1,2]
+ 
+
+Constraints:
+
+1 <= nums.length <= 5 * 104
+-109 <= nums[i] <= 109
+ 
+
+Follow up: Could you solve the problem in linear time and in O(1) space?
+
+MY_SOLUTION
+
+Solution 1: Brute-Force
+
+Approach: Simply count the no. of appearance for each element using nested loops and whenever you find the count of an element greater than N/3 
+times, that element will be your answer.
+
+static ArrayList < Integer > majorityElement(int arr[], int n) {
+    ArrayList < Integer > ans = new ArrayList < > ();
+    for (int i = 0; i < n; i++) {
+      int cnt = 1;
+      for (int j = i + 1; j < n; j++) {
+        if (arr[j] == arr[i])
+          cnt++;
+      }
+
+      if (cnt > (n / 3))
+        ans.add(arr[i]);
+    }
+
+    return ans;
+  }
+  
+  Time Complexity: O(n^2)
+
+Space Complexity: O(1)
+
+
+Approach: Traverse the whole array and store the count of every element in a map. 
+After that traverse through the map and whenever you find the count of an element greater than N/3 times, store that element in your answer.
+
+Dry Run: Lets take the example of arr[] = {10,20,40,40,40}, n=5.
+
+First, we create an unordered map to store the count of each element.
+
+Now traverse through the array 
+
+Found 10 at  index 0, increase the value of key 10 in  the map by 1.
+Found 20 at  index 1, increase the value of key 20 in  the map by 1.
+Found 40 at  index 2, increase the value of key 40 in  the map by 1.
+Found 40 at index 3, increase the value of key 40 in  the map by 1.
+Found 40 at  index 4, increase the value of key 40 in the map by 1.
+Now, Our map will look like this: 
+
+10 -> 1 
+
+20 ->1
+
+40 ->3
+
+Now traverse through the map, 
+
+We found that the value of key 40 is greater than 2 (N/3). So, 40 is the answer.
+
+static ArrayList < Integer > majorityElement(int arr[], int n) {
+    HashMap < Integer, Integer > mp = new HashMap < > ();
+    ArrayList < Integer > ans = new ArrayList < > ();
+
+    for (int i = 0; i < n; i++) {
+      mp.put(arr[i], mp.getOrDefault(arr[i], 0) + 1);
+    }
+
+    for (int x: mp.keySet()) {
+      if (mp.get(x) > (n / 3))
+        ans.add(x);
+    }
+
+    return ans;
+  }
+
+
+Time Complexity: O(n)
+
+Space Complexity: O(n)
+
+Solution 3: Optimal Solution (Extended Boyer Moore’s Voting Algorithm)
+
+Approach + Intuition: In our code, we start with declaring a few variables:
+
+num1 and num2 will store our currently most frequent and second most frequent element.
+c1 and c2 will store their frequency relatively to other numbers.
+We are sure that there will be a max of 2 elements which occurs > N/3 times because there cannot be if you do a simple math addition.
+Let, ele be the element present in the array at any index. 
+
+if ele == num1, so we increment c1.
+if ele == num2, so we increment c2.
+if c1 is 0, so we assign num1 = ele.
+if c2 is 0, so we assign num2 = ele.
+In all the other cases we decrease both c1 and c2.
+In the last step, we will run a loop to check if num1 or nums2 are the majority elements or not by running a for loop check.
+
+Intuition: Since it’s guaranteed that a number can be a majority element, hence it will always be present at the last block, hence, in turn, 
+will be on nums1 and nums2. For a more detailed explanation, please watch the video below.
+
+class Solution {
+    public List<Integer> majorityElement(int[] nums) {
+        int len = nums.length;
+        
+        int num_1 = -1, num_2 = -1, count_1 = 0, count_2 = 0;
+        
+        for(int i = 0; i < len; i++){
+            if(nums[i] == num_1){
+                count_1++;
+            }
+            else if(nums[i] == num_2){
+                count_2++;
+            }
+            else if(count_1 == 0){
+                num_1 = nums[i];
+                count_1 = 1;
+            }
+            else if(count_2 == 0){
+                num_2 = nums[i];
+                count_2 = 1;
+            }
+            else{
+                count_1--;
+                count_2--;
+            }
+
+        }
+        
+        ArrayList<Integer> list = new ArrayList<>();
+        count_1 = 0;
+        count_2 = 0;
+        
+        for(int i = 0; i < len; i++){
+            if(nums[i] == num_1){
+                count_1++;
+            }
+            else if(nums[i] == num_2){
+                count_2++;
+            }
+
+        }
+        if(count_1 > (len/3)) list.add(num_1);
+        if(count_2 > (len/3)) list.add(num_2);
+        return list;
+        
+    }
+}
+
+
+
+Time Complexity: O(n)
+
+Space Complexity: O(1)
+
+
