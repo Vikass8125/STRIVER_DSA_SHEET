@@ -1,0 +1,157 @@
+Given an array nums of size n, return the majority element.
+
+The majority element is the element that appears more than ⌊n / 2⌋ times. You may assume that the majority element always exists in the array.
+
+ 
+
+Example 1:
+
+Input: nums = [3,2,3]
+Output: 3
+Example 2:
+
+Input: nums = [2,2,1,1,1,2,2]
+Output: 2
+ 
+
+Constraints:
+
+n == nums.length
+1 <= n <= 5 * 104
+-109 <= nums[i] <= 109
+ 
+ MY_SOLUTION
+ 
+ Solution 1 (Brute Force):
+
+Check the count of occurrences of all elements of the array one by one.
+Start from the first element of the array and count the number of times it occurs in the array. 
+If the count is greater than the floor of N/2 then return that element as the answer. 
+If not, proceed with the next element in the array and repeat the process.
+
+Time Complexity: O(N2) 
+
+Space Complexity: O(1)
+
+Solution 2 (Better):
+
+Intuition: Use a better data structure to reduce the number of look-up operations and hence the time complexity. 
+Moreover, we have been calculating the count of the same element again and again – so we have to reduce that also.
+
+Approach: 
+
+Use a hashmap and store as (key, value) pairs. (Can also use frequency array based on the size of nums) 
+Here the key will be the element of the array and the value will be the number of times it occurs. 
+Traverse the array and update the value of the key. Simultaneously check if the value is greater than the floor of N/2. 
+If yes, return the key 
+Else iterate forward.
+Time Complexity: O(N)-> Frequency array or O(N log N) -> HashMap 
+
+Space Complexity: O(N)
+
+Solution 3 (Optimal):
+
+Moore’s Voting Algorithm
+
+Intuition: The question clearly states that the nums array has a majority element. 
+Since it has a majority element we can say definitely the count is more than N/2.
+
+Majority element count = N/2 + x;
+
+Minority/Other elements = N/2 – x;
+
+Where x is the number of times it occurs after reaching the minimum value N/2.
+
+Now, we can say that count of minority elements and majority elements are equal up to a certain point of time in the array. 
+
+So when we traverse through the array we try to keep track of the count of elements and which element we are tracking. 
+Since the majority element appears more than N/2 times, we can say that at some point in array traversal we find the majority element. 
+
+Approach: 
+
+Initialize 2 variables: 
+Count –  for tracking the count of element
+Element – for which element we are counting
+Traverse through nums array.
+If Count is 0 then initialize the current traversing integer of array as Element 
+If the traversing integer of array and Element are same increase Count by 1
+If they are different decrease Count by 1
+The integer present in Element is the result we are expecting 
+
+
+
+// Sorting
+public int majorityElement1(int[] nums) {
+    Arrays.sort(nums);
+    return nums[nums.length/2];
+}
+
+// Hashtable 
+public int majorityElement2(int[] nums) {
+    Map<Integer, Integer> myMap = new HashMap<Integer, Integer>();
+    //Hashtable<Integer, Integer> myMap = new Hashtable<Integer, Integer>();
+    int ret=0;
+    for (int num: nums) {
+        if (!myMap.containsKey(num))
+            myMap.put(num, 1);
+        else
+            myMap.put(num, myMap.get(num)+1);
+        if (myMap.get(num)>nums.length/2) {
+            ret = num;
+            break;
+        }
+    }
+    return ret;
+}
+
+// Moore voting algorithm
+public int majorityElement3(int[] nums) {
+    int count=0, ret = 0;
+    for (int num: nums) {
+        if (count==0)
+            ret = num;
+        if (num!=ret)
+            count--;
+        else
+            count++;
+    }
+    return ret;
+}
+
+// Bit manipulation 
+public int majorityElement(int[] nums) {
+    int[] bit = new int[32];
+    for (int num: nums)
+        for (int i=0; i<32; i++) 
+            if ((num>>(31-i) & 1) == 1)
+                bit[i]++;
+    int ret=0;
+    for (int i=0; i<32; i++) {
+        bit[i]=bit[i]>nums.length/2?1:0;
+        ret += bit[i]*(1<<(31-i));
+    }
+    return ret;
+}
+
+
+
+
+================================================================================================================
+
+class Solution {
+    public int majorityElement(int[] nums) {
+        int count = 0;
+        int candidate = 0;
+
+        for (int num : nums) {
+            if (count == 0) {
+                candidate = num;
+            }
+            if(num==candidate)
+            count += 1; 
+            else count -= 1; 
+        }
+
+        return candidate;
+    }
+}
