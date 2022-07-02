@@ -1,0 +1,189 @@
+Given an integer array nums, return the number of reverse pairs in the array.
+
+A reverse pair is a pair (i, j) where 0 <= i < j < nums.length and nums[i] > 2 * nums[j].
+
+ 
+
+Example 1:
+
+Input: nums = [1,3,2,3,1]
+Output: 2
+Example 2:
+
+Input: nums = [2,4,3,5,1]
+Output: 3
+ 
+
+Constraints:
+
+1 <= nums.length <= 5 * 104
+-231 <= nums[i] <= 231 - 1
+
+NOTE : SIMILAR TO INVERSION PAIRS
+MY_SOLUTION
+
+Method 1: Brute force
+Time complexity: O(n^2)
+Space complexity: O(1)
+
+class Solution {
+    public int reversePairs(int[] arr) {
+        int count = 0;
+        for (int i = 0; i < arr.length; i++)
+            for (int j = i+1; j < arr.length; j++)
+                if ((long)arr[i] > (long)2 * arr[j])    // 21,47,483,647, which is max value of int, was given in some test cases
+                    count++;
+        return count;
+    }
+}
+
+
+OPTIMISED
+
+Intuition:
+
+-> We will be using the Merge Sort Algorithm to solve this problem. We split the whole array into 2  parts creating a Merge Sort Tree-like structure. 
+During the conquer step we do the following task : 
+
+-> We take the left half of the Array and Right half of the Array, both are sorted in themselves. 
+
+-> We will be checking the following condition arr[i] <= 2*arr[j]  where i is the pointer in the Left Array and j is the pointer in the Right Array. 
+
+-> If at any point arr[i] <= 2*arr[j] , we add 1  to the answer as this pair has a contribution to the answer. 
+
+-> If Left Array gets exhausted before Right Array we keep on adding the distance j pointer traveled as both the arrays are Sorted so the next ith element 
+from Left Subarray will equally contribute to the answer.
+
+
+
+-> The moment when both Arrays get exhausted we perform a merge operation. This goes on until we get the original array as a Sorted array.
+
+ 
+
+Approach :  
+
+-> We first of all call a Merge Sort function, in that we recursively call Left Recursion and Right Recursion after that we call Merge function 
+in order to merge both Left and Right Calls we initially made and compute the final answer.
+
+-> In the Merge function, we will be using low, mid, high values to count the total number of inversion pairs for the Left half and Right half of the Array.
+
+->  Now, after the above task, we need to Merge the both Left and Right sub-arrays using a temporary vector.
+
+-> After this, we need to copy back the temporary vector to the Original Array. Then finally we return the number of pairs we counted.
+
+
+Time Complexity : O( N log N ) + O (N) + O (N)   
+
+Reason : O(N) – Merge operation , O(N) – counting operation ( at each iteration of i , j doesn’t start from 0 . Both of them move linearly ) 
+
+Space Complexity : O(N) 
+
+Reason : O(N) – Temporary ArrayList
+
+
+TC = O(NlogN) +O(N) + O(N)
+SC = O(N)
+
+class Solution {
+    public int reversePairs(int[] nums) {
+        return mergesort(nums,0,nums.length-1);  // calling merge sort with low, high params
+    }
+    static int mergesort(int[] nums, int low, int high){
+        if(low>=high){   // if it is a single element we will return 0 as it won't be contributing to the ans
+            return 0;
+        }
+        int mid = (low+high)/2;    // computing the mid for the merge sort
+        int inv = mergesort(nums,low,mid);   // calling the left half via recursion i.e low to mid
+        inv += mergesort(nums,mid+1, high); // calling the right half via recursion i.e mid+1 to high
+        inv += merge(nums,low,mid,high);  // merging the 2 sorted arrays and returning the inverted pairs in int form
+        
+        return inv;  // returing the inversion pairs for every recursive call
+    }
+    static int merge(int[] nums, int low, int mid, int high){
+        int cnt = 0;
+        int j = mid + 1;  // initializing j at the starting position of the right half of the array
+        for(int i= low;i<=mid;i++){    // iterate i in the left half of the array
+            while(j<=high && nums[i]> (2 * (long) nums[j])){ // either right half is exausted or if condition in question turns out as false, keep incrementing the j pointer
+                j++;
+            }
+            cnt+= (j-(mid+1));  // counting the number of left elements (how much j has moved from initial mid+1)
+        }
+		
+		// now we simply perform the merge function 
+		
+        ArrayList<Integer> temp = new ArrayList<>();
+        int left = low;
+        int right = mid+1;
+        while(left<=mid && right<=high){
+            if(nums[left]<=nums[right]){ // adding the smaller to the temp arraylist
+                temp.add(nums[left++]);  // incrementing the index of the added element
+            }
+            else{
+                temp.add(nums[right++]); // adding and incrementing right if right is smaller
+            }
+        }
+        while(left<=mid){    // if left part is left to be copied, we add it to the arraylist and increment index left
+            temp.add(nums[left++]);
+        }
+        while(right<=high){   // if right part is left to be copied, we add it to the arraylist and increment index right
+            temp.add(nums[right++]);
+        }
+        for(int i =low;i<=high;i++){
+            nums[i] = temp.get(i-low);  // copying the sorted arraylist to the original nums array
+        }
+        return cnt;  // returing the total number of pairs
+        
+        
+    }
+}
+
+ANOTHER_SOLUTION
+class Solution {
+    public int reversePairs(int[] nums) {
+        int[] temp = new int[nums.length];
+        return mergeSort(nums,0,nums.length-1,temp);
+    }
+    
+    public int mergeSort(int[] nums, int low, int high, int[] temp) {
+        int count = 0;
+        if(low<high)
+        {
+            int mid = (low+high)/2;
+            count += mergeSort(nums,low,mid,temp);
+            count += mergeSort(nums,mid+1,high,temp);
+            count += merge(nums,low,mid+1,high,temp);
+        }
+        return count;
+    }
+    
+    public int merge(int[] nums, int low, int mid, int high, int[] temp) {
+        int count = 0, x = mid;
+        for(int i=low; i<mid; i++)
+        {
+            while((x<=high) && (nums[i]>2*(long)nums[x]))
+                x++;
+            
+            count += x-mid;
+        }
+        
+        int i = low, j = mid, k = low;
+        while((i<=mid-1) && (j<=high))
+        {
+            if(nums[i]<=nums[j])
+                temp[k++] = nums[i++];
+            else
+                temp[k++] = nums[j++];
+        }
+        
+        while(i<=mid-1)
+            temp[k++] = nums[i++];
+        
+        while(j<=high)
+            temp[k++] = nums[j++];
+        
+        for(i = low; i<=high; i++)
+            nums[i] = temp[i];
+        
+        return count;
+    }
+}
