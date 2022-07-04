@@ -1,0 +1,325 @@
+Given an array nums of n integers, return an array of all the unique quadruplets [nums[a], nums[b], nums[c], nums[d]] such that:
+
+0 <= a, b, c, d < n
+a, b, c, and d are distinct.
+nums[a] + nums[b] + nums[c] + nums[d] == target
+You may return the answer in any order.
+
+ 
+
+Example 1:
+
+Input: nums = [1,0,-1,0,-2,2], target = 0
+Output: [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+Example 2:
+
+Input: nums = [2,2,2,2,2], target = 8
+Output: [[2,2,2,2]]
+ 
+
+Constraints:
+
+1 <= nums.length <= 200
+-109 <= nums[i] <= 109
+-109 <= target <= 109
+
+
+MY_SOLUTION
+
+// BRUTE FORCE
+
+Solution 1: Using 3 pointers and Binary Search
+Approach:
+
+The main idea is to sort the array, and then we can think of searching in the array using the binary search technique. 
+Since we need the 4 numbers which sum up to target. So we will fix three numbers as nums[i], nums[j] and nums[k], and search for 
+the remaining (target – (nums[i] + nums[j] + nums[k])) in the array. Since we sorted the array during the start, we can apply binary search to search 
+for this value, and if it occurs we can store them. In order to get the unique quads, we use a set data structure to store them.
+
+
+========================================================================
+Code: C++
+
+#include<bits/stdc++.h>
+using namespace std;
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) {
+        int n = nums.size();
+        
+        sort(nums.begin(),nums.end());
+      
+       set<vector<int>> sv;
+        for(int i=0;i<n;i++)
+        {
+            for(int j=i+1;j<n;j++)
+            {
+    
+                for(int k=j+1;k<n;k++)
+                { 
+                  
+                   int x = (long long)target - 
+                           (long long)nums[i]-
+                           (long long)nums[j]-(long long)nums[k];
+                   
+                        if(binary_search(nums.begin()+k+1,nums.end(),x)){
+                            vector<int> v;
+                            v.push_back(nums[i]);
+                            v.push_back(nums[j]);
+                            v.push_back(nums[k]);
+                            v.push_back(x);
+                            sort(v.begin(),v.end());
+                            sv.insert(v);
+                        }
+                }
+            }
+        }
+        vector<vector<int>> res(sv.begin(),sv.end());
+        return res;
+    }
+};
+int main()
+{
+    Solution obj;
+    vector<int> v{1,0,-1,0,-2,2};
+    
+    vector<vector<int>> sum=obj.fourSum(v,0);
+    cout<<"The unique quadruplets are"<<endl;
+    for (int i = 0; i < sum.size(); i++) {
+        for (int j = 0; j < sum[i].size(); j++)
+            cout << sum[i][j] << " ";
+        cout << endl;
+    }
+}
+====================================================================
+
+Output:
+
+The unique quadruplets are
+-2 -1 1 2
+-2 0 0 2
+-1 0 0 1
+
+Time Complexity: O(N log N + N³ logN)
+Reason: Sorting the array takes N log N and three nested loops will be taking N³ and for binary search, it takes another log N.
+Space Complexity: O(M * 4), where M is the number of quads
+
+============================================================================================================================================
+
+Solution 2: Optimized Approach
+
+Intuition: In the previous approach we fixed three-pointers and did a binary search to find the fourth. 
+Over here we will fix two-pointers and then find the remaining two elements using two pointer technique as the array will be sorted at first.
+
+Approach: Sort the array, and then fix two pointers, so the remaining sum will be (target – (nums[i] + nums[j])). 
+Now we can fix two-pointers, one front, and another back, and easily use a two-pointer to find the remaining two numbers of the quad. 
+In order to avoid duplications, we jump the duplicates, because taking duplicates will result in repeating quads. 
+We can easily jump duplicates, by skipping the same elements by running a loop.
+
+class Solution {
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        ArrayList<List<Integer>> result = new ArrayList<List<Integer>>();
+        int len = nums.length;
+        if(nums == null || len == 0) return result;
+        
+        Arrays.sort(nums);
+        
+        for(int i = 0; i < len; i++){
+        
+            long target_3 = target - nums[i];
+            
+            for(int j = i+1 ; j < len; j++){
+                
+                long target_2 = target_3 - nums[j];
+                
+                int left = j + 1;
+                int right = len - 1;
+                
+                while(left < right){
+                    long two_sum = nums[left] + nums[right];  // Integer Over flow
+                    
+                    if(two_sum < target_2) left++;
+                    
+                    else if(two_sum > target_2) right--;
+                    
+                    else { // two_sum == target_2
+                        List<Integer> ans = new ArrayList<>();
+                        ans.add(nums[i]);
+                        ans.add(nums[j]);
+                        ans.add(nums[left]);
+                        ans.add(nums[right]);
+                        result.add(ans);
+                        
+                        // Removing Duplicates of left
+                        while(left < right && nums[left] == ans.get(2)) ++left;
+                        
+                        // Removing Duplicates of right
+                        while(left < right && nums[right] == ans.get(3)) --right;
+                    }
+                }
+                
+                // Removing Duplicates of j
+                while(j+1 < len && nums[j+1] == nums[j]) ++j;
+            }
+            
+             // Removing Duplicates of i
+                while(i+1 < len && nums[i+1] == nums[i]) ++i;
+
+        }
+        return result;
+        
+    }
+}
+
+
+Time Complexity: O(n³) 
+Reason: There are 2 nested loops and the front pointer as well as the right pointer (Third nested loop)
+
+Space Complexity: O(1), (Generally the space complexity that is used to return the answer is ignored)
+
+
+============================================================================================================================================
+
+OTHER-SOLUTIONS
+class Solution {
+  // TC : O(n3)
+  public List<List<Integer>> fourSum(int[] nums, int target) {
+    List<List<Integer>> ans = new ArrayList<>();
+    Arrays.sort(nums);
+
+    for (int i = 0; i < nums.length - 3; i++) {
+
+      if (i != 0 && nums[i] == nums[i - 1]) {
+        continue;
+      }
+
+      for (int j = i + 1; j < nums.length - 2; j++) {
+
+        if (j != i + 1 && nums[j] == nums[j - 1]) {
+          continue;
+        }
+
+        int left = j + 1;
+        int right = nums.length - 1;
+
+        while (left < right) {
+          int sum = nums[i] + nums[j] + nums[left] + nums[right];
+
+          if (sum < target) {
+            left++;
+          } else if (sum > target) {
+            right--;
+          } else {
+            // sum == target
+            List<Integer> combination = new ArrayList<>();
+            combination.add(nums[i]);
+            combination.add(nums[j]);
+            combination.add(nums[left]);
+            combination.add(nums[right]);
+
+            ans.add(combination);
+
+            left++;
+            right--;
+
+            while (left < right && nums[left] == nums[left - 1]) {
+              left++;
+            }
+
+            while (left < right && nums[right] == nums[right + 1]) {
+              right--;
+            }
+          }
+        }
+      }
+    }
+
+    return ans;
+
+  }
+}
+
+============================================================================================================================================
+
+ANOTRHER_SOLUTION
+
+
+3Sum + 4Sum
+Use two pointers in 3Sum.
+
+public List<List<Integer>> fourSum(int[] nums, int target) {
+  int n = nums.length;
+  // sorting
+  Arrays.sort(nums);
+  // fourSum
+  List<List<Integer>> result = new ArrayList<>();
+  for (int i = 0; i < n; ++i) {
+    if (i > 0 && nums[i - 1] == nums[i]) continue;
+    threeSum(nums, i + 1, n - 1, target - nums[i], result);
+  }
+  return result;
+}
+  
+private void threeSum(int[] nums, int lo, int hi, int target, List<List<Integer>> result) {
+  int n = nums.length;
+  int subLen = hi - lo + 1;
+  for (int i = lo; i <= hi; ++i) {
+    if (i > lo && nums[i] == nums[i - 1]) continue;  // skip same result
+    // two pointers
+    int j = i + 1, k = hi;
+    int t = target - nums[i];
+    while (j < k) { // each element is only used once
+      if (nums[j] + nums[k] < t) {
+        ++j;
+      } else if (nums[j] + nums[k] > t) {
+        --k;
+      } else { // equal
+        result.add(Arrays.asList(nums[lo - 1], nums[i], nums[j], nums[k]));
+        ++j;
+        --k;
+        while (j < k && nums[j] == nums[j - 1]) j++;  // skip same result
+        while (j < k && nums[k] == nums[k + 1]) k--;  // skip same result
+      }
+    }
+  }
+}
+Time: O(N^3)
+Space: O(1)
+
+
+
+============================================================================================================================================
+
+class Solution {
+public List<List> fourSum(int[] arr, int target) {
+
+   Set<List<Integer> > set = new HashSet<>();
+    Arrays.sort(arr);
+    
+    for(int i=0; i<arr.length-3; i++){
+        for(int j=i+1; j<arr.length-2; j++){
+            int left = j+1;
+            int right = arr.length-1;
+            
+            while(left<right){
+                int sum = arr[i]+arr[j]+arr[left]+arr[right];
+                
+                if(sum==target) {
+                    set.add(Arrays.asList(arr[i],arr[j],arr[left],arr[right]));
+                    left++;
+                    right--;
+                }
+                
+                else if(sum<target) left++;
+                
+                else if(sum>target) right--;
+                
+            }    
+                
+        }
+                           
+        }
+    
+    return new ArrayList<>(set);
+    }
+}
