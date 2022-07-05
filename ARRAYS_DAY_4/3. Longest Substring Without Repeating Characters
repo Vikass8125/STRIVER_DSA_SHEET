@@ -1,0 +1,175 @@
+Given a string s, find the length of the longest substring without repeating characters.
+
+ 
+
+Example 1:
+
+Input: s = "abcabcbb"
+Output: 3
+Explanation: The answer is "abc", with the length of 3.
+Example 2:
+
+Input: s = "bbbbb"
+Output: 1
+Explanation: The answer is "b", with the length of 1.
+Example 3:
+
+Input: s = "pwwkew"
+Output: 3
+Explanation: The answer is "wke", with the length of 3.
+Notice that the answer must be a substring, "pwke" is a subsequence and not a substring.
+ 
+
+Constraints:
+
+0 <= s.length <= 5 * 104
+s consists of English letters, digits, symbols and spaces.
+
+MY_SOLUTION
+
+Bruteforce Approach
+The simplest approach to solve this problem is to generate all the substrings of the given string and among all substrings having all unique characters, return the maximum length.
+
+Algorithm
+
+To generate all substrings of a string, loop from the start till the end index of the string. 
+Let us consider, the start index is i and the end index is j. Run a nested loop from i = 0 to N – 1 and j =  i + 1 till N. 
+Hence, the substrings can be generated.
+To check if the substring contains all unique characters, put all the characters in the set one by one. 
+If any of the characters are already present in the set, skip that string, else consider its length and maximize it.
+
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        //BRUTE FORCE : T.C -> O(N^2)
+
+        int len = s.length();
+        int max = Integer.MIN_VALUE;
+        
+        for(int i = 0; i< len ; i++){
+            Set<Character> set = new HashSet<>();
+            
+            for(int j = i; j < len; j++){
+                if(set.contains(s.charAt(j))){
+                    max = Math.max(max, j-i);
+                    break;
+                }
+                set.add(s.charAt(j));
+            }
+        }
+        return max;   
+    }
+}
+
+
+=========================================================================================================================
+class Main {
+    public int lengthOfLongestSubstring(String s) {
+
+        int n = s.length();
+ 
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                if (checkRepetition(s, i, j)) {
+                    res = Math.max(res, j - i + 1);
+                }
+            }
+        }
+ 
+        return res;
+    }
+ 
+    private boolean checkRepetition(String s, int start, int end) {
+        int[] chars = new int[128];
+ 
+        for (int i = start; i <= end; i++) {
+            char c = s.charAt(i);
+            chars[c]++;
+            if (chars[c] > 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+   }
+================================================================================================================================
+Solution 2: Optimised  Approach 1
+
+Approach: We will have two pointers left and right. Pointer ‘left’ is used for maintaining the starting point of substring while ‘right’ will maintain 
+the endpoint of the substring.’ right’ pointer will move forward and check for the duplicate occurrence of the current element if found then ‘left’ pointer 
+will be shifted ahead so as to delete the duplicate elements.
+
+static int solve(String str) {
+        int maxans = Integer.MIN_VALUE;
+        Set < Character > set = new HashSet < > ();
+        int l = 0;
+        for (int r = 0; r < str.length(); r++) // outer loop for traversing the string
+        {
+            if (set.contains(str.charAt(r))) //if duplicate element is found
+            {
+                while (l < r && set.contains(str.charAt(r))) {
+                    set.remove(str.charAt(l));
+                    l++;
+                }
+            }
+            set.add(str.charAt(r));
+            maxans = Math.max(maxans, r - l + 1);
+        }
+        return maxans;
+    }
+
+Time Complexity: O( 2*N ) (sometimes left and right both have to travel complete array)
+
+Space Complexity: O(N) where N is the size of HashSet taken for storing the elements
+
+=======================================================================================================================================
+
+Solution 3: Optimised  Approach 2
+
+Approach: In this approach, we will make a map that will take care of counting the elements and maintaining the frequency of each and every element as 
+a unity by taking the latest index of every element.
+
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        //BRUTE FORCE : T.C -> O(N^2)
+        /*
+        int len = s.length();
+        int max = Integer.MIN_VALUE;
+        
+        for(int i = 0; i< len ; i++){
+            Set<Character> set = new HashSet<>();
+            
+            for(int j = i; j < len; j++){
+                if(set.contains(s.charAt(j))){
+                    max = Math.max(max, j-i);
+                    break;
+                }
+                set.add(s.charAt(j));
+            }
+        }
+        return max;
+        */
+        
+        //MOST OPTIMISED : T.C -> O(N), S.C -> O(N)
+        
+        int left = 0, right = 0;
+        int len = s.length();
+        int maxLen = 0;
+        
+        HashMap<Character, Integer> map = new HashMap<Character, Integer>();
+        
+        while(right < len){
+            if(map.containsKey(s.charAt(right))){
+                left = Math.max(map.get(s.charAt(right)) + 1, left);
+            }
+            map.put(s.charAt(right), right);
+            maxLen = Math.max(maxLen, right - left + 1);
+            right++;
+        }
+        return maxLen;
+    }
+}
+
+Time Complexity: O( N )
+
+Space Complexity: O(N) where N represents the size of HashSet where we are storing our elements
