@@ -1,0 +1,123 @@
+Given the head of a singly linked list, return the middle node of the linked list.
+
+If there are two middle nodes, return the second middle node.
+
+ 
+
+Example 1:
+
+
+Input: head = [1,2,3,4,5]
+Output: [3,4,5]
+Explanation: The middle node of the list is node 3.
+Example 2:
+
+
+Input: head = [1,2,3,4,5,6]
+Output: [4,5,6]
+Explanation: Since the list has two middle nodes with values 3 and 4, we return the second one.
+ 
+
+Constraints:
+
+The number of nodes in the list is in the range [1, 100].
+1 <= Node.val <= 100
+
+MY_SOUTION
+BRUTE_FORCE
+
+Solution 1: Naive Approach
+
+Intuition: We can traverse through the Linked List while maintaining a count of nodes let’s say in variable n, and then 
+traversing for 2nd time for n/2 nodes to get to the middle of the list.
+T.C -> O(N) + O(N/2)
+S.C -> O(1)
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        //BRUTE FORCE
+        /*
+        ListNode temp = head;
+        int count = 0;
+        
+        while(temp != null){
+            count++;
+            temp = temp.next;
+        }
+        
+        temp = head;
+        
+        for(int i = 0; i < count/2; i++){
+            temp = temp.next;
+        }
+        return temp;
+        */
+    }
+}
+        
+       
+=====================================================================================================================================================
+Intuition and Algorithm
+
+Put every node into an array A in order. Then the middle node is just A[A.length // 2], since we can retrieve each node by index.
+
+We can initialize the array to be of length 100, as we're told in the problem description that the input contains between 1 and 100 nodes.
+
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        ListNode[] A = new ListNode[100];
+        int t = 0;
+        while (head != null) {
+            A[t++] = head;
+            head = head.next;
+        }
+        return A[t / 2];
+    }
+}
+
+=====================================================================================================================================================
+Solution 2: [Efficient] Tortoise-Hare-Approach
+
+Unlike the above approach, we don’t have to maintain node count here and we will be able to find the middle node in a single traversal 
+so this approach is more efficient.
+
+Intuition: In the Tortoise-Hare approach, we increment slow ptr by 1 and fast ptr by 2, so if take a close look fast ptr will travel double 
+than that of the slow pointer. So when the fast ptr will be at the end of Linked List, slow ptr would have covered half of Linked List till then. 
+So slow ptr will be pointing towards the middle of Linked List.
+
+Approach: 
+
+Create two pointers slow and fast and initialize them to a head pointer.
+Move slow ptr by one step and simultaneously fast ptr by two steps until fast ptr is NULL or next of fast ptr is NULL.
+When the above condition is met, we can see that the slow ptr is pointing towards the middle of Linked List and hence we can return the slow pointer.
+
+class Solution {
+    public ListNode middleNode(ListNode head) {
+ // OPTIMISED -> FAST AND SLOW POINTER
+        
+        ListNode slow = head;
+        ListNode fast = head;
+        
+        while(fast != null && fast.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+        
+    }
+}
+
+
+
+Time Complexity: O(N/2)
+
+Space Complexity: O(1)
