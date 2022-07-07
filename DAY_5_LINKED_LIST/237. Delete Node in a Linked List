@@ -1,0 +1,88 @@
+Write a function to delete a node in a singly-linked list. You will not be given access to the head of the list, instead you will be given access to the node to be deleted directly.
+
+It is guaranteed that the node to be deleted is not a tail node in the list.
+
+ 
+
+Example 1:
+
+
+Input: head = [4,5,1,9], node = 5
+Output: [4,1,9]
+Explanation: You are given the second node with value 5, the linked list should become 4 -> 1 -> 9 after calling your function.
+Example 2:
+
+
+Input: head = [4,5,1,9], node = 1
+Output: [4,5,9]
+Explanation: You are given the third node with value 1, the linked list should become 4 -> 5 -> 9 after calling your function.
+ 
+
+Constraints:
+
+The number of the nodes in the given list is in the range [2, 1000].
+-1000 <= Node.val <= 1000
+The value of each node in the list is unique.
+The node to be deleted is in the list and is not a tail node
+
+MY_SOLUTION
+Approach:
+
+We are given access to nodes that we have to delete from the linked list. 
+So, whatever operation we want to do in the linked list, we can operate in the right part of the linked list from the node to be deleted. 
+
+The approach is to copy the next node’s value in the deleted node. Then, link node to next of next node. 
+This does not delete that node but indirectly it removes that node from the linked list.
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public void deleteNode(ListNode node) {
+        
+        if(node != null && node.next != null){
+              node.val = node.next.val;
+              node.next = node.next.next;
+        }
+          
+    }
+}
+
+Time Complexity: O(1)
+
+Reason: It is a two-step process that can be obtained in constant time.
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used.
+
+
+
+===================================================================================================================================
+    // now as we can't go in reverse direction our approach would be manipulation of 
+    // a. links
+    // b. values of the node
+    
+    // only link change would not be sufficient as we do not have access to the prev node
+    
+    // we can swap the value of 5, 1 (as in example)
+    // and then delete the 5 valued node
+    
+    if(node != null && node.next != null)
+    {
+        // putting the value of next node into our current node
+        node.val = node.next.val;
+        
+        // our list looks like:
+        // 4->1->1->9->null
+        
+        // connecting node to 9, deleting the mid 1
+        node.next = node.next.next;
+    }
+    
+}
