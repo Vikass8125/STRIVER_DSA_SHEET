@@ -1,0 +1,341 @@
+Given the heads of two singly linked-lists headA and headB, return the node at which the two lists intersect. If the two linked lists have no intersection at all, return null.
+
+For example, the following two linked lists begin to intersect at node c1:
+
+
+The test cases are generated such that there are no cycles anywhere in the entire linked structure.
+
+Note that the linked lists must retain their original structure after the function returns.
+
+Custom Judge:
+
+The inputs to the judge are given as follows (your program is not given these inputs):
+
+intersectVal - The value of the node where the intersection occurs. This is 0 if there is no intersected node.
+listA - The first linked list.
+listB - The second linked list.
+skipA - The number of nodes to skip ahead in listA (starting from the head) to get to the intersected node.
+skipB - The number of nodes to skip ahead in listB (starting from the head) to get to the intersected node.
+The judge will then create the linked structure based on these inputs and pass the two heads, headA and headB to your program. If you correctly return the intersected node, then your solution will be accepted.
+
+ 
+
+Example 1:
+
+
+Input: intersectVal = 8, listA = [4,1,8,4,5], listB = [5,6,1,8,4,5], skipA = 2, skipB = 3
+Output: Intersected at '8'
+Explanation: The intersected node's value is 8 (note that this must not be 0 if the two lists intersect).
+From the head of A, it reads as [4,1,8,4,5]. From the head of B, it reads as [5,6,1,8,4,5]. There are 2 nodes before the intersected node in A; There are 3 nodes before the intersected node in B.
+Example 2:
+
+
+Input: intersectVal = 2, listA = [1,9,1,2,4], listB = [3,2,4], skipA = 3, skipB = 1
+Output: Intersected at '2'
+Explanation: The intersected node's value is 2 (note that this must not be 0 if the two lists intersect).
+From the head of A, it reads as [1,9,1,2,4]. From the head of B, it reads as [3,2,4]. There are 3 nodes before the intersected node in A; There are 1 node before the intersected node in B.
+Example 3:
+
+
+Input: intersectVal = 0, listA = [2,6,4], listB = [1,5], skipA = 3, skipB = 2
+Output: No intersection
+Explanation: From the head of A, it reads as [2,6,4]. From the head of B, it reads as [1,5]. Since the two lists do not intersect, intersectVal must be 0, while skipA and skipB can be arbitrary values.
+Explanation: The two lists do not intersect, so return null.
+ 
+
+Constraints:
+
+The number of nodes of listA is in the m.
+The number of nodes of listB is in the n.
+1 <= m, n <= 3 * 104
+1 <= Node.val <= 105
+0 <= skipA < m
+0 <= skipB < n
+intersectVal is 0 if listA and listB do not intersect.
+intersectVal == listA[skipA] == listB[skipB] if listA and listB intersect.
+ 
+
+Follow up: Could you write a solution that runs in O(m + n) time and use only O(1) memory?
+
+
+
+MY_SOLUTION
+
+//BRUTE FORCE
+Solution 1: Brute-Force
+
+Approach: We know intersection means a common attribute present between two entities. Here, we have linked lists as given entities. 
+
+What should be the common attribute for two linked lists? 
+
+If you believe a common attribute is a node’s value, then think properly! If we take our example 1, there we can see both lists have nodes of value 3. 
+But it is not the first intersection node. So what’s the common attribute?
+
+It is the node itself that is the common attribute. So, the process is as follows:-
+
+Keep any one of the list to check its node present in the other list. Here, we are choosing the second list for this task.
+Iterate through the other list. Here, it is the first one. 
+Check if the both nodes are the same. If yes, we got our first intersection node.
+If not, continue iteration.
+If we did not find an intersection node and completed the entire iteration of the second list, then there is no intersection between the provided lists. 
+Hence, return null.
+
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        //BRUTE FORCE
+        while(headA != null){
+            ListNode temp = headB;
+            
+            while(temp != null){
+                //if both nodes are same
+                if(headA == temp)  return headA;
+                temp = temp.next;
+            }
+            headA = headA.next;
+        }
+        return null;
+    }
+}
+
+Time Complexity: O(m*n)
+
+Reason: For each node in list 2 entire lists 1 are iterated. 
+
+Space Complexity: O(1)
+
+Reason: No extra space is used
+
+
+
+// USING HASHING
+
+Solution 2: Hashing
+
+Approach:
+
+Can we improve brute-force time complexity? In brute force, we are basically performing “searching”. 
+We can also perform searches by Hashing. Taking into consideration that hashing process takes O(1) time complexity. So the process is as follows:-
+
+Iterate through list 1 and hash its node address. Why? (Hint: depends on common attribute we are searching)
+Iterate through list 2 and search the hashed value in the hash table. If found, return node.
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        // HASHING
+        
+        Set<ListNode> list = new HashSet<>();
+        
+        while(headA != null){
+            list.add(headA);
+            headA = headA.next;
+        }
+        
+        while(headB != null){
+            if(list.contains(headB)) return headB;
+            headB = headB.next;
+        }
+        
+        return null;
+    }
+}
+
+Time Complexity: O(n+m)
+
+Reason: Iterating through list 1 first takes O(n), then iterating through list 2 takes O(m). 
+
+Space Complexity: O(n)
+
+Reason: Storing list 1 node addresses in HashSet.
+
+
+
+
+// USING LENGTH DIFFERENCE
+
+Solution 3: Difference of length
+
+Approach:
+
+We will reduce the search length. This can be done by searching the length of the shorter linked list. How? Let’s see the process.
+
+Find length of both the lists.
+Find the positive difference of these lengths.
+Move the dummy pointer of the larger list by difference achieved. This makes our search length reduced to the smaller list length.
+Move both pointers, each pointing two lists, ahead simultaneously if both do not collide.
+
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+// We will calculate the lengths of the linked list 1 and 2, and then take out 
+//their difference - we can then move difference steps ahead from the smaller linked list - to get to
+//our intersection point
+    
+    ListNode tempA = headA;
+    ListNode tempB = headB;
+    
+    int sizeA = 0, sizeB = 0;
+    
+    while(tempA != null)
+    {
+        sizeA++;
+        tempA = tempA.next;
+    }
+    
+    while(tempB != null)
+    {
+        sizeB++;
+        tempB = tempB.next;
+    }
+    
+    // System.out.println("size a : " + sizeA + " size b: " + sizeB);
+    
+    if(sizeA <= sizeB)
+    {
+        // list A is small
+        int difference = sizeB - sizeA;
+        
+        int steps = difference;
+        
+        while(steps != 0)
+        {
+            headB = headB.next;
+            steps--;
+        }
+        
+        while(headA != null && headB != null)
+        {
+            if(headA == headB)
+            {
+                return headA;
+            }
+            headA = headA.next;
+            headB = headB.next;
+        }
+    
+        return null;
+    }
+    else
+    {
+        // list B is small
+        int difference = sizeA - sizeB;
+        
+        int steps = difference;
+        
+        while(steps != 0)
+        {
+            headA = headA.next;
+            steps--;
+        }
+        
+        while(headA != null && headB != null)
+        {
+            if(headA == headB)
+            {
+                return headA;
+            }
+            headA = headA.next;
+            headB = headB.next;
+        }
+    
+        return null;
+    }
+        
+    }
+}
+
+Time Complexity:
+
+O(2max(length of list1,length of list2))+O(abs(length of list1-length of list2))+O(min(length of list1,length of list2))
+
+Reason: Finding the length of both lists takes max(length of list1, length of list2) because it is found simultaneously for both of them. 
+Moving the head pointer ahead by a difference of them. The next one is for searching.
+
+Space Complexity: O(1)
+
+Reason: No extra space is used.
+
+
+
+// OPTIMISED
+
+Solution 4: Optimised 
+
+Approach:
+
+The difference of length method requires various steps to work on it. Using the same concept of difference of length, a different approach can be implemented. 
+The process is as follows:-
+
+Take two dummy nodes for each list. Point each to the head of the lists.
+Iterate over them. If anyone becomes null, point them to the head of the opposite lists and continue iterating until they collide.
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        //OPTIMISED
+        if(headA == null || headB == null) return null;
+        
+        ListNode one = headA;
+        ListNode two = headB;
+        
+        while(one != two){
+            one = one == null ? headB : one.next;
+            two = two == null ? headA : two.next;
+        }
+        return one;
+    }
+}
+
+
+Time Complexity: O(2*max(length of list1,length of list2))
+
+Reason: Uses the same concept of difference of lengths of two lists.
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used
+
+
