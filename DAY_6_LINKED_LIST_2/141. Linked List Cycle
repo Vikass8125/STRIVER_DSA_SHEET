@@ -1,0 +1,204 @@
+141. Linked List Cycle
+Given head, the head of a linked list, determine if the linked list has a cycle in it.
+
+There is a cycle in a linked list if there is some node in the list that can be reached again by continuously following the next pointer. Internally, pos is used to denote the index of the node that tail's next pointer is connected to. Note that pos is not passed as a parameter.
+
+Return true if there is a cycle in the linked list. Otherwise, return false.
+
+ 
+
+Example 1:
+
+
+Input: head = [3,2,0,-4], pos = 1
+Output: true
+Explanation: There is a cycle in the linked list, where the tail connects to the 1st node (0-indexed).
+Example 2:
+
+
+Input: head = [1,2], pos = 0
+Output: true
+Explanation: There is a cycle in the linked list, where the tail connects to the 0th node.
+Example 3:
+
+
+Input: head = [1], pos = -1
+Output: false
+Explanation: There is no cycle in the linked list.
+ 
+
+Constraints:
+
+The number of the nodes in the list is in the range [0, 104].
+-105 <= Node.val <= 105
+pos is -1 or a valid index in the linked-list.
+
+
+MY_SOLUTION
+Solution: Hashing
+
+Approach:
+
+We need to keep track of all the nodes we have visited till now so that once we visit the same node again we can say that a cycle is detected. 
+The process is as follows:
+
+Use a hash table for storing nodes. 
+Start iterating through the lists.
+If the current node is present in the hash table already, this indicates the cycle is present in the linked list and returns true.
+Else move insert the node in the hash table and move ahead.
+If we reach the end of the list, which is NULL, then we can say that the given list does not have a cycle in it and hence we return false.
+
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+  
+        //USING HASHSET
+        /*
+        if(head == null || head.next == null) return false;
+        HashSet<ListNode> listSet = new HashSet<>();
+        
+        while(head != null){
+            if(listSet.contains(head)) return true;
+            
+            listSet.add(head);
+            head = head.next;
+        }
+        return false;
+        */
+    }
+}
+
+Time Complexity: O(N)
+
+Reason: Entire list is iterated once.
+
+Space Complexity: O(N)
+
+Reason: All nodes present in the list are stored in a hash table.
+
+
+
+
+
+Solution: Slow and Faster Pointer
+
+Approach:
+
+We will use two pointers with different steps forward. The process is as follows:-
+
+We will take two pointers, namely fast and slow. Fast pointer takes 2 steps ahead and slow pointer takes 2 points ahead.
+Iterate through the list until the fast pointer is equal to NULL. This is because NULL indicates that there is no cycle present in the given list.
+Cycle can be detected when fast and slow pointers collide.
+
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        
+        if(head == null || head.next == null) return false;
+        ListNode slow = head;
+        ListNode fast = head;
+        
+        while(fast.next != null && fast.next.next != null){
+            fast = fast.next.next;
+            slow = slow.next;
+            if(slow == fast) return true;
+        }
+        return false;  
+    }
+}
+
+Time Complexity: O(N)
+
+Reason: In the worst case, all the nodes of the list are visited.
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used.
+
+
+====================================================================================================================
+
+Fast-Slow Solution:
+public class Solution { //java version
+    public boolean hasCycle(ListNode head) {
+        ListNode fast = head;
+        ListNode slow = head;
+        while(fast != null && fast.next != null){            
+            fast = fast.next.next; //2 times
+            slow = slow.next;
+            if(fast == slow) return true;
+        }
+        return false;
+    }
+}
+First,
+we assume that they can meet. Set the linear length as a, the cycle length as c, the slow's running distance from cycle's start point to 
+meeting point as b. a and c are known, b is unknown. We want a equation to describe b by using a and c.
+
+Here is the diagram:
+
+               b..3    
+               .   \     
+               c   2   
+               \  /     
+1-2-3-4-5-...-a -1  
+An important point is that, the running part of linear length is not a, actually it's a-1.** That's because they use head as start point:
+
+    ListNode fast = head;
+    ListNode slow = head;
+then begin to run:
+
+        fast = fast.next.next;
+        slow = slow.next;
+The head point can't be included when calculating this relation:
+
+slow total running length * 2 = fast total running length
+If fast's speed is twice of slow's speed, we can get:
+
+slow total running length = (a-1)+b //not a!!!
+
+fast total running length = 2*((a-1)+b) //2 can be t times
+Because they meet at point b, we can get equation:
+
+(fast total running length - running part of linear length) % c = b
+which is:
+
+(2*((a-1)+b) - (a-1))%c = b
+2*((a-1)+b) - (a-1) = n*c +b
+(a-1)+b = n*c
+b = n*c-a+1
+Then,
+if fast and slow can meet, we can get a integer b when n is increasing where n is an integer starting from 0. 
+Actually, the b is the first integer that is bigger than 0:
+
+b = n*c-a+1 //write it on paper, compare b with code's result
+Generally,
+if fast's speed is t times of slow's speed, we get:
+
+(fast total running length - running part of linear length) % c = b
+(t*((a-1)+b) - (a-1))%c = b
+Most general equation:
+
+b = n/(t-1) * c - a + 1 //1.fast&slow start from head, 2.t times, 3.a&c are known, 4.n from 0
+                        //5.if b>c, b=b%c
+**(If we want to use a as the running part of linear length, we need a dummy head.)
