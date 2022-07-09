@@ -1,0 +1,245 @@
+Given the head of a linked list, return the node where the cycle begins. If there is no cycle, return null.
+
+There is a cycle in a linked list if there is some node in the list that can be reached again by continuously following the next pointer. Internally, pos is used to denote the index of the node that tail's next pointer is connected to (0-indexed). It is -1 if there is no cycle. Note that pos is not passed as a parameter.
+
+Do not modify the linked list.
+
+ 
+
+Example 1:
+
+
+Input: head = [3,2,0,-4], pos = 1
+Output: tail connects to node index 1
+Explanation: There is a cycle in the linked list, where tail connects to the second node.
+Example 2:
+
+
+Input: head = [1,2], pos = 0
+Output: tail connects to node index 0
+Explanation: There is a cycle in the linked list, where tail connects to the first node.
+Example 3:
+
+
+Input: head = [1], pos = -1
+Output: no cycle
+Explanation: There is no cycle in the linked list.
+ 
+
+Constraints:
+
+The number of the nodes in the list is in the range [0, 104].
+-105 <= Node.val <= 105
+pos is -1 or a valid index in the linked-list.
+ 
+
+Follow up: Can you solve it using O(1) (i.e. constant) memory?
+
+
+MY_SOLUTION
+
+
+///HASHING
+Solution 1: Brute Force
+
+Approach:
+
+We can store nodes in a hash table so that, if a loop exists, the head will encounter the same node again. 
+This node will be present in the table and hence, we can detect the loop. The steps are:-
+
+Iterate the given list.
+For each node visited by the head pointer, check if the node is present in the hash table.
+If yes, the loop detected
+If not, insert the node in the hash table and move the head pointer ahead.
+If the head reaches null, then the given list does not have a cycle in it.
+
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+        // HASHING : T.C -> O(N), S.C -> O(N)
+        // SIMILAR TO DETECT CYCLE IN L.LIST
+        if(head == null || head.next == null) return null;
+        ListNode node = head;
+        HashSet<ListNode> data = new HashSet<>();
+        
+        while(node != null){
+            if(data.contains(node)) return node;
+            
+            data.add(node);
+            node = node.next;
+        }
+        return null;
+        
+    }
+}
+
+Time Complexity: O(N)
+
+Reason: Iterating the entire list once.
+
+Space Complexity: O(N)
+
+Reason: We store all nodes in a hash table.
+
+===============================================================================================================================
+
+
+// FAST ANDSLOW POINTER USING LENGTH CYCLE
+
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+       
+        // FAST AND SLOW POINTER : METHOD - 1
+        if(head == null || head.next == null) return null;
+        // FINDING LENGTH OF THE CYCLE
+        int len = 0;
+        ListNode slow = head;
+        ListNode fast = head;
+        
+        while(fast != null && fast.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+            if(slow == fast){
+                len = lengthCycle(slow);
+                break;
+            }
+        }
+        if(len == 0) return null;
+        
+        ListNode f = head;
+        ListNode s = head;
+        // MOVING SECOND(S) BY LENGTH OF CYCLE TIMES
+        
+        while(len > 0){
+            s = s.next;
+            len--;
+        }
+        
+        // MOVING  FIRST(F) AND SECOND(S) ONE BY ONE UNTIL THEY MEET
+        
+        while(f != s){
+            f = f.next;
+            s = s.next;
+        }
+        return s;
+    }
+    
+    public int lengthCycle(ListNode head) {
+        ListNode fast = head;
+        ListNode slow = head;
+
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) {
+                // calculate the length
+                ListNode temp = slow;
+                int length = 0;
+                do {
+                    temp = temp.next;
+                    length++;
+                } while (temp != slow);
+                return length;
+            }
+        }
+        return 0;
+    }
+}
+
+=================================================================================================================================
+
+Solution 2: Slow and Fast Pointer Method
+
+// https://leetcode.com/problems/linked-list-cycle-ii/discuss/1701128/C%2B%2BJavaPython-Slow-and-Fast-oror-Image-Explanation-oror-Beginner-Friendly
+
+Approach:
+
+The following steps are required:
+
+Initially take two pointers, fast and slow. The fast pointer takes two steps ahead while the slow pointer will take a single step ahead for each iteration.
+We know that if a cycle exists, fast and slow pointers will collide.
+If the cycle does not exist, the fast pointer will move to NULL
+Else, when both slow and fast pointer collides, it detects a cycle exists.
+Take another pointer, say entry. Point to the very first of the linked list.
+Move the slow and the entry pointer ahead by single steps until they collide. 
+Once they collide we get the starting node of the linked list.
+But why use another pointer, or xentry?
+
+Let’s say a slow pointer covers the L2 distance from the starting node of the cycle until it collides with a fast pointer.
+L1 is the distance traveled by the entry pointer to the starting node of the cycle. So, in total, the slow pointer covers the L1+L2 distance. 
+We know that a fast pointer covers some steps more than a slow pointer. Therefore, we can say that a fast pointer will surely cover the L1+L2 distance. 
+Plus, a fast pointer will cover more steps which will accumulate to nC length where cC is the length of the cycle and n is the number of turns. 
+Thus, the fast pointer covers the total length of L1+L2+nC. 
+
+We know that the slow pointer travels twice the fast pointer. So this makes the equation to
+
+2(L1+L2) = L1+L2+nC. This makes the equation to
+
+L1+L2 = nC. Moving L2 to the right side
+
+L1 = nC-L2 and this shows why the entry pointer and the slow pointer would collide.
+
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+     // FAST AND SLOW POINTER : METHOD - 2
+        if(head == null || head.next == null) return null;
+        
+        ListNode slow = head;
+        ListNode fast = head;
+        ListNode entry = head;
+        
+        while(fast != null && fast.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+            
+            if(fast == slow){
+                while(entry != slow){
+                    entry = entry.next;
+                    slow = slow.next;
+                }
+                return entry;
+            }
+        }
+        return null;  
+    }
+}
+
+Time Complexity: O(N)
+
+Reason: We can take overall iterations and club them to O(N)
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used.
