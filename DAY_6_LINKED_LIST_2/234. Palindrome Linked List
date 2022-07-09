@@ -112,11 +112,66 @@ Iterate through the new list until the middle element reaches the end of the lis
 Use a dummy node to check if the same element exists in the linked list from the middle element.
 
 ======================================================================================================
-
+//NOT REVERSING THE L.LIST FROM MIDDLE
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        if(head == null || head.next == null) return true;
+        
+        ListNode slow = head;
+        ListNode fast = head;
+        
+        // FINDING THE MIDDLE -> THE LEFT ONE
+        while(fast.next != null && fast.next.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        
+        // REVERSE THE RIGHT HALF
+        
+        slow.next = reverseList(slow.next);
+        
+        // MOVE SLOW TO RIGHT HALF
+        slow = slow.next;
+        
+        // CHECK FOR LEFT HALF RIGHT EQUAL OR NOT
+        while(slow != null){ // until slow reaches null
+            if(head.val != slow.val) return false;
+            head = head.next;
+            slow = slow.next;
+        }
+        
+        return true; 
+    }
+    
+        public ListNode reverseList(ListNode head){
+            ListNode pre = null;
+            ListNode nextNode = null;
+            
+            while(head != null){
+                nextNode = head.next; // storing the ref for further use
+                head.next = pre;
+                pre = head;
+                head = nextNode;
+            }
+            return pre;
+    }
+}
 
 
 
 =======================================================================================================
+
+//REVERSING THE L.LIST FROM MIDDLE
 /**
  * Definition for singly-linked list.
  * public class ListNode {
