@@ -1,0 +1,206 @@
+Given the head of a singly linked list, return true if it is a palindrome.
+
+ 
+
+Example 1:
+
+
+Input: head = [1,2,2,1]
+Output: true
+Example 2:
+
+
+Input: head = [1,2]
+Output: false
+ 
+
+Constraints:
+
+The number of nodes in the list is in the range [1, 105].
+0 <= Node.val <= 9
+ 
+
+Follow up: Could you do it in O(n) time and O(1) space?
+
+
+MY_SOLUTION
+
+Solution: Using the extra data structure
+
+Approach:
+
+We can store elements in an array. Then check if the given array is a palindrome. How to check if an array is a palindrome? 
+
+Let’s take a string, say “level” which is a palindrome. Let’s observe a thing.
+
+So we can see that each index letter is the same as (length-each index -1) letter. 
+
+The same logic required to check an array is a palindrome.
+
+Following are the steps to this approach.
+
+Iterate through the given list to store it in an array.
+Iterate through the array.
+For each index in range of n/2 where n is the size of the array
+Check if the number in it is the same as the number in the n-index-1 of the array.
+
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        // BRUTE FORCE
+        if(head == null || head.next == null) return true;
+        /*
+        
+        StringBuilder str = new StringBuilder();
+        while(head!=null){
+            str.append(head.val);
+            head = head.next;
+        }
+        return (str.toString().equals(str.reverse().toString()));
+        */
+        
+        // USING ARRAYLIST FOR STORING NODES VALUES
+        /*
+        ArrayList<Integer> arr = new ArrayList<>();
+        while(head != null) {
+            arr.add(head.val);
+            head = head.next;
+        }
+        for(int i=0;i<arr.size()/2;i++) 
+            if(arr.get(i) != arr.get(arr.size()-i-1)) return false;
+        return true;
+        */
+     }
+}
+
+Time Complexity: O(N)
+
+Reason: Iterating through the list to store elements in the array.
+
+Space Complexity: O(N)
+
+Reason: Using an array to store list elements for further computations.
+
+
+=======================================================================================================
+
+Solution 2: Optimized Solution
+
+Approach:
+
+Following are the steps to this approach:-
+
+Find the middle element of the linked list. Refer to this article to know the steps 
+
+ ->  https://takeuforward.org/data-structure/find-middle-element-in-a-linked-list/
+ 
+Reverse linked list from next element of middle element. Refer to this article to know the steps 
+
+->   https://takeuforward.org/data-structure/reverse-a-linked-list/
+
+Iterate through the new list until the middle element reaches the end of the list.
+Use a dummy node to check if the same element exists in the linked list from the middle element.
+
+======================================================================================================
+
+
+
+
+=======================================================================================================
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        ListNode mid = getMid(head);
+        ListNode sHead = reverseList(mid);
+        ListNode reReverse = sHead; 
+        
+        while(head != null && sHead != null){
+            if(head.val != sHead.val){
+                break;
+            }
+            head = head.next;
+            sHead = sHead.next;
+        }
+        reverseList(reReverse);
+        return head == null || sHead == null;
+    }
+    public ListNode getMid(ListNode head){
+        ListNode slow = head;
+        ListNode fast = head;
+        while(fast != null && fast.next != null){
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+    public ListNode reverseList(ListNode head){
+        if(head == null){
+            return head;
+        }
+        ListNode prev = null;
+        ListNode present = head;
+        ListNode nex = present.next;
+        while(present != null){
+            present.next = prev;
+            prev = present;
+            present = nex;
+            if(nex != null){
+                nex = nex.next;
+            }
+        }
+        head = prev;
+        return head;
+        
+    }
+}
+
+
+
+
+Time Complexity: O(N/2)+O(N/2)+O(N/2)
+
+Reason: O(N/2) for finding the middle element, reversing the list from the middle element, and traversing again to find palindrome respectively.
+
+Space Complexity: O(1)
+
+Reason: No extra data structures are used.
+
+
+=======================================================================================================
+ANOTHER_SOLUTION
+
+collect two numbers while going through list and compare them.
+
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        int i=0, j=0, pow = 1;
+        while(head!=null){
+            i = i*10 + head.val;
+            j = head.val*pow + j;
+            pow *= 10;
+            head = head.next;
+        }
+        return i==j;
+    }
+}
+
+=======================================================================================================
