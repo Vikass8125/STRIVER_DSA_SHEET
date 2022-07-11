@@ -1,0 +1,334 @@
+A linked list of length n is given such that each node contains an additional random pointer, which could point to any node in the list, or null.
+
+Construct a deep copy of the list. The deep copy should consist of exactly n brand new nodes, where each new node has its value set to the value of its corresponding original node. Both the next and random pointer of the new nodes should point to new nodes in the copied list such that the pointers in the original list and copied list represent the same list state. None of the pointers in the new list should point to nodes in the original list.
+
+For example, if there are two nodes X and Y in the original list, where X.random --> Y, then for the corresponding two nodes x and y in the copied list, x.random --> y.
+
+Return the head of the copied linked list.
+
+The linked list is represented in the input/output as a list of n nodes. Each node is represented as a pair of [val, random_index] where:
+
+val: an integer representing Node.val
+random_index: the index of the node (range from 0 to n-1) that the random pointer points to, or null if it does not point to any node.
+Your code will only be given the head of the original linked list.
+
+ 
+
+Example 1:
+
+
+Input: head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+Output: [[7,null],[13,0],[11,4],[10,2],[1,0]]
+Example 2:
+
+
+Input: head = [[1,1],[2,1]]
+Output: [[1,1],[2,1]]
+Example 3:
+
+
+
+Input: head = [[3,null],[3,0],[3,null]]
+Output: [[3,null],[3,0],[3,null]]
+ 
+
+Constraints:
+
+0 <= n <= 1000
+-104 <= Node.val <= 104
+Node.random is null or is pointing to some node in the linked list.
+
+
+MY_SOLUTION
+
+Just iterate the linked list and create copies of the nodes on the go. Since a node can be referenced from multiple nodes due to the 
+random pointers, make sure you are not making multiple copies of the same node.
+
+You may want to use extra space to keep old node ---> new node mapping to prevent creating multiples copies of same node.
+
+// NAIVE_APPROACH
+// USING HASHMAP
+/*
+// Definition for a Node.
+class Node {
+    int val;
+    Node next;
+    Node random;
+
+    public Node(int val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+*/
+
+class Solution {
+    public Node copyRandomList(Node head) {
+        
+        // USING HSHMAP : T.C -> O(N). S.C -> O(N)
+        if(head == null) return null;
+        // CREATING A HASH MAP
+        HashMap<Node, Node> map = new HashMap<>();
+        Node curr = head; // Traversing org list
+        
+        Node nHead = new Node(-1);
+        Node prev = nHead; // Traversing copy list
+        
+        while(curr != null){
+            Node node = new Node(curr.val);
+           // prev.next = new Node(curr.val);
+           // prev = prev.next;
+            prev.next = node;
+            //Putting in Map
+            map.put(curr, node);
+            
+            prev = prev.next;
+            curr = curr.next;
+        }
+        
+        nHead = nHead.next;
+        // Lets create two pointer to travel two list simultaneously
+        Node c1 = head;
+        Node c2 = nHead;
+        
+        while(c1 != null){
+            c2.random = (c1.random != null) ? map.get(c1.random) : null;
+            
+            c1 = c1.next;
+            c2 = c2.next;
+        }
+        return nHead;
+        
+        
+    }
+}
+=================================================================================================================================
+/*
+// Definition for a Node.
+class Node {
+    int val;
+    Node next;
+    Node random;
+
+    public Node(int val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+*/
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head==null) return null;
+        
+        Map<Node,Node> map=new HashMap<>();
+        
+        Node curr=head;
+        
+        while(curr!=null){
+            map.put(curr, new Node(curr.val));
+            curr=curr.next;
+        }
+        
+        for(Node key:map.keySet()){
+            Node newNode=map.get(key);
+            newNode.next=map.get(key.next);
+            newNode.random=map.get(key.random);
+        }
+        
+        return map.get(head);
+    }
+}
+==============================================================================================
+
+We can avoid using extra space for old node ---> new node mapping, by tweaking the original linked list. 
+Simply interweave the nodes of the old and copied list. For e.g.
+Old List: A --> B --> C --> D
+InterWeaved List: A --> A' --> B --> B' --> C --> C' --> D --> D'
+
+The interweaving is done using next pointers and we can make use of interweaved structure to get the correct reference nodes for random pointers.
+// OPTIMISED APPROACH
+/*
+// Definition for a Node.
+class Node {
+    int val;
+    Node next;
+    Node random;
+
+    public Node(int val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+*/
+
+class Solution {
+    public Node copyRandomList(Node head) {
+        copyList(head);
+        copyRandompointers(head);
+        return extractDeepCopy(head);
+        
+    }
+    
+    public void copyList(Node head){
+        Node curr = head;
+        
+        while(curr != null){
+            Node forw = curr.next;
+            
+            Node node = new Node(curr.val);
+            curr.next = node;
+            node.next = forw;
+            
+            curr = forw;
+        }    
+    }
+    
+    public void copyRandompointers(Node head){
+        Node curr = head;
+        while(curr != null){
+            Node random = curr.random;
+            if(random != null){
+                curr.next.random = random.next;    
+            }
+            curr = curr.next.next;
+        }
+        
+    }
+    
+    public Node extractDeepCopy(Node head){
+        Node dummy = new Node(-1);
+        Node prev = dummy;
+        Node curr = head;
+        
+        while(curr != null){
+            prev.next = curr.next;
+            curr.next = curr.next.next;
+            
+            prev = prev.next;
+            curr = curr.next;
+        }
+        return dummy.next;    
+    }
+}
+
+===============================================================
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head==null) return null;
+        
+        Node temp=head;
+        
+        while(temp!=null){
+            Node next=temp.next;
+            Node random=temp.random;
+            temp.next=new Node(temp.val,next,random);
+            temp=temp.next.next;
+        }
+        
+        //Update the random 
+        Node newHead=head.next;
+        temp=head;
+        
+        while(temp!=null){
+            Node next=temp.next;
+            if(next.random!=null) next.random=next.random.next;
+            temp=next.next;
+        }
+        
+        //Unwinding the list
+        temp=head;
+        
+        while(temp!=null){
+            Node copy=temp.next;
+            temp.next=copy.next;
+            if(copy.next!=null) copy.next=temp.next.next;
+            temp=temp.next;
+        }
+        
+        return newHead;
+    }
+}
+======================================================================================================
+An intuitive solution is to keep a hash table for each node in the list, via which we just need to iterate the list in 2 rounds respectively to create nodes and assign the values for their random pointers. As a result, the space complexity of this solution is O(N), although with a linear time complexity.
+
+Note: if we do not consider the space reversed for the output, then we could say that the algorithm does not consume any additional memory during the processing, i.e. O(1) space complexity
+
+As an optimised solution, we could reduce the space complexity into constant. The idea is to associate the original node with its copy node in a single linked list. In this way, we don't need extra space to keep track of the new nodes.
+
+The algorithm is composed of the follow three steps which are also 3 iteration rounds.
+
+Iterate the original list and duplicate each node. The duplicate
+of each node follows its original immediately.
+Iterate the new list and assign the random pointer for each
+duplicated node.
+Restore the original list and extract the duplicated nodes.
+The algorithm is implemented as follows:
+
+public RandomListNode copyRandomList(RandomListNode head) {
+  RandomListNode iter = head, next;
+
+  // First round: make copy of each node,
+  // and link them together side-by-side in a single list.
+  while (iter != null) {
+    next = iter.next;
+
+    RandomListNode copy = new RandomListNode(iter.label);
+    iter.next = copy;
+    copy.next = next;
+
+    iter = next;
+  }
+
+  // Second round: assign random pointers for the copy nodes.
+  iter = head;
+  while (iter != null) {
+    if (iter.random != null) {
+      iter.next.random = iter.random.next;
+    }
+    iter = iter.next.next;
+  }
+
+  // Third round: restore the original list, and extract the copy list.
+  iter = head;
+  RandomListNode pseudoHead = new RandomListNode(0);
+  RandomListNode copy, copyIter = pseudoHead;
+
+  while (iter != null) {
+    next = iter.next.next;
+
+    // extract the copy
+    copy = iter.next;
+    copyIter.next = copy;
+    copyIter = copy;
+
+    // restore the original list
+    iter.next = next;
+
+    iter = next;
+  }
+
+  return pseudoHead.next;
+}
+
+====================================================================================
+Points:-
+Store the old and corresponding new Node in the map.
+Traverse the Node recursivelly and while returning from recursion set the respective pointer, next and random pointer.
+CODE
+
+class Solution {
+
+    Map<Node,Node> map = new HashMap<>();
+	
+    public Node copyRandomList(Node head) {
+        if(head == null) return null;
+        Node temp = new Node(head.val);
+        map.put(head,temp);
+        temp.next = copyRandomList(head.next);
+        temp.random = map.get(head.random);
+        return temp;
+    }
+}
