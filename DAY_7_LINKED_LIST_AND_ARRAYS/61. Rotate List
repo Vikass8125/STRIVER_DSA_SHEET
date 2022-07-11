@@ -1,0 +1,255 @@
+Given the head of a linked list, rotate the list to the right by k places.
+
+ 
+
+Example 1:
+
+
+Input: head = [1,2,3,4,5], k = 2
+Output: [4,5,1,2,3]
+Example 2:
+
+
+Input: head = [0,1,2], k = 4
+Output: [2,0,1]
+ 
+
+Constraints:
+
+The number of nodes in the list is in the range [0, 500].
+-100 <= Node.val <= 100
+0 <= k <= 2 * 109
+
+MY_SOLUTION
+
+Solution: Brute Force
+
+Approach:
+
+We have to move the last element to first for each k.
+
+For each k, find the last element from the list. Move it to the first.
+
+//utility function to rotate list by k times
+  static Node rotateRight(Node head, int k) {
+    if (head == null || head.next == null) return head;
+    for (int i = 0; i < k; i++) {
+      Node temp = head;
+      while (temp.next.next != null) temp = temp.next;
+      Node end = temp.next;
+      temp.next = null;
+      end.next = head;
+      head = end;
+    }
+    return head;
+  }
+ Time Complexity: O(Number of nodes present in the list*k)
+
+Reason: For k times, we are iterating through the entire list to get the last element and move it to first.
+
+Space Complexity: O(1)
+
+Reason: No extra data structures are used for computations
+=================================================================================================================================
+  
+ Solution: Optimal Solution
+
+Approach:
+
+Let’s take an example. 
+
+head = [1,2,3,4,5] k = 2000000000
+
+If we see a brute force approach, it will take O(5*2000000000) which is not a good time complexity when we can optimize it.
+
+We can see that for every k which is multiple of the length of the list, we get back the original list. 
+Try to operate brute force on any linked list for k as multiple of the length of the list.
+
+This gives us a hint that for k greater than the length of the list, we have to rotate the list for k%length of the list. This reduces our time complexity.
+
+Steps to the algorithm:-
+
+Calculate the length of the list.
+Connect the last node to the first node, converting it to a circular linked list.
+Iterate to cut the link of the last node and start a node of k%length of the list rotated list.
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        // T.C -> O(N) + O(SKIP) = O(N)
+        if(k <= 0 || head == null || head.next == null) return head;
+        
+        ListNode lastNode = head;
+        // FINDING THE LENGTH
+        
+        int len = 1;
+        while(lastNode.next != null){
+            lastNode = lastNode.next;
+            len++;
+        }
+        
+        // LastNode Pointing to Head of l.list
+        
+        lastNode.next = head;
+        
+        int rotations = k % len;
+        int skip = len - rotations;
+        
+        // newLast is the node before sublist (k elements)
+        ListNode newLast = head;
+        for(int i = 0; i < skip - 1; i++){
+            newLast = newLast.next;
+        }
+        // The new head is the start of the subList
+        head = newLast.next;
+        newLast.next = null;
+        
+        return head;
+    }
+}
+
+
+
+============================================================================================================
+public ListNode rotateRight(ListNode head, int k) {
+        ListNode dummy = head;
+        //for empty or list with 1 node return them as such         
+        if(head == null || head.next == null)
+            return head;
+		//length starts from 1 to include last element
+        int n = 1;
+		//goes until last element
+        while(dummy.next!=null){
+            dummy = dummy.next;
+            n++;
+        }
+        //Set the last node to head to form circular linked list
+        dummy.next = head;
+        dummy = head;
+        // Rotating n*a times would just give the same linked list so remove them
+        k = k%n;
+        //  Since we rotate right we have to find the (n-k)th element which is the head      
+        for(int i = 0;i<n-k-1;i++){
+            dummy = dummy.next;
+        }
+        //Break the cycle by keeping head as (n-k) and setting (n-k-1)th element as tail
+        head = dummy.next;
+        dummy.next = null;
+        return head;
+    }
+    ==========================================================================================================
+    
+    Brute Force Method
+
+Firstly, Let's think about the brute force approach.
+By taking a look on the problem, we can say that if simply rotate the array to right by 1 element and do this k times , then we will get the answer. Time Complexity -> O(n * k)
+Now, lets look at constraints,
+The number of nodes in the list is in the range [0, 500].
+-100 <= Node.val <= 100
+0 <= k <= 2 * 10^9
+So, if we go by the brute force method, it will take 500 * 10^9 operations in the worst case, which will not be accepted and will give TLE error. We can optimize it.
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if( head == null || k==0) return head;  // if list is empty or if we don't have to rotate the list, return it
+        while(k-- > 0){  // repeating k times
+            ListNode x = head;
+            int preValue = x.val;
+            x = x.next; // starting from 2nd node
+            while( x != null ){
+                // swapping x.val with preValue
+                int temp = x.val;  
+                x.val = preValue;
+                preValue = temp;
+				// iterating to next node
+                x= x.next;
+            }
+            head.val = preValue; //updating 1st node value to last
+        }
+        return head;
+    }
+}
+Optimized Brute Force
+5. Update k to k % n ( i.e k modulus n)
+
+why k%n? Because if k > n, let's say, n = 5 and k = 8 , so, we have to rotate list of 5 elements 8 times, if we break down 8 , 8 = 5 + 3 .
+If we rotate a list of 5 elements by 5 times, the result will be same, So, if instead of rotating that 8 times we rotate it 3 times, we still get the correct answer.
+So, now it will take 500 * 500 operations only which is 2.5 * 10^5 operations which is still large but can be accepted.
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        ListNode x = head; // creating copy of head in x to iterate the list while keeping the head unchanged
+        if( x == null || k==0) return head; // if list is empty or if we don't have to rotate the list, return it
+        int n = 1;  // counting no. of nodes in the list 
+        while( x.next != null){
+            x = x.next;
+            n++;
+        }
+        k = k% n; // updating k acc. to point 5
+        while(k-- > 0){
+            ListNode y = head;
+            int preValue = y.val;
+
+            y = y.next; // starting from 2nd node
+            while( y != null ){
+                // swapping x.val with preValue
+                int temp = y.val;  
+                y.val = preValue;
+                preValue = temp;
+
+                y= y.next;
+            }
+            head.val = preValue; //updating 1st node value to last
+        }
+        return head;
+    }
+}
+A new Better Approach
+6. Now what we can do is that instead of changing the values, we change the structure of the List by changing the head pointer.
+
+which means that if instead of pointing to head, we point to the (n-k)th node , because after rotating it will become the first element.
+why (n-k)th and not kth ? because we are rotating to right, so, its kth element from last node, which is (n-k)th . If we want to rotate to left then it will be kth. E
+Suppose our list is like this :- 1 -> 2 -> 3 -> 4 -> 5 -> null
+and we need 4 -> 5-> 1 -> 2 -> 3-> null
+We can also see that 5 is pointing to null which is breaking the list, so we point 5 to 1 and point 3 to null, and we will return a new head pointer which is pointing to 4.
+So, we will get out ans with Time Complexity O(n)
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        ListNode x = head; // creating copy of head in x to iterate the list while keeping the head unchanged
+        if( x == null || k==0) return head; // if list is empty or if we don't have to rotate the list, return it
+        int n = 1;  // counting no. of nodes in the list 
+        while( x.next != null){
+            x = x.next;
+            n++;
+        }
+        int i = 1;
+        k = k%n;  // updaing k acc. to point 5
+        if(k==0 || n==1) return head; // list will not change in this case, so just return it
+        ListNode y = head;
+        while( i < n-k ){
+            y = y.next;
+            i++;
+        }
+        ListNode newHead = y.next; // Creating a new head point which points to (n-k)th node
+        y.next = null;   // pointing the (n- k-1)th node to null
+        x.next = head; // pointing the last pointer to first node.
+        
+        return newHead;
+    }
+}
+
+
+Time Complexity: O(length of list) + O(length of list – (length of list%k))
+
+Reason: O(length of the list) for calculating the length of the list. O(length of the list – (length of list%k)) for breaking link.
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used for computation.
