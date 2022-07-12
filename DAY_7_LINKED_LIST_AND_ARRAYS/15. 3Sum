@@ -92,3 +92,213 @@ Time Complexity : O(n^3)   // 3 loops
 Space Complexity : O(3*k)  // k is the no.of triplets
 ================================================================
 
+// USING HASHMAP AND HASHSET
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        //USING HASHMAP AND SET : T.C -> O(N^2 * LOG M), T.C -> O(M) + O(N)
+        
+         Arrays.sort(nums);
+        Set<List<Integer>> threePairs = new HashSet();
+        for(int i = 0; i < nums.length; i++) {
+            Map<Integer,Integer> zeroMap = new HashMap();
+            for(int j = i+1; j < nums.length; j++) {
+                if(zeroMap.containsKey(0 - nums[i] - nums[j])) {
+                    int k = zeroMap.get(0 - nums[i] - nums[j]);
+                    if(k == i || k == j) {
+                        continue;
+                    }else {
+                        List<Integer> list = new ArrayList();
+                        list.add(nums[i]);
+                        list.add(nums[k]);
+                        list.add(nums[j]);
+                        threePairs.add(list);
+                    }                  
+                }
+                zeroMap.put(nums[j],j);
+            }
+        }
+        List<List<Integer>> threeSum = new ArrayList<>();
+        threeSum.addAll(threePairs);
+        return threeSum;
+        
+    }
+}
+
+===========================================================
+Solution 2 (Optimized Approach):
+
+Intuition: Can we do something better?
+I think yes! In our intuitive approach, we were considering all possible triplets. 
+But do we really need to do that? I say we fixed two pointers i and j and came out with a combination of [-1,1,1] which doesn’t satisfy our condition. 
+However, we still check for the next combination of say [-1,1,2] which is worthless. (Assuming the k pointer was pointing to 2).
+
+Approach:
+We could make use of the fact that we just need to return the triplets and thus could possibly sort the array. 
+This would help us use a modified two-pointer approach to this problem.
+
+Eg) Input :  [-1,0,1,2,-1,-4]
+
+After sorting, our array is : [-4,-1,-1,0,1,2]
+
+Notice, that we are fixing the i pointer and then applying the traditional 2 pointer approach to check whether the sum of three numbers equals zero. 
+If the sum is less than zero, it indicates our sum is probably too less and we need to increment our j pointer to get a larger sum.
+On the other hand, if our sum is more than zero, it indicates our sum is probably too large and we need to decrement the k pointer to reduce the 
+sum and bring it closer to zero.
+
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        //OPTIMISED 
+        Arrays.sort(nums);
+        
+        List<List<Integer>> result = new LinkedList<>();
+        int len = nums.length;
+        if(len < 3) return result; // edge case
+        
+        for(int i = 0; i < len - 2; i++){
+            if(i == 0 || (i > 0 && nums[i] != nums[i-1])){
+                int low = i + 1;
+                int high = len - 1;
+                int sum = 0 - nums[i];
+                
+                while(low < high){
+                    if(nums[low] + nums[high] == sum){
+                        result.add(Arrays.asList(nums[i], nums[low], nums[high]));
+                        
+                        while(low < high && nums[low] == nums[low + 1]) low++;
+                        while(low < high && nums[high] == nums[high - 1]) high--;
+                        
+                        low++;
+                        high--;
+                    }
+                    else if(nums[low] + nums[high] < sum) low++;
+                    
+                    else high--;
+                }
+            }
+        }
+        return result;
+    }
+}
+
+
+Time Complexity : O(N^2)
+
+Space Complexity : O(M) 
+
+===========================================================================================
+OTHER_SOLUTIONS
+public class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> result = new ArrayList<>();
+        if(nums.length < 3) return result;
+        Arrays.sort(nums);
+        int i = 0;
+        while(i < nums.length - 2) {
+            if(nums[i] > 0) break;
+            int j = i + 1;
+            int k = nums.length - 1;
+            while(j < k) {
+                int sum = nums[i] + nums[j] + nums[k];
+                if(sum == 0) result.add(Arrays.asList(nums[i], nums[j], nums[k]));
+                if(sum <= 0) while(nums[j] == nums[++j] && j < k);
+                if(sum >= 0) while(nums[k--] == nums[k] && j < k);
+            }
+            while(nums[i] == nums[++i] && i < nums.length - 2);
+        }
+        return result;
+    }
+}
+
+=================================================================================================
+public List<List<Integer>> threeSum(int[] nums) {
+            
+        /*
+        Approach: Sort the array. Have a set of list of integers (threeSumSet), to store three sum cobos.
+                  Go through each item (i). For each item, have two pointers: one pointing to the next item (j), and another
+                  one pointing to the end of the array (k). Now, do a 2-way-sweep. While j and k doesn't meet, at each step
+                  calculate sum = (nums[i]+nums[j]+nums[k]).
+                  [Starting sweep from next item to prevent duplicate combos because of indexes like ( [i,j,k], [j,i,k]).]
+                  If sum == 0, we found a three-sum combo! Add it to the threeSumSet. If there is any
+                  duplicate combo because of different indexes but same items like 
+                  ([i1, j1, k1], [i2, j2, k2], but i1==i2, j1==j2, k1==k2). This will automatically be taken care of by the 
+                  set, as it analyzes the added Lists and makes sure there is no duplicate.                   
+                  If sum > 0, we should try decreasing the sum value. So we'll decrement k, as this should potentially
+                  result nums[k] being smaller than previous value, as the array is sorted.
+                  If sum < 0, because of the same reason, we'll increment j.
+                  Finally, we'll convert the threeSumSet to ArrayList and return.
+        
+        Complexity analysis: Time: O(n^2), Space: O(n)
+        */
+        
+        Set<List<Integer>> threeSumSet  = new HashSet<>();
+        
+        Arrays.sort(nums);
+        
+        for(int i=0; i<nums.length-2;i++){                         //Doing length-2, because we want two elems j and k after i.
+            int j =i+1;
+            
+            int k = nums.length-1;
+            
+            while(j<k){
+                
+                int sum = nums[i]+nums[j]+nums[k];
+                
+                if(sum==0){
+                    threeSumSet.add(Arrays.asList(nums[i], nums[j], nums[k]));
+                    
+                    j++;
+                    k--;
+                }
+                else if (sum > 0){
+                    k--;
+                } 
+                else if (sum < 0){
+                    j++;
+                } 
+            }
+
+        }
+        
+        return new ArrayList<>(threeSumSet);
+    }
+    =============================================================================================
+    public List<List<Integer>> threeSum(int[] nums) {
+    Arrays.sort(nums);
+    List<List<Integer>> res = new ArrayList<>();
+    for (int i = 0; i < nums.length && nums[i] <= 0; ++i)
+        if (i == 0 || nums[i - 1] != nums[i])
+            twoSumII(nums, i, res);
+    return res;
+}
+void twoSumII(int[] nums, int i, List<List<Integer>> res) {
+    int lo = i + 1, hi = nums.length - 1;
+    while (lo < hi) {
+        int sum = nums[i] + nums[lo] + nums[hi];
+        if (sum < 0 || (lo > i + 1 && nums[lo] == nums[lo - 1]))
+            ++lo;
+        else if (sum > 0 || (hi < nums.length - 1 && nums[hi] == nums[hi + 1]))
+            --hi;
+        else
+            res.add(Arrays.asList(nums[i], nums[lo++], nums[hi--]));
+    }
+}
+
+public List<List<Integer>> threeSum(int[] nums) {
+    List<List<Integer>> res = new ArrayList<>();
+    Set<Pair> found = new HashSet<>();
+    Set<Integer> dups = new HashSet<>();
+    Map<Integer, Integer> seen = new HashMap<>();
+    for (int i = 0; i < nums.length; ++i)
+        if (dups.add(nums[i]))
+            for (int j = i + 1; j < nums.length; ++j) {
+                int complement = -nums[i] - nums[j];
+                if (seen.containsKey(complement) && seen.get(complement) == i) {
+                    int v1 = Math.min(nums[i], Math.min(complement, nums[j]));
+                    int v2 = Math.max(nums[i], Math.max(complement, nums[j]));
+                    if (found.add(new Pair(v1, v2)))
+                        res.add(Arrays.asList(nums[i], complement, nums[j]));
+                }
+                seen.put(nums[j], i);
+            }
+    return res;
+}
