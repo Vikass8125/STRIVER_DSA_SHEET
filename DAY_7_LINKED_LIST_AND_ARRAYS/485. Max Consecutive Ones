@@ -1,0 +1,101 @@
+Given a binary array nums, return the maximum number of consecutive 1's in the array.
+
+ 
+
+Example 1:
+
+Input: nums = [1,1,0,1,1,1]
+Output: 3
+Explanation: The first two digits or the last three digits are consecutive 1s. The maximum number of consecutive 1s is 3.
+Example 2:
+
+Input: nums = [1,0,1,1,0,1]
+Output: 2
+ 
+
+Constraints:
+
+1 <= nums.length <= 105
+nums[i] is either 0 or 1.
+
+HINT :
+You need to think about two things as far as any window is concerned. One is the starting point for the window. 
+How do you detect that a new window of 1s has started? The next part is detecting the ending point for this window. 
+How do you detect the ending point for an existing window? If you figure these two things out, you will be able to detect the windows of consecutive ones. 
+All that remains afterward is to find the longest such window and return the size.
+
+
+MY_SOLUTION
+
+Approach:  We maintain a variable count that keeps a track of the number of consecutive 1’s while traversing the array. 
+The other variable max_count maintains the maximum number of 1’s, in other words, it maintains the answer.
+
+We start traversing from the beginning of the array. Since we can encounter either a 1 or 0 there can be two situations:-
+
+If  the value at the current index is equal to 1 we increase the value of count by one. 
+After updating  the count variable if it becomes more than the max_count  update the max_count.
+If the value at the current index is equal to zero we make the variable count as 0 since there are no more consecutive ones.
+
+class Solution {
+    public int findMaxConsecutiveOnes(int[] nums) {
+        int count = 0;
+        int maxCount = 0;
+        int len = nums.length;
+        
+        for(int i = 0; i < len ; i++){
+            if(nums[i] == 1) count++;
+            else count = 0;
+            
+            maxCount = Math.max(maxCount, count);
+        }
+        return maxCount;
+        
+    }
+}
+
+
+Time Complexity: O(N) since the solution involves only a single pass.
+
+Space Complexity: O(1) because no extra space is used.
+
+======================================================================================================
+class Solution {
+    public int findMaxConsecutiveOnes(int[] nums) {
+        Stack<Integer> st = new Stack<>();
+        for(int i:nums){
+            st.add(i);
+        }
+        int count=0, max=0; //current count of 1s is zero, max count of consecutive ones so far is also zero.
+        while(st.size()!=0){ //we will keep iterating through the Stack as long as it is non empty
+            if(st.peek()==1){ //by peeking or glancing at the topmost element we check if it is one
+                count++; //if it is one then we increase the count 
+                st.pop(); //and pop the topmost element out of the stack
+                max=Math.max(max, count); //we compare the current count with the max so far 
+            }else{ //however if the topmost element is 0
+                max = Math.max(count, max); //we recheck the max count of consecutive 1s so far
+                count=0; //reset the current count of consecutive 1s to 0 (basically make the winsows size 0 again) 
+                st.pop(); //and kick the topmost element out
+            }
+        }
+        return max; //yours truly returns the max :)
+    }
+}
+====================================================================================
+The problem has 1 main assumption:
+
+All of the numbers in the array are either 1 or 0
+(General Advice: If your solution doesn't use ALL of the assumptions given in the specification, its probably not the best solution!)
+
+Let's use this assumption! The trick here is that 0 * x = 0 and 1 * x = x. So, if we multiply by 0, it effectively resets our counter, while multiplying by 1 effectively does nothing. Using these facts, we can eliminate the if-else statement from method 1 to get:
+
+public int findMaxConsecutiveOnes(int[] nums) {
+	int max = 0;
+	int count = 0;
+	for (int n: nums) {
+		count = (count + 1) * n;
+		if (count > max) {
+			max = count;
+		}
+	}
+	return max;
+}
