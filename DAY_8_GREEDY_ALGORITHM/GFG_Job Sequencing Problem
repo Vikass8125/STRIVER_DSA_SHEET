@@ -1,0 +1,467 @@
+Given a set of N jobs where each jobi has a deadline and profit associated with it.
+
+Each job takes 1 unit of time to complete and only one job can be scheduled at a time. We earn the profit associated with job if and only if the job is completed by its deadline.
+
+Find the number of jobs done and the maximum profit.
+
+Note: Jobs will be given in the form (Jobid, Deadline, Profit) associated with that Job.
+
+
+Example 1:
+
+Input:
+N = 4
+Jobs = {(1,4,20),(2,1,10),(3,1,40),(4,1,30)}
+Output:
+2 60
+Explanation:
+Job1 and Job3 can be done with
+maximum profit of 60 (20+40).
+Example 2:
+
+Input:
+N = 5
+Jobs = {(1,2,100),(2,1,19),(3,2,27),
+        (4,1,25),(5,1,15)}
+Output:
+2 127
+Explanation:
+2 jobs can be done with
+maximum profit of 127 (100+27).
+
+Your Task :
+You don't need to read input or print anything. 
+Your task is to complete the function JobScheduling() which takes an integer N and an array of Jobs(Job id, Deadline, Profit) as input and 
+returns the count of jobs and maximum profit.
+
+
+Expected Time Complexity: O(NlogN)
+Expected Auxilliary Space: O(N)
+
+
+Constraints:
+1 <= N <= 105
+1 <= Deadline <= 100
+1 <= Profit <= 500
+
+MY_SOLUTION
+
+Approach:  The strategy to maximize profit should be to pick up jobs that offer higher profits. 
+Hence we should sort the jobs in descending order of profit. Now say if a job has a deadline of 4 we can perform it anytime 
+between day 1-4, but it is preferable to perform the job on its last day. This leaves enough empty slots on the previous days to perform other jobs.
+
+Basic Outline of the approach:-
+
+Sort the jobs in descending order of profit. 
+If the maximum deadline is x, make an array of size x .Each array index is set to -1 initially as no jobs have been performed yet.
+For every job check if it can be performed on its last day.
+If possible mark that index with the job id and add the profit to our answer. 
+If not possible, loop through the previous indexes until an empty slot is found.
+
+
+import java.io.*;
+import java.lang.*;
+import java.util.*;
+
+class Job {
+   int id, profit, deadline;
+   Job(int x, int y, int z) {
+      this.id = x;
+      this.deadline = y;
+      this.profit = z;
+   }
+}
+
+class solve {
+   // return an array of size 2 having the 0th element equal to the count
+   // and 1st element equal to the maximum profit
+   int[] JobScheduling(Job arr[], int n) {
+      Arrays.sort(arr, (a, b) -> (b.profit - a.profit));
+
+      int maxi = 0;
+      for (int i = 0; i < n; i++) {
+         if (arr[i].deadline > maxi) {
+            maxi = arr[i].deadline;
+         }
+      }
+
+      int result[] = new int[maxi + 1];
+
+      for (int i = 1; i <= maxi; i++) {
+         result[i] = -1;
+      }
+
+      int countJobs = 0, jobProfit = 0;
+
+      for (int i = 0; i < n; i++) {
+
+         for (int j = arr[i].deadline; j > 0; j--) {
+
+            // Free slot found 
+            if (result[j] == -1) {
+               result[j] = i;
+               countJobs++;
+               jobProfit += arr[i].profit;
+               break;
+            }
+         }
+      }
+
+      int ans[] = new int[2];
+      ans[0] = countJobs;
+      ans[1] = jobProfit;
+      return ans;
+
+   }
+}
+class Main {
+   public static void main(String[] args) throws IOException {
+
+      //size of array
+      Job[] arr = new Job[4];
+      arr[0] = new Job(1, 4, 20);
+      arr[1] = new Job(2, 1, 10);
+      arr[2] = new Job(3, 2, 40);
+      arr[3] = new Job(4, 2, 30);
+
+      solve ob = new solve();
+
+      //function call
+      int[] res = ob.JobScheduling(arr, 4);
+      System.out.println(res[0] + " " + res[1]);
+
+   }
+}
+
+
+Time Complexity: O(N log N) + O(N*M).
+
+O(N log N ) for sorting the jobs in decreasing order of profit. 
+O(N*M) since we are iterating through all N jobs and for every job we are checking from the last deadline, say M deadlines in the worst case.
+
+Space Complexity: O(M) for an array that keeps track on which day which job is performed if M is the maximum deadline available.
+
+
+================================================================================================
+
+Given an array of jobs where every job has a deadline and associated profit if the job is finished before the deadline. 
+It is also given that every job takes a single unit of time, so the minimum possible deadline for any job is 1. 
+How to maximize total profit if only one job can be scheduled at a time.
+
+Examples: 
+
+Input: Four Jobs with following 
+
+deadlines and profits
+
+JobID  Deadline  Profit
+
+  a      4        20   
+
+  b      1        10
+
+  c      1        40  
+
+  d      1        30
+
+Output: Following is maximum 
+
+profit sequence of jobs
+
+        c, a   
+
+
+
+
+
+Input:  Five Jobs with following
+
+deadlines and profits
+
+JobID   Deadline  Profit
+
+  a       2        100
+
+  b       1        19
+
+  c       2        27
+
+  d       1        25
+
+  e       3        15
+
+Output: Following is maximum 
+
+profit sequence of jobs
+
+        c, a, e
+
+A Simple Solution is to generate all subsets of a given set of jobs and check individual subsets for the feasibility of jobs in that subset. 
+Keep track of maximum profit among all feasible subsets. The time complexity of this solution is exponential. 
+This is a standard Greedy Algorithm problem. 
+
+Following is the algorithm.
+
+1) Sort all jobs in decreasing order of profit. 
+2) Iterate on jobs in decreasing order of profit.For each job , do the following : 
+a)Find a time slot i, such that slot is empty and i < deadline and i is greatest.Put the job in 
+this slot and mark this slot filled. 
+b)If no such i exists, then ignore the job. 
+
+// Program to find the maximum profit
+// job sequence from a given array
+// of jobs with deadlines and profits
+import java.util.*;
+
+class Job {
+    // Each job has a unique-id,profit and deadline
+    char id;
+    int deadline, profit;
+
+    // Constructors
+    public Job() {}
+
+    public Job(char id, int deadline, int profit)
+    {
+        this.id = id;
+        this.deadline = deadline;
+        this.profit = profit;
+    }
+
+    // Function to schedule the jobs take 2 arguments
+    // arraylist and no of jobs to schedule
+    void printJobScheduling(ArrayList<Job> arr, int t)
+    {
+        // Length of array
+        int n = arr.size();
+        // Sort all jobs according to decreasing order of
+        // profit
+        Collections.sort(arr,(a, b) -> b.profit - a.profit);
+
+        // To keep track of free time slots
+        boolean result[] = new boolean[t];
+
+        // To store result (Sequence of jobs)
+        char job[] = new char[t];
+
+        // Iterate through all given jobs
+        for (int i = 0; i < n; i++) {
+            // Find a free slot for this job (Note that we
+            // start from the last possible slot)
+            for (int j = Math.min(t - 1, arr.get(i).deadline - 1); j >= 0; j--) {
+                // Free slot found
+                if (result[j] == false) {
+                    result[j] = true;
+                    job[j] = arr.get(i).id;
+                    break;
+                }
+            }
+        }
+
+        // Print the sequence
+        for (char jb : job)
+            System.out.print(jb + " ");
+        System.out.println();
+    }
+
+    // Driver code
+    public static void main(String args[])
+    {
+        ArrayList<Job> arr = new ArrayList<Job>();
+        arr.add(new Job('a', 2, 100));
+        arr.add(new Job('b', 1, 19));
+        arr.add(new Job('c', 2, 27));
+        arr.add(new Job('d', 1, 25));
+        arr.add(new Job('e', 3, 15));
+
+        // Function call
+        System.out.println(
+            "Following is maximum profit sequence of jobs");
+
+        Job job = new Job();
+
+        // Calling function
+        job.printJobScheduling(arr, 3);
+    }
+}
+
+The Time Complexity of the above solution is O(n2). It can be optimized using Priority Queue(max heap).
+
+The algorithm goes as follow:
+
+Sort the jobs based on their deadlines.
+Iterate from the end and calculate the available slots between every two consecutive deadlines. 
+Include the profit, deadline, and job ID of ith job in the max heap.
+While the slots are available and there are jobs left in the max heap, include the job ID with maximum profit and deadline in the result.
+Sort the result array based on their deadlines.
+
+// Java implementation of above approach
+
+// Program to find the maximum profit
+// job sequence from a given array
+// of jobs with deadlines and profits
+import java.util.*;
+
+class GFG {
+
+    // a class to represent job
+    static class Job {
+        char job_id;
+        int deadline;
+        int profit;
+        Job(char job_id, int deadline, int profit)
+        {
+            this.deadline = deadline;
+            this.job_id = job_id;
+            this.profit = profit;
+        }
+    }
+
+    static void printJobScheduling(ArrayList<Job> arr)
+    {
+        int n = arr.size();
+
+        // sorting the array on the
+        // basis of their deadlines
+        Collections.sort(arr, (a, b) -> {
+            return a.deadline - b.deadline;
+        });
+
+        // initialise the result array and maxHeap
+        ArrayList<Job> result = new ArrayList<>();
+        PriorityQueue<Job> maxHeap = new PriorityQueue<>(
+            (a, b) -> { return b.profit - a.profit; });
+
+        // starting the iteration from the end
+        for (int i = n - 1; i > -1; i--) {
+            int slot_available;
+            // calculate slots between two deadlines
+            if (i == 0) {
+                slot_available = arr.get(i).deadline;
+            }
+            else {
+                slot_available = arr.get(i).deadline
+                                 - arr.get(i - 1).deadline;
+            }
+
+            // include the profit of job(as priority),
+            // deadline and job_id in maxHeap
+            maxHeap.add(arr.get(i));
+
+            while (slot_available > 0
+                   && maxHeap.size() > 0) {
+
+                // get the job with max_profit
+                Job job = maxHeap.remove();
+
+                // reduce the slots
+                slot_available--;
+
+                // include the job in the result array
+                result.add(job);
+            }
+        }
+
+        // jobs included might be shuffled
+        // sort the result array by their deadlines
+        Collections.sort(result, (a, b) -> {
+            return a.deadline - b.deadline;
+        });
+        for (Job job : result) {
+            System.out.print(job.job_id + " ");
+        }
+        System.out.println();
+    }
+
+    // Driver Code
+    public static void main(String[] args)
+    {
+        ArrayList<Job> arr = new ArrayList<Job>();
+
+        arr.add(new Job('a', 2, 100));
+        arr.add(new Job('b', 1, 19));
+        arr.add(new Job('c', 2, 27));
+        arr.add(new Job('d', 1, 25));
+        arr.add(new Job('e', 3, 15));
+        // Function call
+        System.out.println("Following is maximum "
+                           + "profit sequence of jobs");
+
+        // Calling function
+        printJobScheduling(arr);
+    }
+}
+
+Time complexity : O(nlog(n))
+
+Space complexity : O(n)
+
+It can also be optimized using Disjoint Set Data Structure.
+
+====================================================
+AUTHOR'S SOLUTION
+
+//function used for sorting all jobs according to decreasing profit.
+class jobComparator implements Comparator<Job> 
+{
+    public int compare(Job j1, Job j2){
+        if(j1.profit > j2.profit)return -1;
+        if(j1.profit < j2.profit)return 1;
+        return 0;
+    }
+}
+
+class Solution
+{
+    //Function to find the maximum profit and the number of jobs done.
+    int[] JobScheduling(Job arr[], int n)
+    {
+        //sorting all jobs according to decreasing order of profit.
+        Arrays.sort(arr, new jobComparator());
+        
+
+        int res=0, count=0;
+        //array to store result (Sequence of jobs).
+        int[] result = new int[n];
+        //boolean array to keep track of free time slots. 
+        boolean[] slot = new boolean[n];
+        
+        //initializing all slots to free.
+        Arrays.fill(slot, false);
+        
+        //iterating through all given jobs.
+        for (int i=0; i<n; i++)
+        { 
+            //finding a free slot for current job (Note that we start 
+        	//from the last possible slot).
+            for (int j=Integer.min(n, arr[i].deadline)-1; j>=0; j--) 
+            { 
+                //if free slot is found, we add current job to result array
+        		//and make the current slot occupied.
+                if (slot[j]==false)
+                { 
+			        result[j] = i; 
+			        slot[j] = true;
+			        break; 
+		        } 
+	        } 
+	    } 
+	    for (int i=0; i<n; i++)
+	    {
+	        //if slot is occupied, we update the counter and 
+    	    //add its profit in final result.
+	        if(slot[i]) {
+	            count++;
+	            res += arr[result[i]].profit;
+	        }
+	    }
+	    
+	    //storing the count of jobs and max profit in a list and returning it.
+	    int[] ans = new int[2];
+	    ans[0] = count;
+	    ans[1] = res;
+	    return ans;
+    }
+    
+}
+
