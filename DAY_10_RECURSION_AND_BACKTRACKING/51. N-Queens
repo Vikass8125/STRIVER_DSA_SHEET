@@ -1,0 +1,568 @@
+The n-queens puzzle is the problem of placing n queens on an n x n chessboard such that no two queens attack each other.
+
+Given an integer n, return all distinct solutions to the n-queens puzzle. You may return the answer in any order.
+
+Each solution contains a distinct board configuration of the n-queens' placement, where 'Q' and '.' both indicate a queen and an empty space, respectively.
+
+ 
+
+Example 1:
+
+
+Input: n = 4
+Output: [[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+Explanation: There exist two distinct solutions to the 4-queens puzzle as shown above
+Example 2:
+
+Input: n = 1
+Output: [["Q"]]
+ 
+
+Constraints:
+
+1 <= n <= 9
+
+MY_SOLUTION
+
+Solution 1: 
+
+Intuition: Using the concept of Backtracking, we will place Queen at different positions of the chessboard and find the right arrangement where all the n queens can be placed on the n*n grid.
+
+
+
+Approach:
+
+Ist position: This is the position where we can see no possible arrangement is found where all queens can be placed since, at the 3rd column, 
+the Queen will be killed at all possible positions of row.
+
+
+
+2nd position: One of the correct possible arrangements is found. So we will store it as our answer.
+
+
+
+3rd position: One of the correct possible arrangements is found. So we will store it as our answer.
+
+
+
+4th position: This is the position where we can see no possible arrangement is found where all queens can be placed since, 
+at the 4th column, the Queen will be killed at all possible positions of row.
+
+import java.util.*;
+class TUF {
+    public static List < List < String >> solveNQueens(int n) {
+        char[][] board = new char[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                board[i][j] = '.';
+        List < List < String >> res = new ArrayList < List < String >> ();
+        dfs(0, board, res);
+        return res;
+    }
+
+    static boolean validate(char[][] board, int row, int col) {
+        int duprow = row;
+        int dupcol = col;
+        while (row >= 0 && col >= 0) {
+            if (board[row][col] == 'Q') return false;
+            row--;
+            col--;
+        }
+
+        row = duprow;
+        col = dupcol;
+        while (col >= 0) {
+            if (board[row][col] == 'Q') return false;
+            col--;
+        }
+
+        row = duprow;
+        col = dupcol;
+        while (col >= 0 && row < board.length) {
+            if (board[row][col] == 'Q') return false;
+            col--;
+            row++;
+        }
+        return true;
+    }
+
+    static void dfs(int col, char[][] board, List < List < String >> res) {
+        if (col == board.length) {
+            res.add(construct(board));
+            return;
+        }
+
+        for (int row = 0; row < board.length; row++) {
+            if (validate(board, row, col)) {
+                board[row][col] = 'Q';
+                dfs(col + 1, board, res);
+                board[row][col] = '.';
+            }
+        }
+    }
+
+
+
+    static List < String > construct(char[][] board) {
+        List < String > res = new LinkedList < String > ();
+        for (int i = 0; i < board.length; i++) {
+            String s = new String(board[i]);
+            res.add(s);
+        }
+        return res;
+    }
+    public static void main(String args[]) {
+        int N = 4;
+        List < List < String >> queen = solveNQueens(N);
+        int i = 1;
+        for (List < String > it: queen) {
+            System.out.println("Arrangement " + i);
+            for (String s: it) {
+                System.out.println(s);
+            }
+            System.out.println();
+            i += 1;
+        }
+        
+    }
+}
+
+
+Time Complexity: Exponential in nature since we are trying out all ways, to be precise its O(N! * N).
+
+Space Complexity: O( N^2)
+
+===========================================================================================
+Solution 2: 
+
+Intuition: This is the optimization of the issafe function. 
+In the previous issafe function, we need o(N) for a row, o(N) for the column, and o(N) for diagonal. 
+Here, we will use hashing to maintain a list to check whether that position can be the right one or not.
+
+Approach: 
+
+For checking Left row elements
+
+For checking upper diagonal and lower diagonal
+
+class Solution {
+    public List<List<String>> solveNQueens(int n) {
+        char[][] board = new char[n][n];
+        // Making the board
+        for(int i = 0; i < n ; i++){
+            for(int j = 0; j < n; j++){
+                board[i][j] = '.';
+            }
+        }
+        
+        List<List<String>> result = new ArrayList<List<String>>();
+        
+        // the optimised checks
+        int[] leftRow = new int[n];
+        int[] upperDiagonal = new int[2 * n - 1];
+        int[] lowerDiagonal = new int[2 * n - 1];
+        
+        // Calling the recursive function
+        solve(0, board, result, leftRow, upperDiagonal, lowerDiagonal);
+        
+        return result;
+    }
+    
+    
+    static void solve(int col, char[][] board, List<List<String>> result, int[] leftRow, int[] upperDiagonal, int[] lowerDiagonal){
+        if(col == board.length){
+            result.add(construct(board));
+            return;
+        }
+        
+        for(int row = 0; row < board.length; row++){
+            if(leftRow[row] == 0 && lowerDiagonal[row + col] == 0 && upperDiagonal[board.length - 1 + col - row] == 0){
+                board[row][col] = 'Q';
+                // Marking
+                leftRow[row] = 1;
+                lowerDiagonal[row + col] = 1;
+                upperDiagonal[board.length - 1 + col - row] = 1;
+                // calling for next column
+                solve(col + 1, board, result, leftRow, upperDiagonal,lowerDiagonal);
+                // Backtracking
+                board[row][col] = '.';
+                leftRow[row] = 0;
+                lowerDiagonal[row + col] = 0;
+                upperDiagonal[board.length - 1 + col - row] = 0;   
+            }
+        }
+    }
+    
+    static List<String> construct(char[][] board){
+        List<String> result = new LinkedList<String>();
+        for(int i = 0; i < board.length; i++){
+            String s = new String(board[i]);
+            result.add(s);
+        }
+        return result;
+    }
+}
+Time Complexity: Exponential in nature since we are trying out all ways, to be precise its O(N! * N).
+
+Space Complexity: O(N)
+====================================================================================
+
+public class Solution {
+    private Set<Integer> col = new HashSet<Integer>();
+    private Set<Integer> diag1 = new HashSet<Integer>();
+    private Set<Integer> diag2 = new HashSet<Integer>();
+    
+    public List<List<String>> solveNQueens(int n) {
+        List<List<String>> res = new ArrayList<List<String>>();
+        dfs(res,new ArrayList<String>(), 0, n);
+        return res;
+    }
+    private void dfs(List<List<String>> res, List<String> list, int row, int n){
+        if (row == n){
+            res.add(new ArrayList<String>(list));
+            return;
+        }
+        for (int i = 0; i < n; i++){
+            if (col.contains(i) || diag1.contains(row + i) || diag2.contains(row - i)) continue;
+            
+            char[] charArray = new char[n];
+            Arrays.fill(charArray, '.');
+            charArray[i] = 'Q';
+            String rowString = new String(charArray);
+            
+            list.add(rowString);
+            col.add(i);
+            diag1.add(row + i);
+            diag2.add(row - i);
+            
+            dfs(res, list, row + 1, n);
+            
+            list.remove(list.size() - 1);
+            col.remove(i);
+            diag1.remove(row + i);
+            diag2.remove(row - i);
+        }
+    }
+}
+========================================================================
+public class Solution {
+    
+    private void helper(int r, boolean[] cols, boolean[] d1, boolean[] d2, 
+                        String[] board, List<String[]> res) {
+        if (r == board.length) res.add(board.clone());
+        else {
+            for (int c = 0; c < board.length; c++) {
+                int id1 = r - c + board.length, id2 = 2*board.length - r - c - 1;
+                if (!cols[c] && !d1[id1] && !d2[id2]) {
+                    char[] row = new char[board.length];
+                    Arrays.fill(row, '.'); row[c] = 'Q';
+                    board[r] = new String(row);
+                    cols[c] = true; d1[id1] = true; d2[id2] = true;
+                    helper(r+1, cols, d1, d2, board, res);
+                    cols[c] = false; d1[id1] = false; d2[id2] = false;
+                }
+            }
+        }
+    }
+    
+    public List<String[]> solveNQueens(int n) {
+        List<String[]> res = new ArrayList<>();
+        helper(0, new boolean[n], new boolean[2*n], new boolean[2*n], 
+            new String[n], res);
+        return res;
+    }
+}
+=============================================================================
+Logic:
+The best way to generate all valid Queen positions is through backtracking.
+First, we need to understand how a Queen moves and what constitutes a valid position. Queen's can move in literally any straight-lined direction.
+
+image
+
+It's possibe to place a Queen down if and only if:
+
+There exists no Queen on the current row.
+There exists no Queen on the current column.
+There exists no Queen on the current diagonal.
+There exists no Queen on the current anti-diagonal.
+Backtracking: Try a promising Queen position, see how it goes. If it fails, undo that Queen and try again somewhere else.
+
+image
+
+Hopefull it's now clear that we need some way to keep track of Queens on previous rows, columns and diagonals. We can take care of rows automatically by incrementing each queen placement by row. In other words, after each successful Queen placement, we move to the next row (since no two Queens can share the same row).
+We can keep track of previous columns just by their column indexes. What about the diagonals? Well here's an interesting observation:
+
+image
+
+(the "+N" is to offset negative values. You will see why we do this in the next section). Now we have everything we need to keep track of previous Queens and start thinking about our algorithm! But just one more thing; let's keep track of "used" columns and diagonals using bit masks.
+
+Why Integer Bit Masks?
+We prefer integer bitmasks in this question for 2 main reasons:
+
+Sets in Java are a slow datastructure. So keeping track of visited columns and diagonals using integers is much quicker through bit manipulation!
+It's slightly more space efficient since we're only storing three integers instead of arrays or other datastructures.
+Bit Manipulation Tricks
+Check the ith bit: x & (1 << i), where 1 << i is shifting 1 to the left i number of times.
+For example, if we want to check if a Queen exists at column 5, we can check if (cols & (1 << 5) != 0). Basically, if we haven't seen a Queen at this column before, then the bitwise AND operation at that specific bit will be 0. Otherwise, it will be a non-zero value.
+Set the ith bit: x |= (1 << i). This performs a bitwise OR operation on the ith bit. This will always set the ith bit to 1. For example, if the ith bit in cols is currently 1, then 1 | 1 = 1. If it's set to 0, then 0 | 0 is still = 1.
+Flip the ith bit: x ^= (1 << i) To reverse the previous action, we use the inverse logic of an OR; a bitwise XOR (exclusive-OR). The basic idea of XOR is that if two bits are the same (0,0) and (1,1), you will get 0. However if the two bits are different (1,0) or (0,1), you get 1. This is the exact opposite of OR, hence the name.
+Algorithm:
+Awesome! Now we have everything we need. Here's how the backtracking algorithm will work:
+
+Check if we've reached the end:
+If row == N, we've filled in all our rows successfully which implies the current board state is a valid combination. Let's add it to our output list.
+Loop through each column in the current row.
+If we can't add a Queen at this position, skip this col value.
+If we can, add a Queen at this position and adjust our bitmasks respectively.
+Continue to the next row (call backtrack for row+1).
+Undo our changes so we can try other col values.
+Code:
+If you have any questions, suggestions or improvements, feel free to let me know. Thank you for reading!
+
+class Solution {
+    private List<List<String>> res;
+    private int N;
+
+    public List<List<String>> solveNQueens(int n) {
+        res = new ArrayList<>();
+        N = n;
+        char[][] emptyBoard = new char[N][N];
+        for (char[] row: emptyBoard) Arrays.fill(row, '.');
+        
+        backtrack(emptyBoard, 0, 0, 0, 0);
+        return res;
+    }
+    
+    private void backtrack(char[][] board, int row, int cols, int diags, int antiDiags) {
+        // if we've successfuly placed a Queen at all rows, we have a valid board state
+        if (row == N) {
+            res.add(toBoard(board));
+            return;
+        }
+        
+        for (int col=0; col<N; col++) {
+            int currDiag = row-col+N;
+            int currAntiDiag = row+col;
+            
+            // check if the current Queen placement is valid
+            if ((cols & (1 << col)) != 0 || (diags & (1 << currDiag)) != 0 || (antiDiags & (1 << currAntiDiag)) != 0) continue;
+            
+            // if so, add changes
+            board[row][col] = 'Q';
+            cols |= (1 << col);
+            diags |= (1 << currDiag);
+            antiDiags |= (1 << currAntiDiag);
+            
+            // continue to the next row
+            backtrack(board, row + 1, cols, diags, antiDiags);
+            
+            // undo changes and continue
+            board[row][col] = '.';
+            cols ^= (1 << col);
+            diags ^= (1 << currDiag);
+            antiDiags ^= (1 << currAntiDiag);
+        }
+    }
+    
+    private List<String> toBoard(char[][] board) {
+        List<String> newBoard = new ArrayList<>();
+        for (char[] row: board) newBoard.add(new String(row));
+        return newBoard;
+    }
+}
+Time Complexity: O(N!) since we look for every valid board state.
+Space Complexity: O(N^2) to build our board.
+
+======================================================================================
+I use three boolean[] array to keep tracking of the position the Queen take in the helper method.
+
+boolean[] cols is for check if the certain column is taken.
+I use two boolean[2*n] array to keep tracking of two diagonals.
+for the diagonal in the \ direction (from left up corner to right down corner) the col - row will always be same e.g. (0,1), (1,2), (2,3) are on the same diagonal, the range of col - row can be (0-(n-1)) ~ ((n-1)-0), to make sure we can store the value in one array, we will add n to this, it will become to keep tracking of (col - row + n).
+for the diagonal in the / direction (from right up corner to left down corner) the col + row will always be same e.g. (0,4), (1,3), (2,2), (3,1), (4,0) are on the same diagonal, the range of row + col can be 0 ~ (2*n-2)
+back tracking logic should be easy to understand.
+
+public List<List<String>> solveNQueens(int n) {
+    List<List<String>> result = new ArrayList<List<String>>();
+    helper(result, new ArrayList<String>(), 0, new boolean[n], new boolean[2*n], new boolean[2*n], n);
+    return result;
+}
+
+private void helper(List<List<String>> result, List<String> board, int row, boolean[] cols, boolean[] d1, boolean[] d2, int n){
+    if (row == n) {
+        result.add(new ArrayList<String>(board));
+    }
+    for (int col=0; col<n; col++){
+        int id1 = col - row + n;
+        int id2 = col + row;
+        if (!cols[col] && !d1[id1] && !d2[id2]){
+            char[] r = new char[n];
+            Arrays.fill(r, '.');
+            r[col] = 'Q';
+            board.add(new String(r));
+            cols[col] = true;
+            d1[id1] = true;
+            d2[id2] = true;
+            helper(result, board, row+1, cols, d1, d2, n);
+            board.remove(board.size()-1);
+            cols[col] = false;
+            d1[id1] = false;
+            d2[id2] = false;
+        }
+    }
+}
+====================================================================================================================================
+// classic backtracking: initialize the n * n array and starting first position, perform DFS and fill the queens in the boards in the valid positions
+    private static List<List<String>> solveNQueens(int n) {
+        List<List<String>> result = new ArrayList<>();
+        if (n <= 0) {
+            return result;
+        }
+        char[][] matrix = new char[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                matrix[i][j] = '.';
+            }
+        }
+        nQueensDFSHelper(matrix, 0, result);
+        return result;
+    }
+
+    // start the process by placing the queen in the first row [0, 0].  
+    // as we cannot place 2 queens in the same row, when we place the queen in the nth row and if its valid position, 
+    //dfs again starting n+1 th row and try placing the next queen in all the columns of n+1th row and find a valid position.
+    // if no valid queen column found in n+1th row, backtrack and go to nth row, and change the queen position to the next column and repeat the process 
+    private static void nQueensDFSHelper(char[][] matrix, int row, List<List<String>> result) {
+        if (row == matrix.length) {
+            List<String> possibleResult = resultBuilder(matrix);
+            result.add(possibleResult);
+            return;
+        }
+        for (int col = 0; col < matrix.length; col++) {
+            matrix[row][col] = 'Q';   // mark the queen position to try out all the possibilities 
+            if (isValidPosition(matrix, row, col)) {
+                nQueensDFSHelper(matrix, row + 1, result);
+            }
+            matrix[row][col] = '.';   // undo (un mark) the queen position 
+        }
+    }
+
+    // helper method to validate if the queen can be placed at a certain position (x and y coordinates) on current state of the board
+    private static boolean isValidPosition(char[][] matrix, int x, int y) {
+        for (int row = 0; row < x; row++) {   // check for the rows only before x as those are where the 
+        //queen will be (as we are visiting the rows in sequential order)
+            for (int col = 0; col < matrix.length; col++) {  // visit all the columns in these rows 
+                // when the matrix already has queen at [row, column] position, the new queen cannot be in this column or one of its 
+                //diagonals (x-row and y-col -- better understood with an example: these conditions represents if the new queen is placed in one of the 
+                //diagonals of an already existing queen. if yes, the new queen cannot be valid at the given position) 
+                if ((y == col || Math.abs(x - row) == Math.abs(y - col)) && matrix[row][col] == 'Q') {  
+                // NOTE : important condition. don't forget to take care of it
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // create the list of strings from queen positions
+    private static List<String> resultBuilder(char[][] matrix) {
+        int length = matrix.length;
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < length; i++) {
+            list.add(new String(matrix[i]));
+        }
+        return list;
+    }
+    =========================================================================================
+    Logic:
+Our approach for this problem is to place queens at every position of the nxn matrix and check whether it satisfies the case that no two or more 
+queens attack each other
+FYI: A queen can move in vertical horizontal and diagonal positions till the end of the board
+as shown in the picture bellow
+
+
+
+This solution uses the concept of backtracking in it.
+This is what we do -->
+
+Iterate through the whole matrix row wise
+Place the queen at every position and call a helper function (i.e validatePosition) which returns true if the queen can be placed there
+Suppose the condition is satisfied in the first two rows but no such square is found in the third row so what we do is that we go back to the 
+previous row and delete the queen and try to place it somewhere else if it is found good enough we continue the process but if no such position 
+is found we again go back and delete the queen placed on the row prior to that.
+The bellow images will depict how it works
+ ==>  ==>  ==> 
+We go on till the end of the row until we find a green square for the queen
+Helper methods used -->
+
+queenTry --> Iterates through every row like a[0][0]..a[0][1]..a[0][2].. and places a queen and calls for validatePsoition
+validatePosition --> finds an appropiate spot for the queen checks horizontally,vertically and diagonally and returns true is the queen can be placed either false
+build --> here as we iterate through the board we convert it to a string and add it to a list
+Code-->
+Java
+
+class Solution {
+    public List<List<String>> solveNQueens(int n) {
+        List<List<String>> ans = new ArrayList<List<String>>();
+        
+        char arr[][] = new char[n][n];
+        for(int i=0;i<n;i++)
+            for(int j=0;j<n;j++)
+                arr[i][j] = '.';
+        
+        queenTry(ans,arr,0);
+        return ans;
+    }
+    private void queenTry(List<List<String>> ans, char[][] arr, int row)
+    {
+        if(row == arr.length)
+        {
+            ans.add(build(arr));
+            return;
+        }
+        for(int col=0;col<arr.length;col++)
+        {
+            if(validatePosition(arr,row,col))
+            {
+                arr[row][col] = 'Q';
+                queenTry(ans,arr,row+1);
+                arr[row][col] = '.'; 
+            }
+        }
+    }
+    
+    private boolean validatePosition(char[][] arr,int row,int col)
+    {
+        //checks validity in every row for a single column
+        for(int i=0;i<row;i++)
+        {
+            if(arr[i][col] == 'Q')
+                return false;
+        }
+        //checks for every 45 degree angle
+        for(int i=row-1,j=col+1;i>=0 && j<arr.length;i--,j++)
+        {
+            if(arr[i][j] == 'Q')
+                return false;
+        }
+        //checks for every 135 degree angle
+        for(int i=row-1,j=col-1;i>=0 && j>=0;i--,j--)
+        {
+            if(arr[i][j] == 'Q')
+                return false;
+        }
+        return true;
+    }
+    
+    private List<String> build(char arr[][])
+    {
+        List<String> val = new ArrayList<>();
+        for(int i=0;i<arr.length;i++)
+            val.add(new String(arr[i]));
+        return val;
+    }
+}
+
+
+
+
