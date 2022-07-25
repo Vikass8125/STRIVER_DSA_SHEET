@@ -1,0 +1,412 @@
+Consider a rat placed at (0, 0) in a square matrix of order N * N. It has to reach the destination at (N - 1, N - 1). 
+Find all possible paths that the rat can take to reach from source to destination. 
+The directions in which the rat can move are 'U'(up), 'D'(down), 'L' (left), 'R' (right). 
+Value 0 at a cell in the matrix represents that it is blocked and rat cannot move to it while value 1 at a cell in the matrix represents 
+that rat can be travel through it.
+Note: In a path, no cell can be visited more than one time. If the source cell is 0, the rat cannot move to any other cell.
+
+Example 1:
+
+Input:
+N = 4
+m[][] = {{1, 0, 0, 0},
+         {1, 1, 0, 1}, 
+         {1, 1, 0, 0},
+         {0, 1, 1, 1}}
+Output:
+DDRDRR DRDDRR
+Explanation:
+The rat can reach the destination at 
+(3, 3) from (0, 0) by two paths - DRDDRR 
+and DDRDRR, when printed in sorted order 
+we get DDRDRR DRDDRR.
+Example 2:
+Input:
+N = 2
+m[][] = {{1, 0},
+         {1, 0}}
+Output:
+-1
+Explanation:
+No path exists and destination cell is 
+blocked.
+Your Task:  
+You don't need to read input or print anything. Complete the function printPath() which takes N and 2D array m[ ][ ] as input parameters and 
+returns the list of paths in lexicographically increasing order. 
+Note: In case of no path, return an empty list. The driver will output "-1" automatically.
+
+Expected Time Complexity: O((3N^2)).
+Expected Auxiliary Space: O(L * X), L = length of the path, X = number of paths.
+
+Constraints:
+2 ≤ N ≤ 5
+0 ≤ m[i][j] ≤ 1
+
+
+MY_SOLUTION
+Solution 1: Recursion
+
+Intuition:
+
+The best way to solve such problems is using recursion.
+
+Approach:
+
+Start at the source(0,0) with an empty string and try every possible path i.e upwards(U), downwards(D), leftwards(L) and rightwards(R).
+As the answer should be in lexicographical order so it’s better to try the directions in lexicographical order i.e (D,L,R,U)
+Declare a 2D-array named visited because the question states that a single cell should be included only once in the path,
+so it’s important to keep track of the visited cells in a particular path.
+If a cell is in path, mark it in the visited array.
+Also keep a check of the “out of bound” conditions while going in a particular direction in the matrix. 
+Whenever you reach the destination(n,n) it’s very important to get back as shown in the recursion tree.
+While getting back, keep on unmarking the visited array for the respective direction.Also check whether there is a 
+different path possible while getting back and if yes, then mark that cell in the visited array.
+
+class Solution {
+    public static ArrayList<String> findPath(int[][] m, int n) {
+        //Making the visited array
+        int[][] vis = new int[n][n];
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                vis[i][j] = 0;
+            }
+        }
+        
+        ArrayList<String> ans = new ArrayList<>();
+        
+        if(m[0][0] == 1) solve(0, 0, m, n, ans, "", vis);
+        
+        return ans;
+    }
+    
+    private static void solve(int i, int j, int[][] a, int n, ArrayList<String> ans, String move, int[][] vis){
+        if(i == n-1 && j == n-1){
+            ans.add(move);
+            return;
+        }
+        
+        // Down
+        if(i + 1 < n && vis[i+1][j] == 0 && a[i+1][j] == 1){
+            vis[i][j] = 1;
+            solve(i + 1, j, a, n, ans, move + 'D', vis);
+            // BackTrack
+            vis[i][j] = 0;
+        }
+        
+        // Left
+        if(j - 1 >= 0 && vis[i][j-1] == 0 && a[i][j-1] == 1){
+            vis[i][j] = 1;
+            solve(i, j-1, a, n, ans, move + 'L', vis);
+            // BackTrack
+            vis[i][j] = 0;
+        }
+        
+        // Right
+        if(j + 1 < n && vis[i][j+1] == 0 && a[i][j+1] == 1){
+            vis[i][j] = 1;
+            solve(i, j+1, a, n, ans, move + 'R', vis);
+            // BackTrack
+            vis[i][j] = 0;
+        }
+        
+        // Up
+        if(i - 1 >= 0 && vis[i-1][j] == 0 && a[i-1][j] == 1){
+            vis[i][j] = 1;
+            solve(i - 1, j, a, n, ans, move + 'U', vis);
+            // BackTrack
+            vis[i][j] = 0;
+        }
+    }
+}
+
+Time Complexity: O(4^(m*n)), because on every cell we need to try 4 different directions.
+
+Space Complexity:  O(m*n) ,Maximum Depth of the recursion tree(auxiliary space).
+
+
+But, writing an individual code for every direction is a lengthy process therefore we truncate the 4 “if statements” into a 
+single for loop using the following approach.
+
+
+import java.util.*;
+
+// m is the given matrix and n is the order of matrix
+class Solution {
+  private static void solve(int i, int j, int a[][], int n, ArrayList < String > ans, String move,
+    int vis[][], int di[], int dj[]) {
+    if (i == n - 1 && j == n - 1) {
+      ans.add(move);
+      return;
+    }
+    String dir = "DLRU";
+    for (int ind = 0; ind < 4; ind++) {
+      int nexti = i + di[ind];
+      int nextj = j + dj[ind];
+      if (nexti >= 0 && nextj >= 0 && nexti < n && nextj < n &&
+        vis[nexti][nextj] == 0 && a[nexti][nextj] == 1) {
+
+        vis[i][j] = 1;
+        solve(nexti, nextj, a, n, ans, move + dir.charAt(ind), vis, di, dj);
+        vis[i][j] = 0;
+
+      }
+    }
+  }
+  public static ArrayList < String > findPath(int[][] m, int n) {
+    int vis[][] = new int[n][n];
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        vis[i][j] = 0;
+      }
+    }
+    int di[] = {
+      +1,
+      0,
+      0,
+      -1
+    };
+    int dj[] = {
+      0,
+      -1,
+      1,
+      0
+    };
+    ArrayList < String > ans = new ArrayList < > ();
+    if (m[0][0] == 1) solve(0, 0, m, n, ans, "", vis, di, dj);
+    return ans;
+  }
+}
+class TUF {
+  public static void main(String[] args) {
+
+    int n = 4;
+    int[][] a = {{1,0,0,0},{1,1,0,1},{1,1,0,0},{0,1,1,1}};
+
+    Solution obj = new Solution();
+    ArrayList < String > res = obj.findPath(a, n);
+    if (res.size() > 0) {
+      for (int i = 0; i < res.size(); i++)
+        System.out.print(res.get(i) + " ");
+      System.out.println();
+    } else {
+      System.out.println(-1);
+    }
+  }
+}
+Output:
+
+DDRDRR DRDDRR
+
+Time Complexity: O(4^(m*n)), because on every cell we need to try 4 different directions.
+
+Space Complexity:  O(m*n) ,Maximum Depth of the recursion tree(auxiliary space).
+
+=====================================================================================
+Approach 2: 
+
+Start from the initial index (i.e. (0,0)) and look for the valid moves through the adjacent cells in the order Down->Left->Right->Up (so as to get the sorted paths) in the grid.
+If the move is possible, then move to that cell while storing the character corresponding to the move(D,L,R,U) and again start looking for the valid move until the last index (i.e. (n-1,n-1)) is reached.
+Also, keep on marking the cells as visited and when we traversed all the paths possible from that cell, then unmark that cell for other different paths and remove the character from the path formed.
+As the last index of the grid(bottom right) is reached, then store the traversed path.
+// Java implementation of the above approach
+import java.util.*;
+
+class GFG{
+    
+// Vector to store all the possible paths
+static Vector<String> possiblePaths = new Vector<>();
+static String path = "";
+static final int MAX =  5;
+
+// Function returns true if the
+// move taken is valid else 
+// it will return false.
+static boolean isSafe(int row, int col, int m[][], 
+                      int n, boolean visited[][])
+{
+    if (row == -1 || row == n || col == -1 || 
+         col == n || visited[row][col] || 
+                     m[row][col] == 0)
+        return false;
+
+    return true;
+}
+
+// Function to print all the possible
+// paths from (0, 0) to (n-1, n-1).
+static void printPathUtil(int row, int col, int m[][], 
+                          int n, boolean visited[][])
+{
+    
+    // This will check the initial point
+    // (i.e. (0, 0)) to start the paths.
+    if (row == -1 || row == n || col == -1 ||
+         col == n || visited[row][col] || 
+                     m[row][col] == 0)
+        return;
+
+    // If reach the last cell (n-1, n-1)
+    // then store the path and return
+    if (row == n - 1 && col == n - 1)
+    {
+        possiblePaths.add(path);
+        return;
+    }
+
+    // Mark the cell as visited
+    visited[row][col] = true;
+
+    // Try for all the 4 directions (down, left, 
+    // right, up) in the given order to get the
+    // paths in lexicographical order
+
+    // Check if downward move is valid
+    if (isSafe(row + 1, col, m, n, visited))
+    {
+        path += 'D';
+        printPathUtil(row + 1, col, m, n,
+                      visited);
+        path = path.substring(0, path.length() - 1);
+    }
+
+    // Check if the left move is valid
+    if (isSafe(row, col - 1, m, n, visited))
+    {
+        path += 'L';
+        printPathUtil(row, col - 1, m, n,
+                      visited);
+        path = path.substring(0, path.length() - 1);
+    }
+
+    // Check if the right move is valid
+    if (isSafe(row, col + 1, m, n, visited)) 
+    {
+        path += 'R';
+        printPathUtil(row, col + 1, m, n,
+                      visited);
+        path = path.substring(0, path.length() - 1);
+    }
+
+    // Check if the upper move is valid
+    if (isSafe(row - 1, col, m, n, visited))
+    {
+        path += 'U';
+        printPathUtil(row - 1, col, m, n,
+                      visited);
+        path = path.substring(0, path.length() - 1);
+    }
+
+    // Mark the cell as unvisited for 
+    // other possible paths
+    visited[row][col] = false;
+}
+
+// Function to store and print
+// all the valid paths 
+static void printPath(int m[][], int n)
+{
+    boolean [][]visited = new boolean[n][MAX];
+    
+    // Call the utility function to
+    // find the valid paths 
+    printPathUtil(0, 0, m, n, visited);
+
+    // Print all possible paths
+    for(int i = 0; i < possiblePaths.size(); i++)
+        System.out.print(possiblePaths.get(i) + " ");
+}
+
+// Driver code
+public static void main(String[] args)
+{
+    int m[][] = { { 1, 0, 0, 0, 0 },
+                  { 1, 1, 1, 1, 1 },
+                  { 1, 1, 1, 0, 1 },
+                  { 0, 0, 0, 0, 1 },
+                  { 0, 0, 0, 0, 1 } };
+    int n = m.length;
+    
+    printPath(m, n);
+}
+}
+
+// This code is contributed by gauravrajput1 
+
+Output
+DDRRURRDDD DDRURRRDDD DRDRURRDDD DRRRRDDD 
+Complexity Analysis: 
+
+Time Complexity: O(3^(n^2)). 
+As there are N^2 cells from each cell there are 3 unvisited neighboring cells. So the time complexity O(3^(N^2).
+Auxiliary Space: O(3^(n^2)). 
+As there can be at most 3^(n^2) cells in the answer so the space complexity is O(3^(n^2)).
+Efficient Approach:
+
+Instead of maintaining visited matrix, we can modify the given matrix to treat it as visited matrix.
+
+Below is the implementation:
+
+import java.io.*;
+import java.util.*;
+
+class GFG {
+
+    static ArrayList<String> res;
+    public static ArrayList<String> findPath(int[][] m, int n) {
+        res = new ArrayList<>();
+          // dx, dy will be used to follow `DLRU` exploring approach
+          // which is lexicographically sorted order
+        int[] dx = { 1,  0, 0, -1 };
+        int[] dy = { 0, -1, 1,  0 };
+        if (m[0][0] == 1) {
+            m[0][0] = 2;
+            findPathHelper(m, n, 0, 0, dx, dy, "");
+        }
+        return res;
+    }
+    
+    private static void findPathHelper(int[][] m, int n, int x, int y, int[] dx, int[] dy, String path) {
+        if (x == n - 1 && y == n - 1) { 
+            res.add(path);
+            return;
+        }
+        String dir = "DLRU";
+        for (int i = 0; i < 4; i++) {   
+            int row = x + dx[i];
+            int col = y + dy[i];
+            if (isValid(row, col, m, n)) {
+                m[row][col] = 2;                // used to track visited cells of matrix
+                findPathHelper(m, n, row, col, dx, dy, path + dir.charAt(i));
+                m[row][col] = 1;                // mark it unvisited yet explorable
+            }
+        }
+    }
+    
+    private static boolean isValid(int row, int col, int[][] m, int n) {
+        if (row >= 0 && row < n && col >= 0 && col < n && m[row][col] == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        int m[][] = { { 1, 0, 0, 0, 0 },
+                      { 1, 1, 1, 1, 1 },
+                      { 1, 1, 1, 0, 1 },
+                      { 0, 0, 0, 0, 1 },
+                      { 0, 0, 0, 0, 1 } };
+        int n = m.length;
+
+        ArrayList<String> ans = findPath(m, n);
+        System.out.println(ans);
+    }
+}
+
+// Contributed by: jmamtora99
+
+Output
+DDRRURRDDD DDRURRRDDD DRDRURRDDD DRRRRDDD 
+Complexity Analysis: 
+
+Time Complexity: O(3^(n^2)). 
+Space Complexity: O(1); Since we are not using visited matrix.
