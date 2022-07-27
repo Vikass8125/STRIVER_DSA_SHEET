@@ -1,0 +1,328 @@
+You are given a sorted array consisting of only integers where every element appears exactly twice, except for one element which appears exactly once.
+
+Return the single element that appears only once.
+
+Your solution must run in O(log n) time and O(1) space.
+
+ 
+
+Example 1:
+
+Input: nums = [1,1,2,3,3,4,4,8,8]
+Output: 2
+Example 2:
+
+Input: nums = [3,3,7,7,10,11,11]
+Output: 10
+ 
+
+Constraints:
+
+1 <= nums.length <= 105
+0 <= nums[i] <= 105
+
+MY_SOLUTION
+
+Solution 1: Using XOR(^)
+
+Approach: As every number in the array repeats twice and only one number occurs once, we can take advantage of the XOR(^) operator. 
+These are two properties of the XOR operator which will be helpful.
+
+If p is a number then,
+
+p^p=0
+
+p^0=p
+
+If we find the XOR of every element of the array, we will get the answer.
+import java.util.*;
+class TUF {
+    public static int findSingleElement(int nums[]) {
+            int n = nums.length;
+            int elem = 0;
+            for (int i = 0; i < n; i++) {
+                elem = elem ^ nums[i];
+        }
+        
+        return elem;
+    }
+
+    public static void main(String args[]) {
+
+        int arr[] = {1,1,2,3,3,4,4,8,8};
+        
+        int elem = findSingleElement(arr);
+        System.out.println("The single occurring"
+         +" element is " + elem);
+
+    }
+}
+Output: 
+
+The single occurring element is 2
+
+Time Complexity: O(N)
+
+Space Complexity: O(1)
+
+================================================
+
+Solution 2:
+
+Approach: Using Binary Search
+
+As the elements are sorted, twice occurring elements will be placed together in the input array.
+Moreover, the input array has one element occurring once, therefore a general input can be thought of like this.
+
+
+
+Now in this left array, the first instance of every element is occurring on the even index and the second instance on the odd index. 
+Similarly in the right array, the first instance of every element is occurring on the odd index and the second index is occurring on the even index. 
+This is summarized below.
+
+
+
+So the algorithmic approach will be to use binary search. The intuition is that when we see an element, if we know its index and whether it is the first instance or 
+the second instance, we can decide whether we are presently in the left array or right array. 
+Moreover, we can decide which direction we need to move to find the breakpoint. We need to find this breakpoint between our left array and the right array.
+
+We will check our mid element, if it is in the left array, we will shrink our left array to the right of this mid element, 
+if it is in the right array, we will shrink the right array to the left of this mid element. This binary search process will continue till the right array 
+surpasses our left one and the low is pointing towards the breakpoint.
+
+Dry Run:   In case you want to see the dry run of this approach, please watch the video at the bottom.
+
+Code: 
+
+import java.util.*;
+class TUF {
+    static int findSingleElement(int nums[]) {
+        
+        int low = 0;
+        int high = nums.length - 2;
+        
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (mid % 2 == 0) {
+                // Checking whether we are in right half
+                if (nums[mid] != nums[mid + 1]) 
+                    
+                    //Shrinking the right half
+                    high = mid - 1; 
+                else
+                    // Shrinking the left half
+                    low = mid + 1; 
+            } else {
+                // Checking whether we are in right half
+                if (nums[mid] == nums[mid + 1])
+                    //Shrinking the right half
+                    high = mid - 1; 
+                else
+                    // Shrinking the left half
+                    low = mid + 1; 
+            }
+        }
+        return nums[low];
+    }
+
+    public static void main(String args[]) {
+
+        int arr[] = {1,1,2,3,3,4,4,8,8};
+        
+        int elem = findSingleElement(arr);
+        
+        System.out.println("The single occurring" + 
+         " element is " + elem);
+
+    }
+}
+Output: 
+
+The single occurring element is 2
+
+Time Complexity: O(log(N))
+
+Space Complexity: O(1)
+
+==============================================================================
+EXPLANATION:-
+Suppose array is [1, 1, 2, 2, 3, 3, 4, 5, 5]
+we can observe that for each pair, 
+first element takes even position and second element takes odd position
+for example, 1 is appeared as a pair,
+so it takes 0 and 1 positions. similarly for all the pairs also.
+
+this pattern will be missed when single element is appeared in the array.
+
+From these points, we can implement algorithm.
+1. Take left and right pointers . 
+    left points to start of list. right points to end of the list.
+2. find mid.
+    if mid is even, then it's duplicate should be in next index.
+	or if mid is odd, then it's duplicate  should be in previous index.
+	check these two conditions, 
+	if any of the conditions is satisfied,
+	then pattern is not missed, 
+	so check in next half of the array. i.e, left = mid + 1
+	if condition is not satisfied, then the pattern is missed.
+	so, single number must be before mid.
+	so, update end to mid.
+3. At last return the nums[left]
+
+Time: -  O(logN)
+space:-  O(1)
+
+Java:-
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+        int left = 0, right = nums.length-1;
+        while(left < right){
+            int mid = (left + right)/2;
+            if( (mid % 2 == 0 && nums[mid] == nums[mid +1]) || (mid %2 == 1 && nums[mid] == nums[mid - 1]) )
+                left = mid + 1;
+            else
+                right = mid;
+        }
+        return nums[left];
+    }   
+}
+===========================================================================
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+        if(nums.length==1) return nums[0];
+        int l = 0;
+        int h = nums.length-1;
+        
+        while(l<h){
+            int mid = l+(h-l)/2;      // divide the array
+            
+            if(nums[mid]==nums[mid+1]) mid = mid-1;      //two same elements should be in same half
+            
+            if((mid-l+1)%2!=0) h = mid;            // checking the length of left half. If its is odd then update ur right pointer to mid
+            
+            else l = mid+1;    // else your right half will be odd then update your left pointer to mid+1
+        }
+        
+        return nums[l];     //left pointer will have the answer at last
+    }
+}
+===================================================================================
+
+In this post i'll explain 4 approach from worst to best time complexity, and i'll also i'll try to explain the intution behind this.
+Before we proceed to various approaches let's keep this thing in mind.
+As You can see in the image below all the second element in the pair before the target or ans index is at odd index and after the target they shifted to one index and are at even indexes.
+image
+
+Approach 1 : Linear Search - TC O(n) - SC O(1)
+
+In this approach we simply traverse through every pair from the nums array and keep checking if the current element is equal to the prev one, if not we will simply return the prev element.
+
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+	//traverse through arrau and check if prev is equal to curr ,if not return prev
+        for(int i=1;i<nums.length;i+=2){
+         if(nums[i]!=nums[i-1]){
+             return nums[i-1];
+         }   
+        }
+		//if didn't find means last element is single, here's the example [1,1,2,2,3]
+        return nums[nums.length-1];
+    }
+}
+Time Complexity: O(n)
+Space Complexity : O(1)
+
+Approach 2 : Bit manupulation - TC O(n) - SC (1)
+Here we use the fact that performing XOR with two same numbers give us zero and doing XOR with zero and other number will give us that number itself.
+here's the example
+2 - 0010
+2 - 0010
+3 - 0011
+
+So 2^2^3 = 3
+
+So we simply iterate through the loop and do XOR and the final ans will be the required ans
+
+class Solution {
+	public int singleNonDuplicate(int[] nums) {
+		int ans = 0;
+        for(int num:nums){
+            ans^=num;
+        }
+        return ans;
+	}
+}
+Time Complexity: O(n)
+Space Complexity : O(1)
+
+Approach 3 : Bit Manupulation Improved - TC O(n) - SC O(1)
+
+Since we already know that every odd index represent second element of the pair which means at every odd index the XOR value will be zero, and if we found a situation where XOR is not zero at odd index which means last element was single element and that is the ans.
+with this approach we will not iterate every time till last index and we can return when we find odd one.
+
+class Solution {
+	public int singleNonDuplicate(int[] nums) {
+		int ans = 0;
+        int prev = 0;
+        for(int i=0;i<nums.length;i++){
+            prev=ans;
+            ans^=nums[i];
+            if((i&1)==1 && ans!=0){ //here we are checking if the index is odd and ans is not zero
+                return prev;
+            }
+        }
+        return ans;
+	}
+}
+Time Complexity: O(n)
+Space Complexity : O(1)
+
+Approach 4 : Binary Search - TC O(logn) - SC O(1)
+Since the array is already sorted we can apply binary search to find the single element.
+Before proceeding to this solution recall the above rule that i've explained with the image.
+
+class Solution {
+    public int singleNonDuplicate(int[] nums) {
+        //the idea is to find mid element and if mid is single return it
+        //else mid is first element of the pair and 
+            //is at even pos means ans will be to it's right
+            //else ans will be it's left
+        //else mid is second element and 
+            //is at odd pos means ans will be towards right
+        //else ans will be towards left
+        
+        if(nums.length==1){
+            return nums[0];
+        }
+        
+        int lo = 0,hi = nums.length-1;
+        while(lo<=hi){
+            int mid = lo +(hi-lo)/2;
+            
+            
+            //means mid is second element of the pair
+            if(mid-1>=0 &&(nums[mid]==nums[mid-1])){ 
+                //check if mid is at odd pos
+                if((mid&1)==1){
+                    lo = mid+1;
+                }else{
+                    hi = mid;
+                }
+                
+            }else if(mid+1<nums.length &&(nums[mid]==nums[mid+1])){ //means mid is first element of the pair
+                //check if mid is at even pos
+                if((mid&1)==0){
+                    lo = mid+2;
+                }else{
+                    hi = mid;
+                }
+                
+            }else{ //means mid is single
+                return nums[mid];
+            }
+        }
+        return -1;
+    }
+}
+Time Complexity: O(logn)
+Space Complexity : O(1)
