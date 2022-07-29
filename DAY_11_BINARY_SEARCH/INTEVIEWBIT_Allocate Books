@@ -1,0 +1,442 @@
+Given an array of integers A of size N and an integer B.
+
+College library has N bags,the ith book has A[i] number of pages.
+
+You have to allocate books to B number of students so that maximum number of pages alloted to a student is minimum.
+
+A book will be allocated to exactly one student.
+Each student has to be allocated at least one book.
+Allotment should be in contiguous order, for example: A student cannot be allocated book 1 and book 3, skipping book 2.
+Calculate and return that minimum possible number.
+
+NOTE: Return -1 if a valid assignment is not possible.
+
+
+
+
+Input Format
+
+The first argument given is the integer array A.
+The second argument given is the integer B.
+Output Format
+
+Return that minimum possible number
+Constraints
+
+1 <= N <= 10^5
+1 <= A[i] <= 10^5
+For Example
+
+Input 1:
+    A = [12, 34, 67, 90]
+    B = 2
+Output 1:
+    113
+Explanation 1:
+    There are 2 number of students. Books can be distributed in following fashion : 
+        1) [12] and [34, 67, 90]
+        Max number of pages is allocated to student 2 with 34 + 67 + 90 = 191 pages
+        2) [12, 34] and [67, 90]
+        Max number of pages is allocated to student 2 with 67 + 90 = 157 pages 
+        3) [12, 34, 67] and [90]
+        Max number of pages is allocated to student 1 with 12 + 34 + 67 = 113 pages
+
+        Of the 3 cases, Option 3 has the minimum pages = 113.
+
+Input 2:
+    A = [5, 17, 100, 11]
+    B = 4
+Output 2:
+    100
+    
+========================================================================================
+Solution: Using Binary Search
+
+Intuition : 
+
+Let’s analyze a case. 
+
+We are given A = [12, 34, 67, 90] and B = 1. So, for one student we can allocate all books to this student.
+Why so? Because we have to maximize the number of pages allocated to a student and then find the minimum out of it.
+So, this fact gives us an idea that a single student will be allocated the sum of all pages available.
+
+Let’s analyze another case.
+
+We are required to find the minimum number of pages among all possible maximum number of pages of allocations. 
+So, in the worst case, the minimum possible will be minimum pages among all given books.
+
+Now, we know the lowest possible answer and the maximum possible answer and for general cases, the answer will lie in between these edge cases. 
+Thus, we have a search space. This search space will be sorted. Guess what? We reached our approach to use a binary solution.
+
+Approach :
+
+We will set a search space. The lower boundary will be of minimal value among all the books given. 
+The upper boundary will be the sum of all book pages given. Then apply binary search. 
+How to change the range of searching? While searching, allocate pages to each student in such a way that the sum of allocated pages of each student is 
+not greater than the mid-value of search space. If allocating students increases more than the number of students provided, 
+this shows that mid-value should be more, and hence, we move right by restricting our lower boundary as mid+1. 
+If an allocation is possible then reduce the search upper boundary by mid-1. Also, an edge case to check while allocating, 
+each book page should not be greater than mid-value chosen as a barrier.
+
+Dry Run:
+
+
+
+We will find mid of the search space and set it as a barrier. Here, mid = (12+203)/2 =107. Now, we will find if the allocation is possible among two students.
+
+
+
+Now, low = 108, high = 203, so mid = (108+203)/2 = 155. Again check if allocation is possible.
+
+
+
+Now, low = 108, high = 154, so mid = (108+154)/2 = 131. Again check if allocation is possible.
+
+
+
+Now, low = 108, high = 130,so mid = (108+130)/2 = 119. Again check if allocations are possible.
+
+
+
+Now, low = 108, high = 118,so mid = (108+118)/2 = 113. Again check if allocations are possible.
+
+
+
+Now, low = 108, high = 112,so mid = (108+112)/2 = 110. Again check if allocations are possible.
+
+
+
+Now, low = 111, high = 112,so mid = (111+112)/2 = 111. Again check if allocations are possible.
+
+
+
+Now, low = 112, high = 112,so mid = (112+112)/2 = 112. Again check if allocations are possible.
+
+
+
+Now, low = 113, high = 112. Since, low > high, binary search ends and our result is equal to low = 113.
+
+Code:
+
+import java.util.*;
+//to check if allocation of books among given students is possible.
+class TUF {
+    static boolean isPossible(ArrayList < Integer > A, int pages, int students) {
+        int cnt = 0;
+        int sumAllocated = 0;
+        for (int i = 0; i < A.size(); i++) {
+            if (sumAllocated + A.get(i) > pages) {
+                cnt++;
+                sumAllocated = A.get(i);
+                if (sumAllocated > pages) return false;
+            } else {
+                sumAllocated += A.get(i);
+            }
+        }
+        if (cnt < students) return true;
+        return false;
+    }
+    public static int books(ArrayList < Integer > A, int B) {
+        if (B > A.size()) return -1;
+        int low = A.get(0);
+        int high = 0;
+        for (int i = 0; i < A.size(); i++) {
+            high = high + A.get(i);
+            low = Math.min(low, A.get(i));
+        }
+        int res = -1;
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            //cout << low << " " << high << " " << mid << endl; 
+            if (isPossible(A, mid, B)) {
+                res = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        // return res -> this is also correct
+        return low;
+    }
+    public static void main(String args[]) {
+        ArrayList < Integer > A = new ArrayList < > ();
+        A.add(12);
+        A.add(34);
+        A.add(67);
+        A.add(90);
+        int B = 2;
+        System.out.println("Minimum Possible Number is " + books(A, B));
+    }
+}
+Output: Minimum Possible Number is 113
+
+Time Complexity : O(NlogN)
+
+Reason: Binary search takes O(log N). For every search, we are checking if an allocation is possible or not. Checking for allocation takes O(N).
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used to store spaces.
+
+
+=============================================================================================
+public class Solution {
+    public int books(ArrayList<Integer> A, int B) {
+        if(B > A.size()) return -1;
+        
+        int low = A.get(0);
+        int high = 0;
+        
+        for(int i = 0; i < A.size(); i++){
+            high = high + A.get(i);
+            low = Math.min(low, A.get(i));
+        }
+        
+        int result = -1;
+        while(low <= high){
+            int mid = (low + high) >> 1;
+            
+            if(isPossible(A, mid, B)){
+                result = mid;
+                high = mid - 1;
+            }
+            else{
+                low = mid + 1;
+            }
+        }
+        return low; // return result;   
+    }
+    
+   public static boolean isPossible(ArrayList<Integer> A, int limit, int B){
+       int student = 0;
+       int sumAllocated = 0;
+       for(int i = 0; i < A.size(); i++){
+           if(sumAllocated + A.get(i) > limit){
+               student++;
+               sumAllocated = A.get(i);
+               if(sumAllocated > limit) return false;
+           }
+           else{
+               sumAllocated += A.get(i);
+           }
+       }
+       if(student < B) return true;
+       return false;
+   }
+}
+=============================================================================================
+Here we will solve what has been discussed in the previous hint :
+
+Problem statement : Given fixed number of pages (V),  how many number of students we need?
+Solution :
+   simple simulation approach
+   intially Sum := 0
+   cnt_of_student = 0
+   iterate over all books:
+        If Sum + number_of_pages_in_current_book > V :
+                  increment cnt_of_student
+                  update Sum
+        Else:
+                  update Sum
+   EndLoop;
+  
+
+
+    fix range LOW, HIGH
+    Loop until LOW < HIGH:
+            find MID_point
+            Is number of students required to keep max number of pages below MID < M ? 
+            IF Yes:
+                update HIGH
+            Else
+                update LOW
+    EndLoop;
+===============================================================================================
+public class Solution {
+	public int books(ArrayList<Integer> A, int B) {
+	    
+	    int students = B;
+	    long high = Long.MAX_VALUE;
+	    long low = 0;
+	    long mid, res = 0;
+	    
+	    if (B > A.size())
+	        return -1;
+	    
+	    long sum = 0;
+	    
+	    for (int pages : A)
+	        sum += pages;
+	    
+	    while (low <= high) {
+	        
+	        mid = low + ((high - low) >> 1);
+	        
+	        if (isPossible(A, B, mid, sum)) {
+	            res = mid;
+	            high = mid - 1;
+	        } else {
+	            low = mid + 1;
+	        }
+	    }
+	    
+	    return (int) res;
+	    
+	}
+	
+	private boolean isPossible(ArrayList<Integer> A, int B, long maxPage, long totalPages) {
+	    
+	    if (maxPage < totalPages / B)
+	        return false;
+	    
+	    int index = 0;
+	    int n = A.size();
+	    int i;
+	    
+	    for (i = 0; i < B && index < n; i++) {
+	        long page = maxPage;
+	        long total = 0;
+	        
+	        while (total < maxPage && index < n) {
+	            total += A.get(index);
+	            if (total > maxPage)
+	                break;
+	            index++;
+	        }
+	    }
+	    
+	    if (index < n)
+	        return false;
+	    
+	    return true;
+	}
+	
+}
+
+==============================================
+public class Solution {
+    public int books(ArrayList<Integer> A, int B) {
+        
+        int a[] = new int[A.size()];
+        
+        int i=0;
+        
+        for(int e:A){
+            a[i]=(int)e;
+            i++;
+        }
+        
+        return bookAllocation(a,B);
+    }
+    
+    static int bookAllocation(int a[],int key) {
+        
+        
+        int l=0,r=0;
+        int ans=-1;
+        
+        if(a.length<key){
+            return ans;
+        }
+        
+        
+        for(int e:a) {
+            r+=e;
+        }
+        
+        while(l<=r) {
+            int mid=(l+r)/2;
+            
+            if(isSafe(a,key,mid)) {
+                ans=mid;
+                r=mid-1;
+            }else {
+                
+                l=mid+1;
+            }
+        }
+        
+        return ans;
+        
+    }
+    
+    static boolean isSafe(int a[],int key,int totalPage) {
+        int student=1;
+        int curPage=0;
+        
+        for(int i=0;i<a.length;i++) {
+            if(a[i]>totalPage) {
+                return false;
+            }
+            
+            curPage+=a[i];
+            
+            if(curPage>totalPage) {
+                student++;
+                curPage=a[i];
+            }
+        }
+        
+        return student<=key;
+        
+        
+    }
+}
+
+==================================================================
+public class Solution {
+    public boolean canDistribute(List<Integer> books, int students, int[] pagesPerStudent, int maxPerStudent) {
+        if (pagesPerStudent[students-1] <= maxPerStudent) {
+            return true;
+        } else {
+            int stu = students-1;
+            int bookToTransfer = stu;
+            while (stu > 0 && pagesPerStudent[stu] > maxPerStudent) {
+                while (pagesPerStudent[stu] > maxPerStudent) {
+                    int pagesToTransfer = books.get(bookToTransfer);
+                    pagesPerStudent[stu] -= pagesToTransfer;
+                    pagesPerStudent[stu-1] += pagesToTransfer;
+                    bookToTransfer++;
+                }
+                stu--;
+                bookToTransfer = stu;
+            }
+            if (pagesPerStudent[0] > maxPerStudent) return false;
+            return true;
+        }
+    }
+    
+    public int books(ArrayList<Integer> books, int students) {
+        int absoluteMax = 0;
+        int biggestBook = Integer.MIN_VALUE;
+        for (Integer b : books) {
+            biggestBook = Math.max(b, biggestBook);
+            absoluteMax += b;
+        }
+        if (students > books.size()) return -1;
+        int[] pagesPerStudent = new int[students];
+        for (int i = 0; i < students; i++) {
+            int numPages = books.get(i);
+            pagesPerStudent[i] = numPages;
+        }
+        for (int i = students; i < books.size(); i++) {
+            pagesPerStudent[students-1] += books.get(i);
+        }
+        
+        int low = biggestBook;
+        int high = absoluteMax;
+        int best = Integer.MAX_VALUE;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (canDistribute(books, students, Arrays.copyOf(pagesPerStudent, students), mid)) {
+                best = mid;
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return best;
+        // Want the smallest number in between such that each student gets a book
+    }
+}
+
