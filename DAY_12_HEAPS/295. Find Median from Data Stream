@@ -1,0 +1,617 @@
+The median is the middle value in an ordered integer list. If the size of the list is even, 
+there is no middle value and the median is the mean of the two middle values.
+
+For example, for arr = [2,3,4], the median is 3.
+For example, for arr = [2,3], the median is (2 + 3) / 2 = 2.5.
+Implement the MedianFinder class:
+
+MedianFinder() initializes the MedianFinder object.
+void addNum(int num) adds the integer num from the data stream to the data structure.
+double findMedian() returns the median of all elements so far. Answers within 10-5 of the actual answer will be accepted.
+ 
+
+Example 1:
+
+Input
+["MedianFinder", "addNum", "addNum", "findMedian", "addNum", "findMedian"]
+[[], [1], [2], [], [3], []]
+Output
+[null, null, null, 1.5, null, 2.0]
+
+Explanation
+MedianFinder medianFinder = new MedianFinder();
+medianFinder.addNum(1);    // arr = [1]
+medianFinder.addNum(2);    // arr = [1, 2]
+medianFinder.findMedian(); // return 1.5 (i.e., (1 + 2) / 2)
+medianFinder.addNum(3);    // arr[1, 2, 3]
+medianFinder.findMedian(); // return 2.0
+ 
+
+Constraints:
+
+-105 <= num <= 105
+There will be at least one element in the data structure before calling findMedian.
+At most 5 * 104 calls will be made to addNum and findMedian.
+ 
+
+Follow up:
+
+If all integer numbers from the stream are in the range [0, 100], how would you optimize your solution?
+If 99% of all integer numbers from the stream are in the range [0, 100], how would you optimize your solution?
+
+
+MY_SOLUTION
+
+class MedianFinder {
+    private PriorityQueue<Integer> maxHeap = null;
+    private PriorityQueue<Integer> minHeap = null;
+
+    
+
+    public MedianFinder() {
+        maxHeap = new PriorityQueue<>(Collections.reverseOrder());
+        minHeap = new PriorityQueue<>();
+        
+    }
+    
+    public void addNum(int num) {
+        if(maxHeap.isEmpty() || maxHeap.peek() >= num){
+            maxHeap.add(num);
+        }
+        else{
+            minHeap.add(num);
+        }
+        
+        // Now to balancing the heaps
+        // if there are more numbers in the maxHeap then put it in the minHeap
+        if(maxHeap.size() > minHeap.size() + 1){
+            minHeap.add(maxHeap.poll());
+        }
+        else if(maxHeap.size() < minHeap.size()){
+            maxHeap.add(minHeap.poll());
+        }
+    }
+    
+    public double findMedian() {
+        if(maxHeap.size() == minHeap.size()){
+            return (maxHeap.peek() + minHeap.peek()) / 2.0;
+        }
+        return maxHeap.peek();
+        
+    }
+}
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.addNum(num);
+ * double param_2 = obj.findMedian();
+ */
+
+======================================================
+
+// No<0 (TreeMap left), 0-100[array], 101..(TreeMap right)
+// TC : O(klogn)
+// SC : O(k)
+class MedianFinder {
+
+  private PriorityQueue<Integer> maxHeap = null;
+  private PriorityQueue<Integer> minHeap = null;
+
+  /** initialize your data structure here. */
+  public MedianFinder() {
+    maxHeap = new PriorityQueue<Integer>((a,b) -> (b-a));
+    minHeap = new PriorityQueue<Integer>((a,b) -> (a-b));
+  }
+
+  public void addNum(int num) {
+    if(maxHeap.size() == 0 || maxHeap.peek()>=num){
+      maxHeap.offer(num);
+    } else {
+      minHeap.offer(num);
+    }
+
+    balance();
+  }
+
+  public double findMedian() {
+    if(maxHeap.size()> minHeap.size()){
+      return maxHeap.peek();
+    } else if(maxHeap.size()< minHeap.size()) {
+      return minHeap.peek();
+    } else{
+      // maxHeap == minHeap size
+      return (maxHeap.peek()  + minHeap.peek())/2.0;
+    }
+  }
+
+
+
+
+  private void balance(){
+    if(maxHeap.size() - minHeap.size() >1){
+      minHeap.offer(maxHeap.poll());
+    }
+    else if(minHeap.size() - maxHeap.size() >1){
+      maxHeap.offer(minHeap.poll());
+    }
+  }
+}
+
+===============================================
+The invariant of the algorithm is two heaps, small and large, each represent half of the current list. The length of smaller half is kept to be n / 2 at all time and the length of the larger half is either n / 2 or n / 2 + 1 depend on n's parity.
+
+This way we only need to peek the two heaps' top number to calculate median.
+
+Any time before we add a new number, there are two scenarios, (total n numbers, k = n / 2):
+
+(1) length of (small, large) == (k, k)
+(2) length of (small, large) == (k, k + 1)
+After adding the number, total (n + 1) numbers, they will become:
+
+(1) length of (small, large) == (k, k + 1)
+(2) length of (small, large) == (k + 1, k + 1)
+Here we take the first scenario for example, we know the large will gain one more item and small will remain the same size, but we cannot just push the item into large. What we should do is we push the new number into small and pop the maximum item from small then push it into large (all the pop and push here are heappop and heappush). By doing this kind of operations for the two scenarios we can keep our invariant.
+
+Therefore to add a number, we have 3 O(log n) heap operations. Luckily the heapq provided us a function "heappushpop" which saves some time by combine two into one. The document says:
+
+Push item on the heap, then pop and return the smallest item from the heap. The combined action runs more efficiently than heappush() followed by a separate call to heappop().
+Alltogether, the add operation is O(logn), The findMedian operation is O(1).
+
+Note that the heapq in python is a min heap, thus we need to invert the values in the smaller half to mimic a "max heap".
+
+A further observation is that the two scenarios take turns when adding numbers, thus it is possible to combine the two into one. For this please see stefan's post
+
+Java
+
+private PriorityQueue<Integer> small = new PriorityQueue<>(Collections.reverseOrder());
+private PriorityQueue<Integer> large = new PriorityQueue<>();
+private boolean even = true;
+
+public double findMedian() {
+    if (even)
+        return (small.peek() + large.peek()) / 2.0;
+    else
+        return small.peek();
+}
+
+public void addNum(int num) {
+    if (even) {
+        large.offer(num);
+        small.offer(large.poll());
+    } else {
+        small.offer(num);
+        large.offer(small.poll());
+    }
+    even = !even;
+}
+
+============================================================
+class MedianFinder {
+    // max queue is always larger or equal to min queue
+    PriorityQueue<Integer> min = new PriorityQueue();
+    PriorityQueue<Integer> max = new PriorityQueue(1000, Collections.reverseOrder());
+    // Adds a number into the data structure.
+    public void addNum(int num) {
+        max.offer(num);
+        min.offer(max.poll());
+        if (max.size() < min.size()){
+            max.offer(min.poll());
+        }
+    }
+
+    // Returns the median of current data stream
+    public double findMedian() {
+        if (max.size() == min.size()) return (max.peek() + min.peek()) /  2.0;
+        else return max.peek();
+    }
+}
+===========================================================================================================
+Solution for main question
+
+/**
+ * Using two heaps
+ * 
+ * Time Complexity:
+ * 1) addNum -> O(5 * log (N/2)) = O(log N)
+ * 2) findMedian -> O(1)
+ *
+ * Space Complexity: O(N)
+ *
+ * N = Count of numbers in the data stream.
+ */
+class MedianFinder {
+    PriorityQueue<Integer> smallNums; // Max Heap
+    PriorityQueue<Integer> largeNums; // Min Heap
+
+    public MedianFinder() {
+        smallNums = new PriorityQueue<>(Collections.reverseOrder());
+        largeNums = new PriorityQueue<>();
+    }
+
+    public void addNum(int num) {
+        // Add to maxHeap first (Group of smaller numbers)
+        smallNums.offer(num);
+        // Balance the heaps
+        largeNums.offer(smallNums.poll());
+        if (largeNums.size() > smallNums.size()) {
+            smallNums.offer(largeNums.poll());
+        }
+    }
+
+    public double findMedian() {
+        if (smallNums.size() != largeNums.size()) {
+            return smallNums.peek();
+        }
+        return (smallNums.peek() + largeNums.peek()) / 2.0;
+    }
+}
+Solution for Follow-Up 1
+
+/**
+ * Follow-Up 1 - Numbers are between [0, 100]
+ * Maintain a cumulative count array.
+ *
+ * Time Complexity:
+ * 1) addNum -> O(101) = O(1)
+ * 2) findMedian -> O(log(101)) = O(1)
+ *
+ * Space Complexity: O(101) = O(1)
+ */
+class MedianFinder {
+    int[] count;
+
+    public MedianFinder() {
+        count = new int[101];
+    }
+
+    public void addNum(int num) {
+        for (int i = num; i < 101; i++) {
+            count[i]++;
+        }
+    }
+
+    public double findMedian() {
+        int totalNums = count[100];
+        int medianCount = totalNums % 2 == 0 ? totalNums / 2 : (totalNums + 1) / 2;
+        int idx = binarySearch(count, medianCount);
+        if (totalNums % 2 == 0) {
+            if (medianCount < count[idx]) {
+                return idx;
+            }
+            for (int i = idx + 1; i < 101; i++) {
+                if (count[i] > count[idx]) {
+                    return (idx + i) / 2.0;
+                }
+            }
+        }
+        return idx;
+    }
+
+    private int binarySearch(int[] nums, int target) {
+        int start = 0;
+        int end = nums.length - 1;
+        while (start < end) {
+            int mid = start + (end - start) / 2;
+            if (nums[mid] >= target) {
+                end = mid;
+            } else {
+                start = mid + 1;
+            }
+        }
+        return start;
+    }
+}
+Optimized addNum() function to true O(1)
+
+/**
+ * Follow-Up 1 - Numbers are between [0, 100]
+ * Maintain a count array. Here Add num is optimized to true O(1)
+ *
+ * Time Complexity:
+ * 1) addNum -> O(1)
+ * 2) findMedian -> O(101) = O(1)
+ *
+ * Space Complexity: O(101) = O(1)
+ */
+class MedianFinder {
+    int[] count;
+    int totalNums;
+
+    public MedianFinder() {
+        count = new int[101];
+    }
+
+    public void addNum(int num) {
+        count[num]++;
+        totalNums++;
+    }
+
+    public double findMedian() {
+        int medianCount = totalNums % 2 == 0 ? totalNums / 2 : (totalNums + 1) / 2;
+        int countSum = 0;
+        int idx = 0;
+        while (idx <= 100) {
+            countSum += count[idx];
+            if (medianCount <= countSum) {
+                break;
+            }
+            idx++;
+        }
+        if (totalNums % 2 == 0) {
+            if (medianCount < countSum) {
+                return idx;
+            }
+            for (int i = idx + 1; i < 101; i++) {
+                if (count[i] != 0) {
+                    return (idx + i) / 2.0;
+                }
+            }
+        }
+        return idx;
+    }
+}
+Solution for Follow-Up 2
+
+/**
+ * Follow-Up 2 - 99% Numbers are between [0, 100]
+ * Until a threshold is met use two heaps to find the median. Once the threshold is met
+ * use the cumulative count array.
+ *
+ * Time Complexity:
+ * 1) addNum -> Until threshold O(101 + 5*log(threshold/2)). After threshold O(101)
+ * 2) findMedian -> Until threshold O(1). After threshold O(101)
+ *
+ * Space Complexity: O(101+threshold)
+ */
+class MedianFinder {
+    int[] count;
+    int lessThanZero;
+    int totalNums;
+    int threshold;
+    PriorityQueue<Integer> smallNums; // Max Heap
+    PriorityQueue<Integer> largeNums; // Min Heap
+
+    public MedianFinder() {
+        count = new int[101];
+        threshold = 100;
+        smallNums = new PriorityQueue<>(Collections.reverseOrder());
+        largeNums = new PriorityQueue<>();
+    }
+
+    public void addNum(int num) {
+        if (num < 0) {
+            lessThanZero++;
+        }
+        for (int i = Math.max(num, 0); i < 101; i++) {
+            count[i]++;
+        }
+        totalNums++;
+        if (totalNums <= threshold) {
+            smallNums.offer(num);
+            largeNums.offer(smallNums.poll());
+            if (largeNums.size() > smallNums.size()) {
+                smallNums.offer(largeNums.poll());
+            }
+        }
+    }
+
+    public double findMedian() {
+        if (totalNums <= threshold) {
+            if (smallNums.size() != largeNums.size()) {
+                return smallNums.peek();
+            }
+            return (smallNums.peek() + largeNums.peek()) / 2.0;
+        }
+        int medianCount = totalNums % 2 == 0 ? totalNums / 2 : (totalNums + 1) / 2;
+        int idx = binarySearch(count, medianCount);
+        if (totalNums % 2 == 0) {
+            if (medianCount < count[idx]) {
+                return idx;
+            }
+            for (int i = idx + 1; i < 101; i++) {
+                if (count[i] > count[idx]) {
+                    return (idx + i) / 2.0;
+                }
+            }
+        }
+        return idx;
+    }
+
+    private int binarySearch(int[] nums, int target) {
+        int start = 0;
+        int end = nums.length - 1;
+        while (start < end) {
+            int mid = start + (end - start) / 2;
+            if (nums[mid] >= target) {
+                end = mid;
+            } else {
+                start = mid + 1;
+            }
+        }
+        return start;
+    }
+}
+===================================================
+The method is vulnerable to (largely) monotonic inputs, which could push the complexity of addNum to O(n), resulting in "Time Limit Exceeded" errors. 
+At the time of the original post (back in 2016), there weren't such test cases. I believe the "self-balancing binary search tree" would do the rescue.
+
+class MedianFinder {
+    class TreeNode{
+        int val;
+        TreeNode parent,left,right;
+        TreeNode(int val, TreeNode p){
+            this.val=val;
+            this.parent=p;
+            left=null;
+            right=null;
+        }
+        void add(int num){
+            if(num>=val){
+                if(right==null)
+                    right=new TreeNode(num,this);
+                else
+                    right.add(num);
+            }else{
+                if(left==null)
+                    left=new TreeNode(num,this);
+                else
+                    left.add(num);
+            }
+        }
+        TreeNode next(){
+            TreeNode ret;
+            if(right!=null){
+                ret=right;
+                while(ret.left!=null)
+                    ret=ret.left;
+            }else{
+                ret=this;
+                while(ret.parent.right==ret)
+                    ret=ret.parent;
+                ret=ret.parent;
+            }
+            return ret;
+        }
+        TreeNode prev(){
+            TreeNode ret;
+            if(left!=null){
+                ret=left;
+                while(ret.right!=null)
+                    ret=ret.right;
+            }else{
+                ret=this;
+                while(ret.parent.left==ret)
+                    ret=ret.parent;
+                ret=ret.parent;
+            }
+            return ret;
+        }
+    }
+    int n;
+    TreeNode root, curr;
+    // Adds a number into the data structure.
+    public void addNum(int num) {
+        if(root==null){
+            root = new TreeNode(num,null);
+            curr=root;
+            n=1;
+        }else{
+            root.add(num);
+            n++;
+            if(n%2==1){
+                if(curr.val<=num)
+                    curr=curr.next();
+            }else
+                if(curr.val>num)
+                    curr=curr.prev();
+        }
+    }
+
+    // Returns the median of current data stream
+    public double findMedian() {
+        if(n%2==0){
+            return ((double)curr.next().val+curr.val)/2;
+        }else
+            return curr.val;
+    }
+};
+
+// Your MedianFinder object will be instantiated and called as such:
+// MedianFinder mf = new MedianFinder();
+// mf.addNum(1);
+// mf.findMedian();
+=================================================================================
+class MedianFinder {
+    
+    // To store lower half of data stream eg. 1, 2, 3, 6
+    PriorityQueue<Integer> lowerHalf;
+    // To store upper half of data stream eg. 8, 9, 11
+    PriorityQueue<Integer> upperHalf;
+
+    /** initialize your data structure here. */
+    public MedianFinder() {
+        lowerHalf = new PriorityQueue<>((a,b) -> b - a); // Max heap : To fetch largest
+        // element from lower half in O(1) time
+        upperHalf = new PriorityQueue<>(); // Min heap : To fetch lowest 
+        // element from upper half in O(1) time
+    }
+    
+    public void addNum(int num) {
+        // Insert in lowerHalf is it's empty or if number being inserted is less than the peek of lowerHalf otherwise insert in upperHalf
+        if(lowerHalf.isEmpty() || num <= lowerHalf.peek()){
+            lowerHalf.add(num);
+        }else{
+            upperHalf.add(num);
+        }
+        
+        // We also need to ensure that the halves are balanced i.e. there is no more than a difference of 1 in size of both halves
+        // Let lowerHalf be the one to hold one extra element if the size of total data stream is odd otherwise be equal to upperHalf
+        if(upperHalf.size() > lowerHalf.size()){ // If an element added above made upperHalf have one more element than lowerHalf then we poll it and put it into lowerHalf
+            lowerHalf.add(upperHalf.poll());
+        } else if(lowerHalf.size() > upperHalf.size() + 1){
+            // If an element added above, made lowerHalf have 2 more elements then upperHalf then we put one into upperHalf from lowerHalf
+            upperHalf.add(lowerHalf.poll());
+        }
+    }
+    
+    public double findMedian() {
+        if(lowerHalf.size() == upperHalf.size()){
+            return (double)(lowerHalf.peek() + upperHalf.peek())/2;
+        }else{
+             return (double)(lowerHalf.peek());
+        }
+    }
+}
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.addNum(num);
+ * double param_2 = obj.findMedian();
+ */
+ ===============================================================================
+ class MedianFinder {
+    ArrayList<Integer> nums;
+
+    public int findInsertIndex(int target) {
+        int low = 0;
+        int high = nums.size() - 1;
+
+        while (low <= high) {
+            int mid = (low + high) / 2;
+
+            if (nums.get(mid) >= target)
+                high = mid - 1;
+            else
+                low = mid + 1;
+        }
+
+        return low;
+    }
+
+    /**
+     * initialize your data structure here.
+     */
+    public MedianFinder() {
+        nums = new ArrayList<>();
+    }
+
+    public void addNum(int num) {
+        if (nums.size() == 0) {
+            nums.add(num);
+        } else {
+            int index = findInsertIndex(num);
+            if (index == nums.size()) {
+                nums.add(num);
+            } else {
+                nums.add(index, num);
+            }
+        }
+    }
+
+    public double findMedian() {
+        int mid = (nums.size() - 1) / 2;
+        return nums.size() % 2 == 0 ? (nums.get(mid) + nums.get(mid + 1)) / 2.0 : nums.get(mid);
+    }
+}
