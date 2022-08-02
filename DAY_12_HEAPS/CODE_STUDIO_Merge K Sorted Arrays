@@ -1,0 +1,313 @@
+Problem Statement
+YOU HAVE BEEN GIVEN 'K' DIFFERENT ARRAYS/LISTS, WHICH ARE SORTED INDIVIDUALLY (IN ASCENDING ORDER). YOU NEED TO MERGE ALL THE GIVEN
+ARRAYS/LISTS SUCH THAT THE OUTPUT ARRAY/LISTS SHOULD BE SORTED IN ASCENDING ORDER.
+
+
+After merging the two given arrays/lists [3, 5, 9] and [ 1, 2, 3, 8], the output sorted array will be [1, 2, 3, 3, 5, 8, 9].
+
+HINTS:
+Copy the values and sort the final array. 
+
+Can we repeatedly merge two arrays until we are left with one final array?
+
+Try to use a min-heap of size K to store the elements from the given K set of sorted arrays and keep removing the minimum (root) element 
+(As we know, the root of the min-heap is always the minimum element in the heap) and adding it to the output array to get the desired merged sorted array.
+
+MY_SOLUTION
+
+Sorting
+ 
+
+Create an output array ‘RESULT’.
+Traverse all the given arrays from start to end and insert all the elements in the output array ‘RESULT’.
+Sort the ‘RESULT’ and return it.
+Time Complexity
+O((N * K) *  log(N * K)), Where ‘K’ is the number of arrays and ‘N’ is the average number of elements in every array.
+
+ 
+
+We are traversing all the ‘K’ arrays and then we are sorting the output array. Thus, the total time complexity will be O((N * K) *  log(N * K)). 
+
+Space Complexity
+O(N * K), Where ‘K’ is the number of arrays and ‘N’ is the average number of elements in every array.
+
+ 
+
+We are using an array/list of size O(N * K) to store all the elements of the ‘K’ arrays/lists. Then, we are sorting the output array in ascending order 
+which takes at-least log(N * K) additional space. Thus, the total space complexity is O(K * N).
+
+
+/*
+    Time Complexity: O((N * K) * log(N * K))
+    Space Complexity: O(N * K)
+
+    Where K is the number of arrays and N is the average number of elements in every array.
+*/
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Solution 
+{
+    public static ArrayList<Integer> mergeKSortedArrays(ArrayList<ArrayList<Integer>> kArrays, int k) 
+    {
+        // Output array.
+        ArrayList<Integer> result = new ArrayList<Integer>();
+
+        // Traverse all the k ArrayLists.
+        for (int i = 0; i < k; i++) 
+        {
+
+            for (int j = 0; j < kArrays.get(i).size(); j++) 
+            {
+                // Add the element to the output array.
+                result.add(kArrays.get(i).get(j));
+            }
+            
+        }
+
+        // Sort the output array.
+        Collections.sort(result);
+
+        return result;
+    }
+}
+
+===========================================
+Divide and Conquer
+The idea is based on the divide and conquer strategy.  We take pairs of arrays at each step. Then merge the pairs using the two-pointer technique of 
+
+merging two sorted arrays. Thus, after merging all the pairs, the number of arrays will reduce by half. 
+
+We will continue this till the number of remaining arrays doesn’t become 1. 
+ 
+
+Algorithm:
+ 
+
+Create a recursive function which takes ‘K’ arrays and returns the output array.
+In the recursive function, if the value of ‘K’ is 1 then return the array else if the value of ‘K’ is 2 then merge the two arrays in linear time using 
+two-pointers and return the merged array.
+If the value of ‘K’ is greater than 2, then divide the group of ‘K’ arrays into two equal halves and recursively call the function, i.e 0 to K/2 array 
+in one recursive function and K/2 to ‘K’ array in another recursive function.
+Return the output array.
+Time Complexity
+O((N * K) * log(K)), Where ‘K’ is the number of arrays and ‘N’ is the average number of elements in every array.
+
+ 
+
+There are log(K) levels because in each level the ‘K’ arrays are divided into half. Also, at each level, the ‘K’ arrays are traversed to merge. 
+Thus, the total time complexity is O((N * K) * log(K)).
+
+Space Complexity
+O((N * K )* log(K)), Where ‘K’ is the number of arrays and ‘N’ is the average number of elements in every array.
+
+ 
+
+There are log (K) levels because in each level the ‘K’ arrays are divided into half. And O(N * K) space is required to store the answer. 
+Thus, the total time complexity is O((N * K) * log(K)).
+
+/*
+    Time Complexity: O((N * K) * log(K))
+    Space Complexity: O((N * K )* log(K))
+
+    Where K is the number of arrays and N is the average number of elements in every array.
+*/
+
+import java.util.ArrayList;
+
+public class Solution 
+{
+	private static ArrayList<Integer> merge(ArrayList<Integer> a, ArrayList<Integer> b) 
+	{
+		ArrayList<Integer>ans = new ArrayList<Integer>();
+
+		int n = a.size(), m = b.size();
+		int i = 0, j = 0;
+
+		// Traverse the both arrays.
+		while (i < n && j < m) 
+		{
+			if (a.get(i) < b.get(j)) 
+			{
+				ans.add(a.get(i));
+				i ++;
+			} 
+			else 
+			{
+				ans.add(b.get(j));
+				j ++;
+			}
+		}
+
+		// Add remaining elements of the first array.
+		while (i < n) 
+		{
+			ans.add(a.get(i));
+			i ++;
+		}
+
+		// Add remaining elements of the second array.
+		while (j < m) 
+		{
+			ans.add(b.get(j));
+			j ++;
+		}
+
+		return ans;
+	}
+
+	private static ArrayList<Integer>  mergeKSortedArraysHelper(ArrayList<ArrayList<Integer>> kArrays, int start, int end) 
+	{
+		// If there is only one array.
+		if (start == end) 
+		{
+			return kArrays.get(start);
+		}
+
+		// If there are only two arrays, merge them.
+		if (start + 1 == end) 
+		{
+			return merge(kArrays.get(start), kArrays.get(end));
+		}
+
+		int mid = start + (end - start) / 2;
+
+		// Divide the arrays into two halves.
+		ArrayList<Integer> first = mergeKSortedArraysHelper(kArrays, start, mid);
+		ArrayList<Integer> second = mergeKSortedArraysHelper(kArrays, mid + 1, end);
+
+		// Return the final merged array.
+		return merge(first, second);
+
+	}
+
+	public static ArrayList<Integer> mergeKSortedArrays(ArrayList<ArrayList<Integer>>kArrays, int k) 
+	{
+		ArrayList<Integer> result = mergeKSortedArraysHelper(kArrays, 0, k - 1);
+		return result;
+	}
+}
+
+=========================================================================
+Heaps
+The idea is to use the concept of min-heap. As we know, the root of the min-heap is always the minimum element in the heap. 
+Thus, insert the first elements of all the ‘K’ arrays into the heap along with their indices, and then removing the minimum ( root ) element and adding it 
+to the output array will give us the required result. We will store indices into the heap because we can get the next greater element from the same array 
+where the current element has been popped.
+ 
+
+Algorithm: 
+
+ 
+
+Create an output array ‘RESULT’.
+Create a min-heap of size K and insert the first element of all the arrays, along with its indices, into the heap.
+The heap is ordered by the element of the array/list.
+While the min-heap is not empty, we will keep doing the following operations :
+Remove the minimum element from the min-heap (the minimum element is always at the root) and store it in the output array.
+Insert the next element from the array for which the current element is extracted. If the array doesn’t have any more elements i.e. if the index of the
+above-removed component is equal to ‘LENGTH-1’ of the array from which the element is extracted, then do nothing. Because we are done with this array.
+After the above process, 'RESULT' will contain all the elements of ‘K’ arrays in ascending order.
+Return the output array i.e. ‘RESULT’.
+Time Complexity
+O((N * K) * log(K)), Where ‘K’ is the number of arrays and ‘N’ is the average number of elements in every array. 
+
+ 
+
+We are using the min-heap of size K. Due to the insertion and the removal of elements in the heap, the final complexity of this approach is O(K * N * log(K)).
+
+Space Complexity
+O(N * K), where ‘K’ is the number of arrays and ‘N’ is the average number of elements in every array.
+
+ 
+
+Since we are using a min-heap of size K arrays for the average N elements present in every array, therefore, the space complexity of the approach is O(N * K).
+
+
+/*
+    Time Complexity: O((N * K) * log(K)) 
+    Space Complexity: O(N * K)
+    
+    Where N is the total number of elements in all the arrays, and K is the number of arrays.
+*/
+
+// import java.util.*;
+
+import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.PriorityQueue;
+
+
+class Pair 
+{
+    public int first, second, third;
+
+    Pair(int first, int second, int third) 
+    {
+        this.first = first;
+        this.second = second;
+        this.third = third;
+    }
+}
+
+
+// Implements Comparator interface for min-heap.
+class PqComparator implements Comparator<Pair> 
+{
+    public int compare(Pair pair1, Pair pair2) 
+    {
+        if (pair1.first < pair2.first) 
+        {
+            return -1;
+        }
+        if (pair1.first == pair2.first) 
+        {
+            return 0;
+        }
+        return 1;
+    }
+}
+
+public class Solution 
+{
+
+    public static ArrayList<Integer> mergeKSortedArrays(ArrayList<ArrayList<Integer>> kArrays, int k) 
+    {
+        ArrayList<Integer> result = new ArrayList<Integer>();
+
+        // Create a min heap to store atmost k heap nodes at a time.
+        PriorityQueue<Pair> minHeap = new PriorityQueue < Pair>(new PqComparator());
+
+        for (int i = 0; i < kArrays.size(); i++) 
+        {
+            minHeap.add(new Pair( kArrays.get(i).get(0), i, 0 ));
+        }
+
+
+        while (minHeap.isEmpty() == false) 
+        {
+
+            // Remove the minimum element from the heap.
+            Pair curr = minHeap.remove();
+
+            // i is the array number and j is the index of the removed element in the ith array.
+            int i = curr.second;
+            int j = curr.third;
+
+            // Add the removed element to the output array.
+            result.add(curr.first);
+
+            // If the next element of the extracted element exists, add it to the heap.
+            if (j + 1 < kArrays.get(i).size()) 
+            {
+                minHeap.add(new Pair( kArrays.get(i).get(j + 1),  i, j + 1 ));
+            }
+        }
+
+        // Return the output array.
+        return result;
+    }
+}
