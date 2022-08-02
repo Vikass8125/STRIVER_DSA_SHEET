@@ -1,0 +1,600 @@
+Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.
+
+ 
+
+Example 1:
+
+Input: nums = [1,1,1,2,2,3], k = 2
+Output: [1,2]
+Example 2:
+
+Input: nums = [1], k = 1
+Output: [1]
+ 
+
+Constraints:
+
+1 <= nums.length <= 105
+-104 <= nums[i] <= 104
+k is in the range [1, the number of unique elements in the array].
+It is guaranteed that the answer is unique.
+ 
+
+Follow up: Your algorithm's time complexity must be better than O(n log n), where n is the array's size.
+
+MY_SOLUTION
+
+
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        //Step : 1 -> Hashing
+        Map<Integer, Integer> map = new HashMap<>();
+        
+        for(int ele : nums){
+            map.put(ele, (map.getOrDefault(ele, 0) + 1));
+        }
+        
+        // Step : 2 -> Heap
+        
+        PriorityQueue<Integer> maxHeap = new PriorityQueue<>((a,b) -> map.get(b) - map.get(a));
+        
+        for(int key : map.keySet()){
+            maxHeap.add(key);
+        }
+        
+        int[] result = new int[k];
+        
+        // Step : 3 -> Extract max. K elements
+        for(int i = 0 ; i < k; i++){
+            result[i] = maxHeap.poll();
+        }
+        
+        return result;
+        
+    }
+}
+======================================================
+
+QuickSelect
+Prerequisite: Quick Sort
+
+ 
+
+In this approach, we will try to divide the problem at every step into a smaller problem. 
+We know that the kth top frequent element is (n - k)th less frequent. So, we will do a partial sort from the less frequent element to the most frequent one, 
+till (n - k)th less frequent element takes place (n - k) in a sorted array. To do so, we will use quickselect.
+Quickselect is an algorithm used to find the kth smallest element in an array. In this problem, we will modify the 
+general quickselect algorithm to find (n - k)th less frequent element. 
+
+ 
+
+We will perform quickselect on an array containing all the keys of the hash map where the key is an element of ‘ARR’ and value is how often this element 
+appears in 'ARR'. We will use a partition scheme to put all the less frequent elements to the left of the pivot and the more frequent elements to the right 
+of the pivot. Then, we will put the pivot element at its correct position in the final sorted array(sorted according to the frequencies). 
+When the pivot reaches the target position, i.e.,(n - k)th position, then all the elements to its right will be k most frequent elements.
+
+ 
+
+Algorithm :
+
+Initialize a hash map ‘MAP’ where the key is the element and value is how often this element appears in ‘ARR’.
+Iterate every element in ‘ARR’:
+Add the current element to ‘MAP’ and increase its value by 1.
+Set ‘SIZE’ as ‘MAP.SIZE’.
+Initialize an integer array ‘UNIQUE’ and add all the keys of ‘MAP’ to it.
+Call ‘QUICKSELECT’(0, ‘SIZE’ - 1, ‘SIZE’ -’K’).
+Return elements of ‘UNIQUE’ from index‘(SIZE’ - ’K’) to ‘SIZE’.
+ 
+
+Maintain a function ‘QUICKSELECT’(‘LEFT’, ‘RIGHT’, ‘KSMALL’):
+
+If ‘LEFT’ is equal to ‘RIGHT’, return.
+Select a random pivot between ‘LEFT’ to ‘RIGHT’.
+Set ‘PIVOT’ as ‘PARTITION’(‘LEFT’, ‘RIGHT’, ‘PIVOT’).
+If ‘KSMALL’ is equal to ‘PIVOT’, return.
+Otherwise, if ‘KSMALL’ is less than ‘PIVOT’, call quickselect on the left partition.
+Otherwise, call quickselect on the right partition.
+ 
+
+Maintain a function ‘PARTITION’(‘LEFT’, ‘RIGHT’, ‘PIVOT’):
+
+Set ‘PIVOTFREQUENCY’ as the frequency of ‘UNIQUE’[‘PIVOT’].
+Swap ‘UNIQUE’[‘PIVOT’] and ‘UNIQUE’[‘RIGHT’].
+Set ‘IDX’ as ‘LEFT’.
+Iterate ‘I’ in ‘LEFT’ to ‘RIGHT’
+If the frequency of ‘UNIQUE’[‘I’] is less than the frequency of the pivot element, move ‘UNIQUE’[‘I’] to the left of the pivot element and increment ‘IDX’ by 1.
+Swap ‘UNIQUE’[‘IDX’] and ‘UNIQUE’[‘RIGHT’].
+Return ‘IDX’.
+Time Complexity
+O(N ^ 2), where 'N' is the size of the input array.
+
+ 
+
+The worst-case time complexity of quickselect is O(N ^ 2) when bad pivots are which doesn’t divide the problem in half are chosen constantly. 
+But when the pivots are chosen randomly, the probability of such a worst-case is small. The average case time complexity of quickselect is O(N).
+
+Space Complexity
+O(N).
+
+ 
+
+The Hash map and the array of unique elements can have at most N elements. Hence, the total space complexity is O(N).
+
+
+/*
+    Time Complexity: O(N ^ 2)
+    Space Complexity: O(N)
+
+    where 'N' is the size of the input array.
+*/
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+public class Solution {
+
+	static int[] unique;
+    static Map<Integer, Integer> map;
+
+	public static int[] KMostFrequent(int n, int k, int[] arr) {
+
+        map = new HashMap();
+
+		// Build map where the key is element
+		// and value is how often this element appears in 'ARR'.
+		for (int ele : arr) {
+
+			map.put(ele, map.getOrDefault(ele, 0) + 1);
+		}
+
+        int size = map.size();
+        unique = new int[size];
+        int i = 0;
+
+		// Build array of unique elements.
+        for (int num: map.keySet()) {
+
+			unique[i] = num;
+            i++;
+        }
+
+		// Perform quickselect.
+        quickselect(0, size - 1, size - k);
+
+        // Return top 'K' frequent elements
+        return Arrays.copyOfRange(unique, size - k, size);
+
+	}
+
+	public static void quickselect(int left, int right, int kSmall) {
+
+        // If the list contains only one element.
+        if (left == right) {
+			return;
+		}
+
+        Random r = new Random();
+
+        // Select a random index as pivot.
+        int pivot = left + r.nextInt(right - left);
+
+        // Find the position of pivot in the sorted list.
+        pivot = partition(left, right, pivot);
+
+        // If the pivot is in its final sorted position.
+        if (kSmall == pivot) {
+
+            return;
+        }
+		else if (kSmall < pivot) {
+
+			// Move in the left direction.
+            quickselect(left, pivot - 1, kSmall);
+        }
+		else {
+
+			// Move in the right direction.
+            quickselect(pivot + 1, right, kSmall);
+        }
+    }
+
+    public static int partition(int left, int right, int pivot) {
+
+		int pivotFrequency = map.get(unique[pivot]);
+
+		// Move pivot to end.
+        swap(pivot, right);
+        int idx = left;
+
+        // Move all less frequent elements to the left of the pivot.
+        for (int i = left; i <= right; i++) {
+
+			if (map.get(unique[i]) < pivotFrequency) {
+
+				swap(idx, i);
+                idx++;
+            }
+        }
+
+        // Move pivot to its final place.
+        swap(idx, right);
+
+        return idx;
+    }
+
+	public static void swap(int a, int b) {
+        int temp = unique[a];
+        unique[a] = unique[b];
+        unique[b] = temp;
+    }
+}
+
+
+=========================================
+Heap
+In this approach, we will sort the unique elements of the input array according to how often this element appears in 'ARR'. 
+We will use a hasp map where the key is element and value is how often this element appears in 'ARR'.
+Then we will initialize a heap where elements will be sorted in descending order according to the element’s frequency. 
+We will add all the keys of the hash map to the heap and return the first ‘K’ elements of the heap.
+
+ 
+
+Algorithm :
+
+If ‘K’ is equal to ‘N’, return ‘ARR’.
+Initialize a hash map ‘MAP’ where the key is the element and value is how often this element appears in ‘ARR’.
+Iterate every element in ‘ARR’:
+Add the current element to ‘MAP’ and increase its value by 1.
+Initialize a priority queue ‘HEAP’ where elements will be sorted in descending order according to the element’s frequency.
+Add all the keys of ‘MAP’ in ‘HEAP’.
+Initialize an array ‘ANS’.
+Add first ‘K’ elements of ‘HEAP’ to ‘ANS’.
+Return ‘ANS’.
+Time Complexity
+O(N * LOG(N)), where 'N' is the size of the input array.
+
+ 
+
+Building hash map takes O(N) and, in the worst case, building heap will take O(N * LOG(N)) time as adding an element to heap takes LOG(N) time.
+Hence, the total time complexity is O(N * LOG(N)).
+
+Space Complexity
+O(N).
+
+ 
+
+The Hash map and the heap can have at most N elements. Hence, the total space complexity is O(N).
+
+/*
+    Time Complexity: O(N * LOG(N))
+    Space Complexity: O(N)
+
+    where 'N' is the size of the input array.
+*/
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
+
+public class Solution {
+
+	public static int[] KMostFrequent(int n, int k, int[] arr) {
+
+        if (k == n) {
+			return arr;
+		}
+
+		Map<Integer, Integer> map = new HashMap<>();
+
+		// Build map where the key is element
+		// and value is how often this element appears in 'ARR'.
+		for (int ele : arr) {
+
+			map.put(ele, map.getOrDefault(ele, 0) + 1);
+		}
+
+		// Elements in heap will be sorted in descending order
+		// according to the frequency of the element.
+		Queue<Integer> heap = new PriorityQueue<>((n1, n2) -> map.get(n2) - map.get(n1));
+
+		// Build heap of maximum size 'K'.
+		for (int key : map.keySet()) {
+
+			heap.add(key);
+		}
+
+		int[] ans = new int[k];
+
+		// Build output array.
+		for (int i = 0; i < k; i++) {
+
+			ans[i] = heap.poll();
+		}
+
+		return ans;
+	}
+
+}
+
+===================================================
+Bucket Sort
+We can observe that frequency of any element in ‘ARR’ can be a minimum of one and maximum ‘N’. 
+So, we can create N buckets and add each unique element in the respective bucket according to its frequency. For example, 
+for any element having frequency X we go to BUCKET[X]. After adding all the unique elements in their respective buckets, the ‘K’ elements starting 
+from the rightmost buckets will be our answer.
+
+ 
+
+Algorithm :
+
+Initialize a hash map ‘MAP’ where the key is the element and value is how often this element appears in ‘ARR’.
+Iterate every element in ‘ARR’:
+Add the current element to ‘MAP’ and increase its value by 1.
+Initialize an array of lists‘ BUCKETS’.
+Add all the keys of the hash map in the respective according to their frequency.
+Add 'K' elements to answer array ‘ANS’ starting from the rightmost bucket.
+Return ‘ANS’.
+Time Complexity
+O(N), where 'N' is the size of the input array.
+ 
+
+We traverse each element for a constant amount of time. Hence, the total time complexity is O(N).
+
+Space Complexity
+O(N).
+ 
+
+The Hash map and the array of buckets elements can have at most N elements. Hence, the total space complexity is O(N).
+
+/*
+    Time Complexity: O(N)
+    Space Complexity: O(N)
+
+    where 'N' is the size of the input array.
+*/
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+
+	public static int[] KMostFrequent(int n, int k, int[] arr) {
+
+		Map<Integer, Integer> map = new HashMap<>();
+
+		// Build map where the key is element
+		// and value is how often this element appears in 'ARR'.
+		for (int ele : arr) {
+
+			map.put(ele, map.getOrDefault(ele, 0) + 1);
+		}
+
+		List<Integer>[] bucket = new List[n + 1];
+
+		for (int key : map.keySet()) {
+
+            int freq = map.get(key);
+
+            if (bucket[freq] == null) {
+
+                bucket[freq] = new LinkedList<>();
+			}
+
+            // Add in correct bucket.
+			bucket[freq].add(key);
+		}
+
+		int[] ans = new int[k];
+        int cur = 0;
+
+        // Add 'K' elements to answer array starting from the rightmost bucket.
+        for (int i = bucket.length - 1; i > 0 && k > 0; i--) {
+
+            if (bucket[i] == null) {
+                continue;
+            }
+
+            for (int num : bucket[i]) {
+
+                ans[cur++] = num;
+                k--;
+            }
+        }
+
+        return ans;
+    }
+}
+
+=================================================================================
+Use hashmap to store the count.
+
+Map<Integer, Integer> countMap = new HashMap<>();
+    List<Integer> ret = new ArrayList<>();
+    for (int n : nums) {
+        if (countMap.containsKey(n)) {
+            countMap.put(n ,countMap.get(n)+1);
+        } else {
+            countMap.put(n ,1);
+        }
+    }
+   PriorityQueue<Map.Entry<Integer, Integer>> pq =
+            new PriorityQueue<Map.Entry<Integer, Integer>>((o1, o2) -> o2.getValue() - o1.getValue());
+    pq.addAll(countMap.entrySet());
+    
+    List<Integer> ret = new ArrayList<>();
+    for(int i = 0; i < k; i++){
+        ret.add(pq.poll().getKey());
+    }
+    return ret;
+    ===================================
+    BRITE FORCE
+    class Solution {
+    public List<Integer> topKFrequent(int[] nums, int k) {
+        // Handle null data and edge cases
+        if (nums == null || nums.length == 0) return new ArrayList<>();
+        
+        // Using a map to keep track of count
+        Map<Integer, Integer> map = new HashMap<>();
+        // Using a list to only keep unique nums and to then sort them
+        List<Integer> list = new ArrayList<>();
+        
+        for (int num : nums) {
+            // Add count to map
+            map.put(num, map.getOrDefault(num, 0) + 1);
+            // Add only unique nums to list
+            if (!list.contains(num)) list.add(num);
+        }
+        
+        // Sort list by greatest count to least
+        Collections.sort(list, (Integer a, Integer b) -> map.get(b) - map.get(a));
+        
+        // Return a list containing only up to K elements
+        return list.subList(0, k);
+    }
+}
+Time Complexity: O(n log n)
+Space Complexity: O(n)
+
+
+=======================================================
+// use an array to save numbers into different bucket whose index is the frequency
+public class Solution {
+    public List<Integer> topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int n: nums){
+            map.put(n, map.getOrDefault(n,0)+1);
+        }
+        
+        // corner case: if there is only one number in nums, we need the bucket has index 1.
+        List<Integer>[] bucket = new List[nums.length+1];
+        for(int n:map.keySet()){
+            int freq = map.get(n);
+            if(bucket[freq]==null)
+                bucket[freq] = new LinkedList<>();
+            bucket[freq].add(n);
+        }
+        
+        List<Integer> res = new LinkedList<>();
+        for(int i=bucket.length-1; i>0 && k>0; --i){
+            if(bucket[i]!=null){
+                List<Integer> list = bucket[i]; 
+                res.addAll(list);
+                k-= list.size();
+            }
+        }
+        
+        return res;
+    }
+}
+
+
+
+// use maxHeap. Put entry into maxHeap so we can always poll a number with largest frequency
+public class Solution {
+    public List<Integer> topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int n: nums){
+            map.put(n, map.getOrDefault(n,0)+1);
+        }
+           
+        PriorityQueue<Map.Entry<Integer, Integer>> maxHeap = 
+                         new PriorityQueue<>((a,b)->(b.getValue()-a.getValue()));
+        for(Map.Entry<Integer,Integer> entry: map.entrySet()){
+            maxHeap.add(entry);
+        }
+        
+        List<Integer> res = new ArrayList<>();
+        while(res.size()<k){
+            Map.Entry<Integer, Integer> entry = maxHeap.poll();
+            res.add(entry.getKey());
+        }
+        return res;
+    }
+}
+
+
+
+// use treeMap. Use freqncy as the key so we can get all freqencies in order
+public class Solution {
+    public List<Integer> topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int n: nums){
+            map.put(n, map.getOrDefault(n,0)+1);
+        }
+        
+        TreeMap<Integer, List<Integer>> freqMap = new TreeMap<>();
+        for(int num : map.keySet()){
+           int freq = map.get(num);
+           if(!freqMap.containsKey(freq)){
+               freqMap.put(freq, new LinkedList<>());
+           }
+           freqMap.get(freq).add(num);
+        }
+        
+        List<Integer> res = new ArrayList<>();
+        while(res.size()<k){
+            Map.Entry<Integer, List<Integer>> entry = freqMap.pollLastEntry();
+            res.addAll(entry.getValue());
+        }
+        return res;
+    }
+}
+
+
+==========================================================================
+
+The main idea is to use Bucket Sort
+
+Create Frequency map:
+1.1 Iterate thru the given nums[] array
+1.2. With each iteration - check if map already contains current key
+If current key is already in the map just increase the value for this key
+Else add key value pair.
+Where key is current int and value is 1 (1 -> we encounter given key for the first time)
+Create List[] freqSorted
+index of freqSorted[] arr will represent the value from our map
+Why not use int[] arr? Multiple values can have the same frequency that's why we use List[] array of lists instead of regular array
+Iterate thrue the map and for each value add key at the index of that value
+If we look at freqSorted arr we can see that most frequent elements are located at the end of arr
+and leat frequent elemnts at the begining
+Last step is to iterate from the end to the begining of the arr and add elements to result List
+image
+public int[] topKFrequent(int[] nums, int k) {
+	//create array of lists to be used as buckets
+	//we need to sort by frequency 
+	//NOTE: if we know frequencies are unique we can use simple int[]
+	//but since we can have duplicated frequencies we need a way to store all duplicates 
+	//thats why we use List<Integer>[] instead of simple int[]
+	List<Integer>[] freqSorted = new List[nums.length +1];
+	Map<Integer, Integer> frequencyMap = new HashMap();
+	List<Integer> res = new ArrayList();
+
+	//find how often each char occured
+	for(int n: nums)
+		frequencyMap.put(n, frequencyMap.getOrDefault(n, 0) + 1);
+
+   //iterate thru frequency map and add to freqSorted key at position frequency
+   //NOTE: each index of freqSorted represents frequency 
+  //Example: at position freqSorted[3] we will store all elements that appeared 3 times
+   for(int key: frequencyMap.keySet()){
+	   if(freqSorted[frequencyMap.get(key)] == null)
+		   freqSorted[frequencyMap.get(key)] = new ArrayList();
+	   freqSorted[frequencyMap.get(key)].add(key);
+   }
+
+   //iterate again starting from right to left 
+   //since we need most frequent  
+   //NOTE: if problem asks for least frequent nums iterate from left to right 
+   for(int i = freqSorted.length - 1; i >= 0 && res.size() < k; i--)
+	   if(freqSorted[i] != null){
+			res.addAll(freqSorted[i]);
+  }
+
+  return res.stream().mapToInt(i->i).toArray();
+}
+}
