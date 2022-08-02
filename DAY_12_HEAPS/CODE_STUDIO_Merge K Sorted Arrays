@@ -14,6 +14,7 @@ Try to use a min-heap of size K to store the elements from the given K set of so
 (As we know, the root of the min-heap is always the minimum element in the heap) and adding it to the output array to get the desired merged sorted array.
 
 MY_SOLUTION
+// https://www.youtube.com/watch?v=l8CuET0jlDU&ab_channel=HelloWorld
 
 Sorting
  
