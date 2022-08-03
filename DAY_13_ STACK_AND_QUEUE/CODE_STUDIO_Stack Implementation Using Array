@@ -1,0 +1,321 @@
+Problem statement: Implement a stack using an array.
+
+Note: Stack is a data structure that follows the Last In First Out (LIFO) rule.
+Explanation: 
+
+push(): Insert the element in the stack.
+
+pop(): Remove and return the topmost element of the stack.
+
+top(): Return the topmost element of the stack
+
+size(): Return the number of remaining elements in the stack.
+
+MY_SOLUTION
+
+
+
+
+Intuition: As we know stack works on the principle of last in first out, so we have to put elements in an array such that it keeps 
+track of the most recently inserted element. Hence we can think of using a Top variable which will help in keeping track of recent elements inserted in the array.
+
+Approach:
+
+Declare an array of particular size.
+Define a variable “Top” and initialize it as -1.
+push(x): insert element is the array by increasing top by one.
+pop(): check whether top is not equal to -1 if it is so, return top and decrease its value by one.
+size(): return top+1.
+
+
+Code:
+
+import java.util.*;
+
+public class tuf {
+
+    public static void main(String[] args) {
+
+        stack s = new stack();
+        s.push(6);
+        s.push(3);
+        s.push(7);
+        System.out.println("Top of the stack before deleting any element " + s.top());
+        System.out.println("Size of the stack before deleting any element " + s.size());
+        System.out.println("The element deleted is " + s.pop());
+        System.out.println("Size of the stack after deleting an element " + s.size());
+        System.out.println("Top of the stack after deleting an element " + s.top());
+    }
+}
+class stack {
+    int size = 10000;
+    int arr[] = new int[size];
+    int top = -1;
+    void push(int x) {
+        top++;
+        arr[top] = x;
+    }
+    int pop() {
+        int x = arr[top];
+        top--;
+        return x;
+    }
+    int top() {
+        return arr[top];
+    }
+    int size() {
+        return top + 1;
+    }
+}
+Output:
+
+Top of the stack before deleting any element 7
+Size of the stack before deleting any element 3
+The element deleted is 7
+Size of the stack after deleting an element 2
+Top of the stack after deleting an element 3
+
+Time Complexity: O(N)
+
+Space Complexity: O(N)
+
+==================================================================================
+
+public class Stack {
+    int size;
+    int[] arr;
+    int topp;
+   
+    Stack(int capacity) {
+        this.size = capacity;
+        arr = new int[size];
+        topp = -1;
+    }
+   
+    void push(int num) {
+        // Write your code here.
+        if(size - topp > 1){
+          arr[++topp] = num;  
+        }
+        
+    }
+    int pop() {
+        // Write your code here.\
+        if(topp != -1){
+            int ele = arr[topp];
+            topp--;
+            return ele;
+        }
+        else{
+            return -1;
+        }
+       
+    }
+    int top() {
+        // Write your code here.
+        if(topp != -1){
+            return arr[topp];
+        }
+        else{
+            return -1;
+        }
+        
+    }
+    int isEmpty() {
+        // Write your code here.
+        return (topp == -1) ? 1 : 0;
+    }
+    int isFull() {
+        // Write your code here.
+        return (topp == size - 1) ? 1 : 0;
+    }
+}
+=================================================================================================
+Brute Force
+The basic idea is to store the size of the stack while performing the operations. We keep a variable (say, ‘stackSize’) to store the size, initialized with -1. 
+
+ 
+
+Push: While inserting a number in the stack, we increase the size value by 1 and store it in our array at index ‘stackSize’. 
+
+ 
+
+When we pop the element from the stack
+
+Pop: We check if the ‘stackSize’ value equals 0. If it is not equal to 0, we simply print the value present at index ‘stackSize’ and decrease the ‘stackSize’ value by 1.
+
+ 
+
+Top: This operation is similar to the ‘Pop’ operation, we don’t decrease the ‘stackSize’ value.
+
+ 
+
+isEmpty: We simply check whether the ‘stackSize’ value is -1 or not.
+
+ 
+
+isFull: We check whether the value of ‘stackSize’ equals ‘N’ - 1 or not.
+ 
+
+Here is the algorithm :
+
+ 
+
+PUSH(‘NUM’)
+
+ 
+
+Check if ‘stackSize’ is not equal to ‘N’ - 1.
+Increment ‘stackSize’ by 1.
+Update ‘STACK[stackSize]’ to ‘NUM’.
+ 
+
+POP()
+
+ 
+
+Check if ‘stackSize’ is not equal to -1.
+Decrease ‘stackSize’ by 1.
+Return ‘STACK[stackSize + 1]’.
+Else,
+Return -1.
+ 
+
+TOP()
+
+ 
+
+Check if ‘stackSize’ is not equal to -1.
+Return ‘STACK[stackSize]’.
+Else,
+Return -1.
+ 
+
+isEmpty()
+ 
+
+Check if ‘stackSize’ is not equal to -1.
+Return 0.
+Else,
+Return 1.
+ 
+
+isFull()
+ 
+
+Check if ‘stackSize’ is not equal to ‘N’ - 1.
+Return 0.
+Else,
+Return 1.
+Time Complexity
+O(1)
+
+ 
+
+We don’t traverse the array in any of the operations. Therefore, the overall time complexity will be O(1).
+
+Space Complexity
+O(N), where ‘N’ is the capacity of the stack.
+
+ 
+
+We use extra space to store the elements of the stack. Therefore, the overall space complexity will be O(N).
+
+
+
+/*
+    Time complexity: O(1)
+    Space complexity: O(N)
+    
+    Where 'N' is the capacity of the stack.
+*/
+import java.util.ArrayList;
+
+public class Stack {
+    // Declare array.
+    ArrayList<Integer> myStack;
+
+    // Stack size.
+    int stackSize;
+
+    // Maximum size.
+    int n;
+
+    // Constructor function.
+    Stack(int n) {
+
+        // Initialize class objects.
+        myStack = new ArrayList<Integer>(n);
+        for (int i = 0; i < n; i++) {
+            myStack.add(0);
+        }
+        stackSize = -1;
+        this.n = n;
+    }
+
+    // Push function.
+    void push(int num) {
+
+        // Check if stack is not full.
+        if (stackSize != n - 1) {
+
+            // Increment stack size and update array.
+            ++stackSize;
+            myStack.set(stackSize, num);
+        }
+    }
+
+    // Pop function.
+    int pop() {
+
+        // Check if stack is not empty.
+        if (stackSize != -1) {
+
+            // Decrease size and return element.
+            --stackSize;
+            return myStack.get(stackSize + 1);
+        } else {
+            return -1;
+        }
+    }
+
+    // Top function.
+    int top() {
+
+        // Check if stack is not empty.
+        if (stackSize != -1) {
+
+            // Return element.
+            return myStack.get(stackSize);
+        } else {
+            return -1;
+        }
+    }
+
+    // To check whether stack is empty or not.
+    int isEmpty() {
+
+        // Check if stack is not empty.
+        if (stackSize != -1) {
+
+            // Return element.
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    // To check whether stack is full or not.
+    int isFull() {
+
+        // Check if stack is not empty.
+        if (stackSize != n - 1) {
+
+            // Return element.
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+}
+
