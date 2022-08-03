@@ -1,0 +1,720 @@
+Implement a last-in-first-out (LIFO) stack using only two queues. The implemented stack should support all the functions of a normal stack (push, top, pop, and empty).
+
+Implement the MyStack class:
+
+void push(int x) Pushes element x to the top of the stack.
+int pop() Removes the element on the top of the stack and returns it.
+int top() Returns the element on the top of the stack.
+boolean empty() Returns true if the stack is empty, false otherwise.
+Notes:
+
+You must use only standard operations of a queue, which means that only push to back, peek/pop from front, size and is empty operations are valid.
+Depending on your language, the queue may not be supported natively. You may simulate a queue using a list or deque (double-ended queue) as 
+long as you use only a queue's standard operations.
+ 
+
+Example 1:
+
+Input
+["MyStack", "push", "push", "top", "pop", "empty"]
+[[], [1], [2], [], [], []]
+Output
+[null, null, null, 2, 2, false]
+
+Explanation
+MyStack myStack = new MyStack();
+myStack.push(1);
+myStack.push(2);
+myStack.top(); // return 2
+myStack.pop(); // return 2
+myStack.empty(); // return False
+ 
+
+Constraints:
+
+1 <= x <= 9
+At most 100 calls will be made to push, pop, top, and empty.
+All the calls to pop and top are valid.
+ 
+
+Follow-up: Can you implement the stack using only one queue?
+
+
+MY_SOLUTION
+class MyStack {
+    private Queue<Integer> q1;
+    private Queue<Integer> q2;
+    private int top;
+    public MyStack() {
+        q1 = new LinkedList<>();
+        q2 = new LinkedList<>();
+    }
+    
+    public void push(int x) {
+        q1.add(x);
+        top = x;
+    }
+    
+    public int pop() {
+        while(q1.size() > 1){
+            top = q1.remove();
+            q2.add(top);
+        }
+       
+        int ans = q1.remove();
+        Queue<Integer> temp = q1;
+        q1 = q2;
+        q2 = temp;
+        return ans;
+    }
+    
+    public int top() {
+        return top;
+    }
+    
+    public boolean empty() {
+        return q1.isEmpty();
+    }
+}
+
+/**
+ * Your MyStack object will be instantiated and called as such:
+ * MyStack obj = new MyStack();
+ * obj.push(x);
+ * int param_2 = obj.pop();
+ * int param_3 = obj.top();
+ * boolean param_4 = obj.empty();
+ */
+ ===============================================
+ class MyStack {
+
+    private Queue<Integer> q1;
+    private Queue<Integer> q2;
+    private int top;
+    public MyStack() {
+        q1 = new LinkedList<>();
+        q2 = new LinkedList<>();
+    }
+    
+    public void push(int x) {
+        q2.add(x);
+        top = x;
+        while (!q1.isEmpty()) {                
+            q2.add(q1.remove());
+        }
+        Queue<Integer> temp = q1;
+        q1 = q2;
+        q2 = temp;
+    }
+    
+    public int pop() {
+        int val = q1.remove();
+        if (!q1.isEmpty()) {
+            top = q1.peek();
+        } 
+        return val;
+    }
+    
+    public int top() {
+        return top;
+        
+    }
+    
+    public boolean empty() {
+         return q1.isEmpty();
+        
+    }
+}
+
+/**
+ * Your MyStack object will be instantiated and called as such:
+ * MyStack obj = new MyStack();
+ * obj.push(x);
+ * int param_2 = obj.pop();
+ * int param_3 = obj.top();
+ * boolean param_4 = obj.empty();
+ */
+ =========================================
+ Approach 1
+This method ensures that every new element entered in the queue ‘q1’ is always at the front.
+Hence, during pop operation, we just dequeue from ‘q1’.
+For this, we need another queue ‘q2., which is used to keep every new element to the front of ‘q1’.
+During push operation :
+Enqueue new element ‘x’ to queue ‘q2’.
+One by one, dequeue everything from ‘q1’ and enqueue to ‘q2’.
+Swap the names of ‘q1’ and ‘q2’.
+During pop operation :
+Dequeue an element from ‘q1’ and return it.
+For the size function, return the size of queue ‘q1’ and for the empty function, check if ‘q1’ is empty.
+Time Complexity
+O(N * Q), where ‘N’ denotes the maximum number of elements in the queue, and ‘Q’ denotes the number of queries.
+
+ 
+
+During each push operation, we transfer all the elements of ‘q1’ to ‘q2’.
+
+Space Complexity
+O(max(N1, N2)), where ‘N1' and ‘N2’ denote the size of queues ‘q1’ and ‘q2’.
+
+ 
+
+We use two queues of size ‘N1’ and ‘N2’.
+
+============
+/*
+    Time complexity: O(Q*N)
+    For each push operation O(N); O(1) for all other operations.
+    
+    Space complexity: O(max(N1, N2))
+
+    where Q is the number of queries, N denotes the maximum number of elements in the queue and
+    ‘N1' and ‘N2’ denote the size of queues ‘q1’ and ‘q2’.
+*/
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Stack {
+	public Queue<Integer> q1;
+	public Queue<Integer> q2;
+
+	public Stack() {
+		this.q1 = new LinkedList<>();
+		this.q2 = new LinkedList<>();
+	}
+
+	public int getSize() {
+		// Return the size of the queue 'q1'.
+		return this.q1.size(); 
+	}
+
+	public boolean isEmpty() {
+		return this.getSize() == 0;
+	}
+
+	public void push(int data) {
+		// Enqueue new element to q2.
+		this.q2.add(data); 
+
+		// Enqueue all the elements of q1 into q2.
+		while (this.q1.size() > 0) { 
+			this.q2.add(this.q1.peek());
+			this.q1.poll();
+		}
+
+		// Swap q1 and q2.
+		Queue<Integer> temp = q1; 
+		q1 = q2;
+		q2 = temp;
+
+	}
+
+	public int pop() {
+		// If empty, return -1.
+		if (isEmpty()) { 
+			return -1;
+		}
+		// Simply dequeue from the queue q1.
+		int ans = this.q1.peek(); 
+		this.q1.poll();
+
+		return ans;
+	}
+
+	int top() {
+		if (isEmpty()) {
+			return -1;
+		}
+		int ans = this.q1.peek();
+
+		return ans;
+	}
+}
+=============================================================================
+Approach 2
+We will be using two queues, ‘q1’ and ‘q2’.
+In a push operation, the new element is always enqueued to ‘q1’.
+During push operation :
+Enqueue new element  ‘x’ to ‘q1’.
+During pop operation :
+One by one, dequeue everything except the last element from ‘q1’ and enqueue to ‘q2’.
+Dequeue the last item of ‘q1’, and the dequeued item is the result, store it.
+Swap the names of ‘q1’ and ‘q2’.
+Return the item stored in step 2.
+For the size function, return the size of queue ‘q1’ and for the empty function, check if ‘q1’ is empty.
+Time Complexity
+O(N * Q), where ‘N’ denotes the maximum number of elements in the queue, and ‘Q’ denotes the number of queries.
+
+ 
+
+During each pop operation, we transfer all the elements of ‘q1’ to ‘q2’.
+
+Space Complexity
+O(max(N1, N2)), where ‘N1' and ‘N2’ denote the size of queues ‘q1’ and ‘q2’.
+
+ 
+
+We use two queues of size ‘N1’ and ‘N2’.
+
+
+/*
+	Time complexity: O(Q*N)
+    For each push operation O(N); O(1) for all other operations.
+    
+    Space complexity: O(max(N1, N2))
+
+    where Q is the number of queries, N denotes the maximum number of elements in the queue and
+    ‘N1' and ‘N2’ denote the size of queues ‘q1’ and ‘q2’.
+*/
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Stack {
+	public Queue<Integer> q1;
+	public Queue<Integer> q2;
+
+	public Stack() {
+		this.q1 = new LinkedList<>();
+		this.q2 = new LinkedList<>();
+	}
+
+	public int getSize() {
+		// Return the size of the queue 'q1'.
+		return this.q1.size(); 
+	}
+
+	public boolean isEmpty() {
+		return this.getSize() == 0;
+	}
+
+	public void push(int data) {
+		// Simply enqueue data to q1.
+		this.q1.add(data);
+
+	}
+
+	public int pop() {
+		// If empty, return -1.
+		if (isEmpty()) { 
+			return -1;
+		}
+
+		// Enqueue all the elements of q1 into q2 except the last one.
+		while (this.q1.size() > 1) { 
+			this.q2.add(this.q1.peek());
+			this.q1.poll();
+		}
+
+		// Last element of q1 is our answer.
+		int ans = this.q1.peek(); 
+		this.q1.poll();
+
+		// Swap q1 and q2.
+		Queue<Integer> temp = q1; 
+		q1 = q2;
+		q2 = temp;
+
+		return ans;
+	}
+
+	int top() {
+		if (isEmpty()) {
+			return -1;
+		}
+
+		// Enqueue all the elements of q1 into q2 except the last one.
+		while (this.q1.size() > 1) { 
+			this.q2.add(this.q1.peek());
+			this.q1.poll();
+		}
+
+		// Last element of q1 is our answer.
+		int ans = this.q1.peek(); 
+		this.q1.poll();
+		// Enqueue the top to q2.
+		this.q2.add(ans); 
+
+		Queue<Integer> temp = q1;
+		q1 = q2;
+		q2 = temp;
+
+		return ans;
+	}
+}
+
+
+
+
+=============================================================================
+Approach 3
+We will be using a single queue ‘q1’.
+In a push operation, we can calculate the size of the queue ‘q1’.Hence we enqueue new data to the queue.
+Now suppose before inserting new data size of the queue is ‘x’, Hence we dequeue ‘x’ elements from the queue and push it back again into the same queue.
+This would push the new element to the front of the queue.
+During pop and top operation :
+The element we are searching for is the front of the queue.
+Hence during pop operation simply access the front of the queue and remove the element.
+During top operation simply access the front element of the queue.
+Hence assuming we know the size of the queue at any instance we can solve this problem using a single queue.
+Time Complexity
+O(N*Q), where ‘N’ denotes the maximum number of elements in the queue, and ‘Q’ denotes the number of queries.
+
+ 
+
+During each push operation, we re-transfer all the elements of ‘q1’ back to ‘q1’.
+
+Space Complexity
+O(N), where ‘N’ denotes the maximum number of elements in the queue.
+
+ 
+
+We are using a queue of size ‘N’.
+
+/*
+	Time complexity: O(Q*N)
+	For each push operation O(N); O(1) for all other operations.
+
+	Space complexity: O(N)
+
+	where Q is the number of queries, N denotes the maximum number of elements in the queue.
+*/
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Stack {
+	public Queue<Integer> q1;
+
+	public Stack() {
+		this.q1 = new LinkedList<>();
+	}
+
+	public int getSize() {
+		// Return the size of the queue 'q1'.
+		return this.q1.size(); 
+	}
+
+	public boolean isEmpty() {
+		return this.getSize() == 0;
+	}
+
+	public void push(int data) {
+		int size = this.getSize();
+		this.q1.add(data);
+		// Make the new data front of the queue.
+		for (int i = 0; i < size; i++) 
+		{
+			this.q1.add(this.q1.peek());
+			this.q1.poll();
+		}
+
+	}
+
+	public int pop() {
+		// If empty, return -1.
+		if (isEmpty()) { 
+			return -1;
+		}
+		// Simply dequeue from the queue q1.
+		int ans = this.q1.peek(); 
+		this.q1.poll();
+		return ans;
+	}
+
+	int top() {
+		if (isEmpty()) {
+			return -1;
+		}
+
+		int ans = this.q1.peek();
+
+		return ans;
+	}
+}
+===================================================================================================
+
+Intuition: As we know stack follows last in first out, which means we get the most recently inserted element whenever we remove an element 
+from the stack. But queue follows first in first out, it means we get that element which we inserted in the starting at each deletion, 
+it means if we want to use the queue like a stack we have to arrange elements in the queue such that we get the most recent element at each deletion.
+
+Approach:
+
+Take a single queue.
+push(x): Push the element in the queue.
+Use a for loop of size()-1, remove element from queue and again push back to the queue, hence the most recent element becomes the most former element and vice versa.
+pop(): remove the element from the queue.
+top(): show the element at the top of the queue.
+size(): size of the current queue.
+Repeat step3 at every insertion of the element.
+
+
+
+Code:
+
+import java.util.*;
+
+public class tuf {
+
+    public static void main(String[] args) {
+        stack s = new stack();
+        s.push(3);
+        s.push(2);
+        s.push(4);
+        s.push(1);
+        System.out.println("Top of the stack: " + s.top());
+        System.out.println("Size of the stack before removing element: " + s.size());
+        System.out.println("The deleted element is: " + s.pop());
+        System.out.println("Top of the stack after removing element: " + s.top());
+        System.out.println("Size of the stack after removing element: " + s.size());
+    }
+
+}
+class stack {
+    Queue < Integer > q = new LinkedList < > ();
+    void push(int x) {
+        q.add(x);
+        for (int i = 0; i < q.size() - 1; i++) {
+            q.add(q.remove());
+        }
+    }
+    int pop() {
+        return q.remove();
+    }
+    int top() {
+        return q.peek();
+    }
+    int size() {
+        return q.size();
+    }
+}
+Output:
+
+Top of the stack: 1
+Size of the stack before removing element: 4
+The deleted element is: 1
+Top of the stack after removing element: 4
+Size of the stack after removing element: 3
+
+Time Complexity: O(N)
+
+Space Complexity: O(N)
+
+====================================================================================================
+
+Solution
+Approach #1 (Two Queues, push - O(1), pop O(n) )
+Intuition
+
+Stack is LIFO (last in - first out) data structure, in which elements are added and removed from the same end, called top. 
+In general stack is implemented using array or linked list, but in the current article we will review a different approach for implementing stack using queues. 
+In contrast queue is FIFO (first in - first out) data structure, in which elements are added only from the one side - rear and removed from the other - front. 
+In order to implement stack using queues, we need to maintain two queues q1 and q2. Also we will keep top stack element in a constant memory.
+
+Algorithm
+
+Push
+
+The new element is always added to the rear of queue q1 and it is kept as top stack element
+
+Push an element in stack
+
+Figure 1. Push an element in stack
+
+Java
+
+private Queue<Integer> q1 = new LinkedList<>();
+private Queue<Integer> q2 = new LinkedList<>();
+private int top;
+
+// Push element x onto stack.
+public void push(int x) {
+    q1.add(x);
+    top = x;
+}
+Complexity Analysis
+
+Time complexity : O(1). Queue is implemented as linked list and add operation has O(1) time complexity.
+
+Space complexity : O(1)
+
+Pop
+
+We need to remove the element from the top of the stack. This is the last inserted element in q1. 
+Because queue is FIFO (first in - first out) data structure, the last inserted element could be removed only after all elements, except it, have been removed. 
+For this reason we need to maintain additional queue q2, which will serve as a temporary storage to enqueue the removed elements from q1. 
+The last inserted element in q2 is kept as top. Then the algorithm removes the last element in q1. We swap q1 with q2 to avoid copying all elements from q2 to q1.
+
+Pop an element from stack
+
+Figure 2. Pop an element from stack
+
+Java
+
+// Removes the element on top of the stack.
+public void pop() {
+    while (q1.size() > 1) {
+        top = q1.remove();
+        q2.add(top);
+    }
+    q1.remove();
+    Queue<Integer> temp = q1;
+    q1 = q2;
+    q2 = temp;
+}
+Complexity Analysis
+
+Time complexity : O(n). The algorithm dequeues n elements from q1 and enqueues n−1 elements to q2, where nn is the stack size. This gives 2n−1 operations.
+Space complexity : O(1).
+Approach #2 (Two Queues, push - O(n), pop O(1) )
+Algorithm
+
+Push
+
+The algorithm inserts each new element to queue q2 and keep it as the top element.
+In case queue q1 is not empty (there are elements in the stack), we remove all elements from q1 and add them to q2. 
+In this way the new inserted element (top element in the stack) will be always positioned at the front of q2.
+We swap q1 with q2 to avoid copying all elements from q2 to q1.
+
+Push an element in stack
+
+Figure 3. Push an element in stack
+
+Java
+
+public void push(int x) {
+    q2.add(x);
+    top = x;
+    while (!q1.isEmpty()) {                
+        q2.add(q1.remove());
+    }
+    Queue<Integer> temp = q1;
+    q1 = q2;
+    q2 = temp;
+}
+Complexity Analysis
+
+Time complexity : O(n). The algorithm removes n elements from q1 and inserts n + 1n+1 elements to q2, where n is the stack size. 
+This gives 2n+1 operations. The operations add and remove in linked lists has O(1) complexity.
+
+Space complexity : O(1).
+
+Pop
+
+The algorithm dequeues an element from queue q1 and keeps front element of q1 as top.
+
+Pop an element from stack
+
+Figure 4. Pop an element from stack
+
+Java
+
+// Removes the element on top of the stack.
+public void pop() {
+    q1.remove();
+    if (!q1.isEmpty()) {
+    	top = q1.peek();
+    }
+}
+Complexity Analysis
+
+Time complexity : O(1)O(1).
+Space complexity : O(1)O(1).
+In both approaches empty and top operations have the same implementation.
+
+Empty
+
+Queue q1 always contains all stack elements, so the algorithm checks q1 size to return if the stack is empty.
+
+// Return whether the stack is empty.
+public boolean empty() {
+    return q1.isEmpty();
+}
+Time complexity : O(1)O(1).
+
+Space complexity : O(1)O(1).
+
+Top
+
+The top element is kept in constant memory and is modified each time when we push or pop an element.
+
+// Get the top element.
+public int top() {
+    return top;
+}
+Time complexity : O(1)O(1). The top element has been calculated in advance and only returned in top operation.
+
+Space complexity : O(1)O(1).
+
+Approach #3 (One Queue, push - O(n), pop O(1) )
+The mentioned above two approaches have one weakness, they use two queues. This could be optimized as we use only one queue, instead of two.
+
+Algorithm
+
+Push
+
+When we push an element into a queue, it will be stored at back of the queue due to queue's properties. 
+But we need to implement a stack, where last inserted element should be in the front of the queue, not at the back.
+To achieve this we can invert the order of queue elements when pushing a new element.
+
+Push an element in stack
+
+Figure 5. Push an element in stack
+
+Java
+
+private LinkedList<Integer> q1 = new LinkedList<>();
+
+// Push element x onto stack.
+public void push(int x) {
+    q1.add(x);
+    int sz = q1.size();
+    while (sz > 1) {
+        q1.add(q1.remove());
+        sz--;
+    }
+}
+Complexity Analysis
+
+Time complexity : O(n). The algorithm removes n elements and inserts n+1 elements to q1 , where n is the stack size. This gives 2n+1 operations.
+The operations add and remove in linked lists has O(1) complexity.
+
+Space complexity : O(1).
+
+Pop
+
+The last inserted element is always stored at the front of q1 and we can pop it for constant time.
+
+Java
+
+// Removes the element on top of the stack.
+public void pop() {
+    q1.remove();
+}
+Complexity Analysis
+
+Time complexity : O(1)O(1).
+Space complexity : O(1)O(1).
+Empty
+
+Queue q1 contains all stack elements, so the algorithm checks if q1 is empty.
+
+// Return whether the stack is empty.
+public boolean empty() {
+    return q1.isEmpty();
+}
+Time complexity : O(1).
+
+Space complexity : O(1).
+
+Top
+
+The top element is always positioned at the front of q1. Algorithm return it.
+
+// Get the top element.
+public int top() {
+    return q1.peek();
+}
+Time complexity : O(1).
+
+Space complexity : O(1).
