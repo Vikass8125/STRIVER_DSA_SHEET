@@ -1,0 +1,124 @@
+YOU ARE GIVEN A STACK CONSISTING OF 'N' INTEGERS. YOUR TASK IS TO SORT THIS STACK IN DESCENDING ORDER USING RECURSION.
+
+Problem Statement
+Sample Input 1:
+1
+5
+5 -2 9 -7 3
+Sample Output 1:
+9 5 3 -2 -7
+Explanation Of Sample Input 1:
+9 Is the largest element, hence it’s present at the top. Similarly 5>3, 3>-2 and -7 being the smallest element is present at the last. 
+Sample Input 2:
+1
+5
+-3 14 18 -5 30
+Sample Output 2:
+30 18 14 -3 -5
+Explanation Of Sample Input 2:
+30 is the largest element, hence it’s present at the top. Similarly, 18>14, 14>-3 and -5 being the smallest element is present at the last. 
+
+
+
+
+MY_SOLUTIONRecursive approach
+The idea of the solution is very simple. 
+
+First, we will hold all values in a Call Stack until the stack becomes empty.
+When the stack becomes empty, insert all held items one by one(from the call stack) in sorted order.
+We will do this by using a function sortedInsert() which will sort these elements.
+In the sortedInsert() function we will first check if the stack is empty and if the current element is greater than the top element of the stack, if these conditions are met then we push that current element to the stack.
+Then we pop the top element of the stack and again recursively call the stack with the remaining elements.
+Now we push the earlier top element which we popped in step 5 back into the stack.
+Finally, we will print our sorted stack.
+Let us understand this with the help of an example.
+Consider we have the following stack.
+5 <- top of the stack
+-2
+9
+-7
+3
+First, we will pop all the elements of the stack. After popping, the call stack frame looks like:
+5 <- stack frame #1
+-2 <- stack frame #2
+9 <- stack frame #3
+-7 <- stack frame #4
+3 <- stack frame #5
+Now our stack is empty and sortedInsert() function is called. It inserts 3(from stack frame #5) the bottom of the stack.
+3 <- Top of the stack
+Now next element i.e. -7 (from stack frame #4) is picked. Since -7 <3, -7 is inserted at the bottom of the stack. Now stack becomes:
+3 <- Top of the stack
+-7
+Now next element i.e. 9 (from stack frame #3) is picked. Since 9 is not smaller than any current value in the stack, it is inserted at the top of the stack. Now stack becomes:
+9 <- Top of the stack
+3
+-7
+Now next element i.e. -2 (from stack frame #2) is picked. Since -2 <3, -2 is inserted below 3. Now stack becomes:
+9 <- Top of the stack
+3
+-2
+-7
+Now the final element i.e. 5  (from stack frame #1) is picked. Since 5 <9, 5 is inserted below 9. Now, stack finally becomes:
+9 <- Top of the stack
+5
+3
+-2
+-7
+Time Complexity
+O(N^2), where N is the number of elements in the stack. 
+
+ 
+
+In the worst case for every sortStack(), sortedInsert() is called for ‘N’ times recursively for putting element to the right place
+
+Space Complexity
+O(N), where N is the number of elements in the stack.
+
+ 
+
+This is the space used by the stack data structure to store the elements. 
+
+
+
+
+/*
+    Time Complexity: O(N^2)
+    Space Complexity: O(N),
+
+    where N is the number of elements in the stack.
+*/
+import java.util.Stack;
+
+public class Solution {
+	public static void sortedInsert(Stack<Integer> stack, int current) {
+		if (stack.empty() == true || current > stack.peek()) {
+			stack.push(current);
+			return;
+		}
+
+		// Remove the top element
+		int top = stack.peek();
+		stack.pop();
+		// Recursion for the remaining elements in the stack
+		sortedInsert(stack, current);
+		// Insert the popped element back in the stack
+		stack.push(top);
+	}
+
+	// Recursive method to sort a stack
+	public static void sortStack(Stack<Integer> stack) {
+		// Base case: stack is empty
+		if (stack.empty() == true) {
+			return;
+		}
+
+		// Remove the top element
+		int top = stack.peek();
+		stack.pop();
+		// Recursion for the remaining elements in the stack
+		sortStack(stack);
+		// Insert the popped element back in the sorted stack
+		sortedInsert(stack, top);
+	}
+
+}
