@@ -417,3 +417,432 @@ public class LRUCache {
         }
     }
 }
+================================================================================================
+
+Array Approach
+We will use an array of type Pair<key, value> to implement our LRU Cache where the larger the index is, the more recently the key is used. 
+Means, the 0th index denotes the least recently used pair, and the last index denotes the most recently used pair.
+
+ 
+
+The key will be considered as accessed if we try to perform any operation on it. 
+So while performing the get operation on a key, we will do a linear search, if the key found in the cache at an index id we will left shift all keys starting 
+from id+1 in the cache by one and put the key at the end (marking it as the most recently used key in the cache). 
+
+ 
+
+Similarly, while performing the put operation on a key, we will do a linear search, if the key found at index equals to id, 
+we will shift left all keys starting from id+1 in the cache by one and put the key at the end. Otherwise, we will check the current size of the cache. 
+If the size equals capacity, we will remove the first(0th) key from the cache by doing the left shift on all the keys by one. 
+Now we can simply insert the key at the end.
+
+ 
+
+size: denotes the current size of the cache.
+
+capacity: denotes the maximum keys cache can hold at one time.
+
+cache: denotes the array of type pair to store key-value pairs.
+
+Pair: Pair type will store these values, key, value.
+
+ 
+
+Algorithm
+
+ 
+
+This method will return the index of the key if it exists in the cache, otherwise -1.
+
+ 
+
+getIndex(int key):
+
+For all the pairs in the cache, from i = 0 to size - 1.
+If currentPair->key == key, return i.
+Return -1, as the given key does not exist in the cache.
+This method will shift left all the pairs starting from the start index by 1.
+
+ 
+
+leftShift(int start):
+
+If start == size, no pair exists to shift, return.
+For all pairs in tha cache, from i = start to size - 1,
+cache[i - 1] = cache[i]
+ 
+
+int get(key):
+
+ID = getIndex(key).
+If ID == -1, the key does not exist in the cache, return -1.
+Get the pair at index = ID, let it pair.
+leftShift(ID + 1).
+cache[size - 1] = pair
+Return pair->value.
+ 
+
+void put(key, value):
+
+ID = getIndex(key).
+If ID is not equal to -1, the key already exists in the cache,
+Get the pair at index = ID, let it pair.
+leftShift(ID + 1).
+pair->value = value.
+cache[size - 1] = pair
+Return.
+Create a new pair of (key, value), let it be pair.
+If the size is less than the capacity,
+Insert pair in cache at index = size, cache[size] = pair
+Increment size by 1.
+Otherwise,
+Remove the first pair from the cache, by performing a left shift, leftShift(1).
+Insert pair in cache at index = size - 1, cache[size - 1] = 
+
+pair.
+
+Time Complexity
+O(Q*capacity), where ‘Q’ is the number of the given queries and ‘capacity’ is the maximum number of keys LRU Cache can store.
+
+ 
+
+In the worst case, we will be iterating on the cache to left shift all pairs by one.
+
+Space Complexity
+O(capacity): where ‘capacity’ is the maximum number of keys LRU Cache can store.
+
+ 
+
+In the worst case, we will only be maintaining the ‘capacity’ number of keys in storage.
+
+/*
+    Time Complexity: O(Q*capacity) 
+    Space Complexity: O(capacity)
+    
+    where Q is the number of the given queries and 
+    capacity is the maximum number of keys LRU Cache can store.
+*/
+
+public class LRUCache
+{
+    class Pair
+    {
+        int key, val;
+
+        Pair(int key, int val)
+        {
+            this.key = key;
+            this.val = val;
+        }
+    }
+
+    Pair cache[];
+    int size;
+    
+    // Initialize LRUCache
+    public LRUCache(int capacity)
+        {
+            cache = new Pair[capacity];
+            size = 0;
+        }
+    
+    // Shift elements to left.
+    public void leftShift(int st)
+        {
+            if (st == size)
+                return;
+
+            for (int i = st; i < size; i++)
+            {
+                cache[i - 1] = cache[i];
+            }
+        }
+
+    public int getIndex(int key)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                Pair pair = cache[i];
+
+                if (pair.key == key)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+    
+    // Return the value of the given key
+    public int get(int key)
+        {
+            int id = getIndex(key);
+            if (id == -1)
+            {
+                return id;
+            }
+
+            Pair pair = cache[id];
+            leftShift(id + 1);
+            cache[size - 1] = pair;
+
+            return pair.val;
+        }
+    
+    // Inserts a key and its value into the LRUCache
+    public void put(int key, int value)
+        {
+            int id = getIndex(key);
+
+            if (id != -1)
+            {
+                Pair pair = cache[id];
+                leftShift(id + 1);
+                pair.val = value;
+                cache[size - 1] = pair;
+            }
+            else
+            {
+                Pair pair = new Pair(key, value);
+
+                if (size < cache.length)
+                {
+                    cache[size] = pair;
+                    size++;
+                }
+                else
+                {
+                    leftShift(1);
+                    cache[size - 1] = pair;
+                }
+            }
+        }
+    }
+
+===================================================================
+
+Using HahMap with Queue
+We will use two data structures to implement our LRU Cache.
+
+ 
+
+Queue<Node>: To store the nodes into cache where the least recently used key will be the head node and the most recently used key will be the tail node.
+Map<K, Node>: To map the keys to the corresponding nodes.
+ 
+
+The key will be considered as accessed if we try to perform any operation on it. So while performing the get operation on a key, i
+f the key already exists in the cache we will detach the key from the cache and put it at the tail end (marking it as the most recently used key in the cache). 
+Similarly, while performing the put operation on a key, if the key already exists, we will detach it from the cache and put it at the tail end. 
+Otherwise, we will put the key at the tail end and check the current size of the cache. If the size exceeds capacity, we will remove the head key from the cache.
+
+ 
+
+To perform both of these operations at the minimum cost (O(1)). We will use a doubly-linked list to implement our queue.
+
+ 
+
+head: head node of the queue, to store least recently used key-value pair.
+
+tail: tail node of the queue, to store the most recently used key-value pair.
+
+size: denotes the current size of the cache.
+
+capacity: denotes the maximum keys cache can hold at one time.
+
+Node: Node type will store these values, left node, right node, key, and value.
+
+ 
+
+Algorithm
+
+ 
+
+addToRear(Node node)
+
+If head == null, head = node.
+Else tail->right = node and node->left = tail
+tail = node
+ 
+
+deleteNode(Node node)
+
+If the given node is the head node, head = head->right.
+Else node->left->right = node->right.
+If the given node is the tail node, tail = tail.left
+Else node->right->left = node.left
+node->right = null.
+node->left = null
+ 
+
+int get(key)
+
+ 
+
+If the key does not exist, return -1.
+Fetch the node corresponding to the given key from the map, let it be nod.
+deleteNode(nod).
+addToRear(nod).
+Return nod->value.
+ 
+
+void put(key, value)
+
+ 
+
+If the key already exists in the cache, remove the key from the cache and put it at the tail end with the new value.
+Fetch the node corresponding to the given key from the map, let it be nod.
+nod->value = value.
+deleteNode(nod)
+addToRear(nod)
+return
+Initialize a new node with the given key-value pair. Let it nod, nod = node(key,value).
+map.put(key, nod).
+If the cache size reaches its capacity,
+map.remove(key).
+deleteNode(nod)
+addToRear(nod)
+Else,
+addToRear(nod)
+Increment size by 1.
+Time Complexity
+O(Q), where ‘Q’ is the number of the given queries.
+
+ 
+
+As we are only updating the pointers of a queue implemented using a doubly-linked list, both the operations will take O(1) time. 
+Therefore for ‘Q’ queries time complexity will be O(Q).
+
+Space Complexity
+O(capacity), where ‘capacity’ is the maximum number of keys LRU Cache can store.
+
+ 
+
+In the worst case, we will only be maintaining the capacity number of keys in storage.
+
+
+/*
+    Time Complexity: O(Q) 
+    Space Complexity: O(capacity)
+    
+    where Q is the number of the given queries and 
+    capacity is the maximum number of keys LRU Cache can store.
+*/
+
+import java.util.HashMap;
+
+class Node
+{
+    Node left, right;
+    int key, val;
+
+    Node(int key, int val)
+    {
+        this.key = key;
+        this.val = val;
+        left = null;
+        right = null;
+    }
+}
+
+public class LRUCache
+{
+    HashMap<Integer, Node> map;
+    Node tail, head;
+    int capacity, size;
+    
+    // Initialize LRUCache
+    public LRUCache(int capacity)
+    {
+        map = new HashMap();
+        this.capacity = capacity;
+        size = 0;
+        head = null;
+        tail = null;
+    }
+
+    public void deleteNode(Node nod)
+    {
+        if (nod.left != null)
+        {
+            nod.left.right = nod.right;
+        }
+        else
+        {
+            head = head.right;
+        }
+
+        if (nod.right != null)
+        {
+            nod.right.left = nod.left;
+        }
+        else
+        {
+            tail = tail.left;
+        }
+
+        nod.right = null;
+        nod.left = null;
+    }
+    
+    // Add node at rear of linked list,
+    public void addToRear(Node nod)
+    {
+        if (head == null)
+        {
+            head = nod;
+            tail = nod;
+            return;
+        }
+
+        tail.right = nod;
+        nod.left = tail;
+        tail = nod;
+    }
+    
+    // Return the value of the given key
+    public int get(int key)
+    {
+        if (!map.containsKey(key))
+        {
+            return -1;
+        }
+        Node nod = map.get(key);
+
+        deleteNode(nod);
+        addToRear(nod);
+
+        return nod.val;
+    }
+    
+    // Inserts a key and it's value into the LRUCache
+    public void put(int key, int value)
+    {
+        if (map.containsKey(key))
+        {
+            Node nod = map.get(key);
+            nod.val = value;
+
+            deleteNode(nod);
+            addToRear(nod);
+        }
+        else
+        {
+            Node nod = new Node(key, value);
+            map.put(key, nod);
+
+            if (size == capacity)
+            {
+                map.remove(head.key);
+                deleteNode(head);
+                addToRear(nod);
+            }
+            else
+            {
+                addToRear(nod);
+                size++;
+            }
+        }
+    }
+}
+
+
