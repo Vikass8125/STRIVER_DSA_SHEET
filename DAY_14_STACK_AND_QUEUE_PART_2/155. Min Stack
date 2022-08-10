@@ -1,0 +1,350 @@
+Design a stack that supports push, pop, top, and retrieving the minimum element in constant time.
+
+Implement the MinStack class:
+
+MinStack() initializes the stack object.
+void push(int val) pushes the element val onto the stack.
+void pop() removes the element on the top of the stack.
+int top() gets the top element of the stack.
+int getMin() retrieves the minimum element in the stack.
+You must implement a solution with O(1) time complexity for each function.
+
+ 
+
+Example 1:
+
+Input
+["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]
+
+Output
+[null,null,null,null,-3,null,0,-2]
+
+Explanation
+MinStack minStack = new MinStack();
+minStack.push(-2);
+minStack.push(0);
+minStack.push(-3);
+minStack.getMin(); // return -3
+minStack.pop();
+minStack.top();    // return 0
+minStack.getMin(); // return -2
+ 
+
+Constraints:
+
+-231 <= val <= 231 - 1
+Methods pop, top and getMin operations will always be called on non-empty stacks.
+At most 3 * 104 calls will be made to push, pop, top, and getMin.
+
+MY_SOLUTUION
+
+Solution 1: Using pairs to store the value and minimum element till now. 
+
+Approach: The first element in the pair will store the value and the second element will store the minimum element till now.
+
+When the first push operation comes in we will push the value and store it as minimum itself in the pair. 
+
+In the second push operation, we will check if the top element’s minimum is less than the new value.
+If it is then we will push the value with minimum as the previous top’s minimum. To get the getMin element to take the top’s second element.
+
+Code:
+
+class Pair {
+    int x, y;
+    Pair(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+class MinStack {
+    Stack < Pair > st;
+    public MinStack() {
+        st = new Stack < > ();
+    }
+
+    public void push(int x) {
+        int min;
+        if (st.isEmpty()) {
+            min = x;
+        } else {
+            min = Math.min(st.peek().y, x);
+        }
+        st.push(new Pair(x, min));
+    }
+
+    public void pop() {
+        st.pop();
+    }
+
+    public int top() {
+        return st.peek().x;
+    }
+
+    public int getMin() {
+        return st.peek().y;
+    }
+}
+Time Complexity: O(1)
+
+Space Complexity: O(2N)
+
+Solution 2: 
+
+Approach: 
+
+Let’s take a variable that stores the minimum number.
+So whenever a push operation comes in just take that number put it in the stack and update the variable to the number.
+
+Push operation:
+
+Now if there is a push operation just check whether that number is less than the min number. 
+If it is smaller than min we will push a modified value which is a push(2 * Val – min) into the stack and will update min to the value of the original number. 
+If it’s not then we will just push it as it is.
+
+getMin() operation:
+
+We will just return the value of min.
+
+Top operation:
+
+While returning the top value we know that it is a modified value. 
+We will check if the top value is lesser than min, If it is then we will return the min as the top value.
+
+Pop operation:
+
+While making pop we will check if the top value is lesser than min, If it is then we must update our min to its previous value. 
+In order to do that min = (2 * min) – (modified value) and we will pop the element.
+
+Code:
+
+class MinStack {
+    Stack < Long > st = new Stack < Long > ();
+    Long mini;
+
+    /** initialize your data structure here. */
+    public MinStack() {
+        mini = Long.MAX_VALUE;
+    }
+
+    public void push(int value) {
+        Long val = Long.valueOf(value);
+        if (st.isEmpty()) {
+            mini = val;
+            st.push(val);
+        } else {
+            if (val < mini) {
+                st.push(2 * val - mini);
+                mini = val;
+            } else {
+                st.push(val);
+            }
+        }
+    }
+
+    public void pop() {
+        if (st.isEmpty()) return;
+
+        Long val = st.pop();
+        if (val < mini) {
+            mini = 2 * mini - val;
+        }
+    }
+
+    public int top() {
+        Long val = st.peek();
+        if (val < mini) {
+            return mini.intValue();
+        }
+        return val.intValue();
+    }
+
+    public int getMin() {
+        return mini.intValue();
+    }
+}
+Time Complexity: O(1)
+
+Space Complexity: O(N)
+
+===========================================================================================
+//Just check the ind value that's it
+class MinStack {
+    int ind=-1;
+    private ArrayList<Integer> arr;
+    public MinStack() {
+        arr=new ArrayList();
+    }
+    
+    public void push(int val) {
+        arr.add(val);
+        ind++;
+    }
+    
+    public void pop() {
+            arr.remove(ind);
+            ind--;
+    }
+    
+    public int top() {
+        return arr.get(ind);
+    }
+    
+    public int getMin() {
+        int mini=Integer.MAX_VALUE;
+        for(int i=0;i<arr.size();i++){
+            int val=arr.get(i);
+            if(val<mini){
+                mini=val;
+            }
+        }
+        return mini;
+    }
+}
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * MinStack obj = new MinStack();
+ * obj.push(val);
+ * obj.pop();
+ * int param_3 = obj.top();
+ * int param_4 = obj.getMin();
+ */
+ ==================================================================================================
+ class MinStack {
+    
+    // we use 2 stacks one is the normal stack and the other stack stores the min element at that that stage/postion,
+    
+    Stack<Integer> stack;
+    Stack<Integer> minn;
+
+    public MinStack() {
+        stack= new Stack<>();
+        minn= new Stack<>();
+    }
+    
+    public void push(int val) {
+        stack.add(val);
+		
+		//if the minnstack is empty then nothing to compare the current element to determine the minimum element
+	
+        if(minn.isEmpty()==true){
+            minn.add(val);
+        }
+        else{
+            minn.add( Math.min(minn.peek(),val));
+        }
+    }
+    
+    public void pop() {
+        minn.pop();
+        stack.pop();
+    }
+    
+    public int top() {
+        return stack.peek();
+    }
+    
+    public int getMin() {
+        return minn.peek();
+    }
+}
+======================================================================================================
+// Approach 1 : Own Stack implemetnation using LinkedList
+class MinStack {
+
+    private Node head;
+
+    public void push(int val) {
+
+        int min = val;
+        if (head != null) min = Math.min(min, head.min);
+
+        Node newNode = new Node(val, min);
+        newNode.next = head;
+        head = newNode;
+    }
+
+    public void pop() {
+        head = head.next;
+    }
+
+    public int top() {
+        return head.val;
+    }
+
+    public int getMin() {
+        return head.min;
+    }
+
+    private static class Node {
+
+        private int val;
+        private int min;
+        private Node next;
+
+        private Node(int val, int min) {
+            this.val = val;
+            this.min = min;
+        }
+    }
+}
+
+// Approach 2: Built-in Stack Implementation (uses extra space store duplicate min values)
+class MinStack {
+
+    Stack<int[]> stack; // [val, min]
+
+    public MinStack() {
+        stack = new Stack<>();
+    }
+
+    public void push(int val) {
+        int min = val;
+        if (!stack.isEmpty())
+            min = Math.min(min, stack.peek()[1]);
+        stack.push(new int[]{val, min});
+    }
+
+    public void pop() {
+        stack.pop();
+    }
+
+    public int top() {
+        return stack.peek()[0];
+    }
+
+    public int getMin() {
+        return stack.peek()[1];
+    }
+}
+
+
+// Approach 3: Built-in Stack Implemetnation (don't use extra space to store duplicate min values)
+class MinStack {
+
+    private Stack<Integer> valStack = new Stack<>();
+    private Stack<Integer> minStack = new Stack<>();
+
+    public void push(int val) {
+
+        valStack.push(val);
+
+        if (minStack.isEmpty() || val <= minStack.peek())
+            minStack.push(val);
+    }
+
+    public void pop() {
+        int popped = valStack.pop();
+        if (minStack.peek() == popped)
+            minStack.pop();
+    }
+
+    public int top() {
+        return valStack.peek();
+    }
+
+    public int getMin() {
+        return minStack.peek();
+    }
+}
