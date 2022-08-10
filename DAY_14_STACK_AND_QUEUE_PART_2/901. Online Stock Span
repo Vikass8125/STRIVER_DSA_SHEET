@@ -1,0 +1,312 @@
+Design an algorithm that collects daily price quotes for some stock and returns the span of that stock's price for the current day.
+
+The span of the stock's price today is defined as the maximum number of consecutive days (starting from today and going backward) 
+for which the stock price was less than or equal to today's price.
+
+For example, if the price of a stock over the next 7 days were [100,80,60,70,60,75,85], then the stock spans would be [1,1,1,2,1,4,6].
+Implement the StockSpanner class:
+
+StockSpanner() Initializes the object of the class.
+int next(int price) Returns the span of the stock's price given that today's price is price.
+ 
+
+Example 1:
+
+Input
+["StockSpanner", "next", "next", "next", "next", "next", "next", "next"]
+[[], [100], [80], [60], [70], [60], [75], [85]]
+Output
+[null, 1, 1, 1, 2, 1, 4, 6]
+
+Explanation
+StockSpanner stockSpanner = new StockSpanner();
+stockSpanner.next(100); // return 1
+stockSpanner.next(80);  // return 1
+stockSpanner.next(60);  // return 1
+stockSpanner.next(70);  // return 2
+stockSpanner.next(60);  // return 1
+stockSpanner.next(75);  // return 4, because the last 4 prices (including today's price of 75) were less than or equal to today's price.
+stockSpanner.next(85);  // return 6
+ 
+
+Constraints:
+
+1 <= price <= 105
+At most 104 calls will be made to next.
+
+MY_SOLUTION
+
+class StockSpanner {
+//    Initialize a stack with int array.
+//      First Index would be price, and
+//      Second Index Will be span at that price.
+    Stack<int[]> stack;
+    public StockSpanner() {
+        stack = new Stack<>();
+    }
+
+    public int next(int price) {
+//        At each level initialize the span to 1.
+        int span = 1;
+//        If The top element of stack price is below or equal to the current price:
+//          Then, the previous element will be span of current.
+        while(!stack.isEmpty() && stack.peek()[0] <= price){
+            span += stack.pop()[1];
+        }
+//        At each level add the price and the span. 
+//        So that Next time when visited for consecutive days, you have the value of current that will avoid traversal till the current days span. 
+        stack.add(new int[]{price, span});
+        return span;
+    }
+}
+
+=========================================================================================
+
+
+
+Brute Force Approach
+The basic idea is to make an array/list ‘RESULT’ of size ‘N’ and fill it with 0,  
+then for each ‘i’ (0 <= ‘i’ < ‘N’) we iterate backward from ‘i’, using pointer ‘j’ till PRICE[j] <= PRICE[i] and increment RESULT[i] by 1 for each such ‘j’.
+
+ 
+Algorithm:
+
+Make an array/list ‘RESULT’ of size ‘N’ and fill it with 0.
+Run a loop where ‘i’ ranges from 0 to ‘N’-1 and do the following -:
+Initialize an integer ‘j’ := ‘i’.
+Run a loop till ‘j’ >= 0 and PRICE[j] <= PRICE[i]:
+Increment ‘RESULT[i]’ by 1,
+Decrement ‘j’ by 1.
+Return ‘RESULT’.
+Time Complexity
+O(N^2), where 'N' is the size of array/list ‘PRICE’.
+
+ 
+
+Here we are using two nested loops both inner and outer loops can run at most ‘N’ times.  Thus, the overall time complexity will be O(N^2). 
+
+Space Complexity
+O(1)
+
+/*
+
+    Time Complexity : O(N^2)
+    Space Complexity : O(1)
+
+    where 'N' is the size of array/list 'PRICE'.
+    
+*/
+import java.util.ArrayList;
+
+public class Solution {
+    public static ArrayList<Integer> findSpans(ArrayList<Integer> price) {
+        
+        //  Size of array/list 'price'.
+    	int n = price.size();
+
+    	//  Make an array/list 'result' of size 'n' and fill it with 0.
+    	ArrayList<Integer> result = new ArrayList<>();
+    	for(int i=0; i<n; i++) {
+    		result.add(0);
+    	}
+
+    	for(int i = 0; i < n; i++) {
+        	
+        	int j = i;
+        	
+        	//  Find span of Ninja coin on day 'i'.
+	        while(j >= 0 && price.get(j) <= price.get(i)) {
+
+	        	result.set(i, result.get(i)+1);
+	            j -= 1;
+	        }
+    	}
+    	return result;    	
+    }
+}
+================================================================================================
+
+Stack Approach
+The basic idea is to use a stack here. We can track all the days before ‘i’ which has a Ninja Coin price higher than its 
+price at day ‘i’ in increasing order of price from top to bottom.  Using this stack we can find the span at any day ‘i’ in O(1) time.
+
+
+Algorithm:
+
+Make an array/list ‘RESULT’ of size ‘N’ and fill it with 0.
+Create an empty stack ‘STK’.
+Run a loop where ‘i’ ranges from 0 to ‘N’-1 and do the following -:
+Run a loop till ‘STK’ is not empty and PRICE[STK.top()] <= PRICE[i] -:
+Pop-top element from STK.
+If ‘STK’ is empty, then do ‘RESULT[i]’:= i+1, otherwise do RESULT[i] = i - STK.top(),  Where STK.top() is the top element of stack.
+Push ‘i’ in STK.
+Return ‘RESULT’.
+Time Complexity
+O(N), where 'N' is the size of array/list ‘PRICE’.
+
+ 
+
+Each index will be pushed or pop at most once, from the stack,  Both push and pop operation takes O(1) times in stack.
+Thus, the overall time complexity will be O(N).
+
+Space Complexity
+O(N), where 'N' is the size of array/list ‘PRICE’.
+
+ 
+
+The size of the stack ‘STK’ can go up to ‘N’. Thus overall complexity is O(N).
+
+/*
+
+    Time Complexity : O(N)
+    Space Complexity : O(N)
+
+    where 'N' is the size of array/list 'PRICE'.
+    
+*/
+
+import java.util.Stack;
+import java.util.ArrayList;
+
+public class Solution {
+    public static ArrayList<Integer> findSpans(ArrayList<Integer> price) {
+        
+        //  Size of array/list 'price'.
+    	int n = price.size();
+
+    	//  Make an array/list 'result' of size 'n' and fill it with 0.
+    	ArrayList<Integer> result = new ArrayList<>();
+    	for(int i=0; i<n; i++) {
+    		result.add(0);
+    	}
+
+    	Stack<Integer> stk = new Stack<Integer>();
+
+    	for(int i = 0; i < n; i++) {
+        	
+        	//  Stack will have only those days before 'i' in which price is higher than price at day 'i'.
+        	while(stk.isEmpty() == false && price.get(stk.peek()) <= price.get(i)) {	
+        		stk.pop();
+	        }
+
+	        //  Span on day 'i'.
+	        if(stk.isEmpty() == true) {
+            	result.set(i, i + 1);
+            }
+            else {
+            	result.set(i, i - stk.peek());
+            }
+            stk.push(i);
+        }
+    	return result;    	
+    }
+}
+================================================================================================================
+
+class StockSpanner {
+    
+    // Step 1: Create a list to store prices
+    List<Integer> stocks = null;
+    
+    // Step 2: Create a stack to store index of prices
+    Stack<Integer> stack = null;
+    
+    // Step 3: Create a variable to track index of current price in list
+    int index = -1;
+
+    // Step 4: Initialize list & stack
+    public StockSpanner() {        
+        stocks = new ArrayList<>();
+        stack = new Stack<>();        
+    }
+    
+    public int next(int price) {
+        
+        int result = 1;
+        
+        // Step 5: Insert price in list
+        stocks.add(price);
+        
+        // Step 6: Keep track of current price index in list
+        index++;
+        
+        // Step 7: Remove all indices from stack whose value is <= price
+        while((stack.size() > 0) && (stocks.get(stack.peek()) <= price)){
+            stack.pop();
+        }
+        
+        // Step 8: If stack is empty, means no greater element found on left side
+        if(stack.size() == 0){
+            result = index + 1;
+        }
+        // Step 9: Else, return difference between current index & greatest index on left
+        else{                
+            result = index - stack.peek();
+        }
+        
+        // Step 10: Push the current price in stack
+        stack.push(index);
+        
+        return result;
+        
+    }
+}
+=================================================================================================
+BRUTE FORCE
+class StockSpanner {
+
+    ArrayList<Integer> arr;
+    
+    public StockSpanner() {
+        arr = new ArrayList<>();
+    }
+    
+    public int next(int price) {
+        arr.add(price);
+        int ans = 0;
+        for(int i = arr.size()-1 ; i>=0 ; i--)
+        {
+            if(arr.get(i) <= price)
+                ans++;
+            else
+                break;
+        }
+        return ans;
+    }
+}
+
+====================================================================================================
+Approach 1 -
+
+class StockSpanner {
+    List<Integer> list = new ArrayList<>();
+    public StockSpanner() {        
+    }
+    public int next(int price) {
+        list.add(price);
+        int c=0;
+        for(int i=list.size()-1;i>=0;i--){
+            if(price<list.get(i)) {
+                break;   
+            } 
+            c++;
+        }
+        return c;
+    }
+}
+
+Approach 2 -
+
+class StockSpanner {
+    private Deque<int[]> stack = new LinkedList<>();
+    public StockSpanner() {   
+    }    
+    public int next(int price) {
+        int tot=1;
+        while(!stack.isEmpty() && stack.peek()[1]<=price){
+            tot+=stack.pop()[0];
+        }
+        stack.push(new int[]{tot,price});
+        return tot;
+    }
+}
