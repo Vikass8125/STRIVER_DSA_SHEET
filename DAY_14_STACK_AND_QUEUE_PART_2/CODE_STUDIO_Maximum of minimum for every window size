@@ -1,0 +1,470 @@
+YOU ARE GIVEN AN ARRAY OF 'N' INTEGERS, YOU NEED TO FIND THE MAXIMUM OF MINIMUM FOR EVERY WINDOW SIZE.
+THE SIZE OF THE WINDOW SHOULD VARY FROM 1 TO 'N' ONLY.
+
+Example 1:
+
+Input:
+N = 7
+arr[] = {10,20,30,50,10,70,30}
+Output: 70 30 20 10 10 10 10 
+Explanation: 
+1.First element in output
+indicates maximum of minimums of all
+windows of size 1.
+2.Minimums of windows of size 1 are {10},
+ {20}, {30}, {50},{10}, {70} and {30}. 
+ Maximum of these minimums is 70. 
+3. Second element in output indicates
+maximum of minimums of all windows of
+size 2. 
+4. Minimums of windows of size 2
+are {10}, {20}, {30}, {10}, {10}, and
+{30}.
+5. Maximum of these minimums is 30 
+Third element in output indicates
+maximum of minimums of all windows of
+size 3. 
+6. Minimums of windows of size 3
+are {10}, {20}, {10}, {10} and {10}.
+7.Maximum of these minimums is 20. 
+Similarly other elements of output are
+computed.
+Example 2:
+
+Input:
+N = 3
+arr[] = {10,20,30}
+Output: 30 20 10
+Explanation: First element in output
+indicates maximum of minimums of all
+windows of size 1.Minimums of windows
+of size 1 are {10} , {20} , {30}.
+Maximum of these minimums are 30 and
+similarly other outputs can be computed
+
+Expected Time Complxity : O(N)
+Expected Auxilliary Space : O(N)
+
+Constraints:
+1 <= N <= 105
+1 <= arr[i] <= 106
+
+
+MY_SOLUTION
+
+Brute Force
+We will use two nested loops for sliding on the window of every possible size and one more inner loop to traverse on the window and 
+store the minimum element of the current window in a ‘temp’ variable.
+We will create an array named ‘answer’. The ‘answer[i]’ will store the maximum of all the available minimum of every window size ‘i’.
+If ‘i’ and ‘j’  are the starting and ending indexes of the window then its length = j-i+1.
+So we update our ‘answer[length]’ with the maximum of all the available minimum of every window size ‘i’ with the help of a ‘temp’ variable
+i.e, ‘answer[length]’ = max( answer[length] , temp ).
+Time Complexity
+O(N ^ 3), where ‘N’ is the number of elements present in the array.
+
+ 
+
+As we ran 3 nested loops in total, 2 for sliding over the window and one for calculating over the answer for the current window.
+Hence, the overall Time Complexity is O(N ^ 3).
+
+Space Complexity
+O(1). 
+ 
+
+Constant space is being used. Hence, the overall Space Complexity is O(1).
+
+
+
+/*
+    Time Complexity: O(N ^ 3)
+    Space complexity: O(1)
+
+    Where 'N' is the number elements present in the given array.
+ */
+
+public class Solution 
+{
+    public static int[] maxMinWindow(int[] arr, int n) 
+    {
+        // Definition: answer[i] will store the maximum of minimum of every window of size 'i'.
+        int[] answer = new int[n];
+        for (int i = 0; i < n; ++i) 
+        {
+            answer[i] = Integer.MIN_VALUE;
+        }
+
+        // Sliding on all possible windows
+        for (int i = 0; i < n; ++i) 
+        {
+            for (int j = i; j < n; ++j) 
+            {
+                // Start is the starting index of current window
+                int start = i;
+                
+                //  End is the ending index of current window
+                int end = j;
+                
+                // Temp will store minimum element for the current window
+                int temp = Integer.MAX_VALUE;
+                
+                for (int k = start; k <= end; ++k) 
+                {
+                    temp = Math.min(temp, arr[k]);
+                }
+                
+                int length = end - start;
+                
+                // Update the answer of current window length
+                answer[length] = Math.max(answer[length], temp);
+            }
+        }
+
+        return answer;
+    }
+}
+===============================================================
+
+Monotonic Stack
+We will follow some reverse strategy for building our final solution instead of finding minimums for every possible window.
+We will find how many windows our current element can be the answer.
+To find that we will calculate the indexes of the next smaller and previous smaller element for every element given in the array. 
+The next smaller element is some number that is smaller than the current element and lies nearest on the right-hand side of the current element.
+Similarly, the previous smaller is some number that is smaller than the current element and lies nearest on the left-hand side of the current element.
+If there is no next smaller element for the current number then we will assume its index having value N and if there is no previous smaller element for 
+the current number then we will assume its index having value -1.
+The above two arrays of the next smaller and previous smaller can be done in linear time with the help of Monotonic Stack.
+Suppose ‘next[i]’ = index of next smaller element, ‘prev[i]’ = index of previous smaller element. 
+Now, we know the ‘ARR[i]’ will be the minimum of the window of size -> size = next[i] - prev[i] + 1.
+So, we will directly use the value of ‘ARR[i]’ for updating the answer of window having size = next[i] - prev[i] + 1.
+After doing this for every element we can update our answer for windows of some different lengths i.e, we are still left with 
+some window sizes for which the answer is not calculated yet. So to fill the remaining entries we will use some observations listed below:-
+The answer for some window having size ‘L’ would always be greater than or equal to the answer for a window having a length greater than L i.e, L+1, L+2 .... so on.
+Hence, we will update the remaining uncalculated answer for some windows having length ‘L’ with the maximum suffix starting from length ‘L+1’.
+Time Complexity
+O(N), where ‘N’ is the number of elements present in the array.
+
+ 
+
+The Time Complexity for creating the next array and the prev array from Monotonic Stack takes linear time. 
+For each element, we update our answer using next and prev in constant time. Hence, the overall Time Complexity is O(N).
+
+Space Complexity
+O(N), where ‘N’ is the number of elements present in the array.
+
+ 
+
+We are using two extra arrays, next and prev of size N. Hence, the overall Space Complexity is O(N).
+
+/*
+    Time Complexity: O(N)
+	Space complexity: O(N)
+
+	Where 'N' is the number elements present in the given array.
+ */
+
+import java.util.Stack;
+
+public class Solution 
+{
+    public static int[] maxMinWindow(int[] arr, int n) 
+    {
+        // Definition: answer[i] will store the maximum of minimum of every window of size 'i'.
+        int[] answer = new int[n];
+        
+        for (int i = 0; i < n; ++i) 
+        {
+            answer[i] = Integer.MIN_VALUE;
+        }
+
+        // Definition: next[i] will store the index of next smaller element which lie on the right hand side of 'i'.
+        int[] next = nextSmaller(arr, n);
+
+        // Definition: prev[i] will store the index of previous smaller element which lie on the left hand side of 'i'.
+        int[] prev = previousSmaller(arr, n);
+
+        for (int i = 0; i < n; i++) 
+        {
+            // Length of the window in which a[i] is minimum
+            int length = next[i] - prev[i] - 1;
+            
+            // Update the answer[length-1] ( 0 based indexing )  with a[i]
+            answer[length - 1] = Math.max(answer[length - 1], arr[i]);
+        }
+        
+       // Some entries in answer[] may not be filled yet.
+       // We fill them by taking maximum element from suffix starting from 'i'.
+        for (int i = n - 2; i >= 0; i--) 
+        {
+            answer[i] = Math.max(answer[i], answer[i + 1]);
+        }
+
+        return answer;
+    }
+
+	// This function will return an array.
+    // Each ith position contains the index of previous smaller elements in the original array.
+    private static int[] previousSmaller(int[] arr, int n) 
+    {
+        int[] prev = new int[n];
+        Stack<Integer> s = new Stack<>();
+        
+        for (int i = 0; i < n; i++) 
+        {
+            while (!s.empty() && arr[s.peek()] >= arr[i]) 
+            {
+                s.pop();
+            }
+            
+            if (s.empty()) 
+            {
+                prev[i] = -1;
+            } 
+            else 
+            {
+                prev[i] = s.peek();
+            }
+            
+            s.push(i);
+        }
+        
+        return prev;
+    }
+
+    // This function will return an array.
+    // Each ith position contains the index of next smaller elements in the original array.
+    private static int[] nextSmaller(int[] arr, int n) 
+    {
+        Stack<Integer> s = new Stack<>();
+        int[] next = new int[n];
+    
+        for (int i = n - 1; i >= 0; i--) 
+        {
+            while (!s.isEmpty() && arr[s.peek()] >= arr[i]) 
+            {
+                s.pop();
+            }
+            
+            if (s.empty()) 
+            {
+                next[i] = n;
+            } 
+            else 
+            {
+                next[i] = s.peek();
+            }
+            
+            s.push(i);
+        }
+        
+        return next;
+    }
+
+}
+=========================================================================================
+Naive Solution: Brute Force. 
+
+Approach: A simple brute force approach to solve this problem can be to generate all the windows possible of a particular length say ‘L’ and find the 
+minimum element in all such windows. Then find the maximum of all such elements and store it. Now the length of window is 1<=L<=N. 
+So we have to generate all possible windows of size ‘1’ to ‘N’ and for generating each such window we have to mark the end-points of that window.
+So for that, we have to use a nested loop for fixing the starting and end point of the window respectively.
+Therefore there will be a use of triple-nested loop in brute-force approach mainly for fixing the length of the window, starting point and end point.
+
+
+
+// A naive method to find maximum of
+// minimum of all windows of different sizes
+
+class Test {
+	static int arr[] = { 10, 20, 30, 50, 10, 70, 30 };
+
+	static void printMaxOfMin(int n)
+	{
+		// Consider all windows of different
+		// sizes starting from size 1
+		for (int k = 1; k <= n; k++) {
+			// Initialize max of min for current
+			// window size k
+			int maxOfMin = Integer.MIN_VALUE;
+
+			// Traverse through all windows of
+			// current size k
+			for (int i = 0; i <= n - k; i++) {
+				// Find minimum of current window
+				int min = arr[i];
+				for (int j = 1; j < k; j++) {
+					if (arr[i + j] < min)
+						min = arr[i + j];
+				}
+
+				// Update maxOfMin if required
+				if (min > maxOfMin)
+					maxOfMin = min;
+			}
+
+			// Print max of min for current
+			// window size
+			System.out.print(maxOfMin + " ");
+		}
+	}
+
+	// Driver method
+	public static void main(String[] args)
+	{
+		printMaxOfMin(arr.length);
+	}
+}
+
+Complexity Analysis:  
+
+Time Complexity: O(n3). 
+As there is a use of triple nested loop in this approach.
+Auxiliary Space: O(1) 
+As no extra data structure has been used to store the values.
+
+
+===========================================================
+Efficient Solution: 
+
+We can solve this problem in O(n) time. The idea is to use extra space. Below are detailed steps.
+
+Step 1: 
+
+Find indexes of next smaller and previous smaller for every element. Next smaller is the nearest smallest element on right side of arr[i]. 
+Similarly, a previous smaller element is the nearest smallest element on the left side of arr[i]. 
+If there is no smaller element on the right side, then the next smaller is n. If there is no smaller on the left side, then the previous smaller is -1.
+For input {10, 20, 30, 50, 10, 70, 30}, array of indexes of next smaller is {7, 4, 4, 4, 7, 6, 7}. 
+For input {10, 20, 30, 50, 10, 70, 30}, array of indexes of previous smaller is {-1, 0, 1, 2, -1, 4, 4}
+This step can be done in O(n) time using the approach discussed in next greater element.
+Step 2: 
+
+Once we have indexes of next and previous smaller, we know that arr[i] is a minimum of a window of length “right[i] – left[i] – 1”. 
+Lengths of windows for which the elements are minimum are {7, 3, 2, 1, 7, 1, 2}. 
+This array indicates, the first element is minimum in the window of size 7, the second element is minimum in the window of size 3, and so on.
+
+Create an auxiliary array ans[n+1] to store the result. Values in ans[] can be filled by iterating through right[] and left[] 
+
+    for (int i=0; i < n; i++)
+    {
+        // length of the interval
+        int len = right[i] - left[i] - 1;
+
+        // arr[i] is a possible answer for
+        // this length len interval
+        ans[len] = max(ans[len], arr[i]);
+    }
+We get the ans[] array as {0, 70, 30, 20, 0, 0, 0, 10}. Note that ans[0] or answer for length 0 is useless.
+
+Step 3: 
+
+Some entries in ans[] are 0 and yet to be filled. 
+For example, we know maximum of minimum for lengths 1, 2, 3 and 7 are 70, 30, 20 and 10 respectively, but we don’t know the same for lengths 4, 5 and 6. 
+
+Below are few important observations to fill remaining entries
+
+Result for length i, i.e. ans[i] would always be greater or same as result for length i+1, i.e., ans[i+1]. 
+If ans[i] is not filled it means there is no direct element which is minimum of length i and therefore either the element of length ans[i+1], or ans[i+2], and 
+so on is same as ans[i] 
+So we fill rest of the entries using below loop. 
+    for (int i=n-1; i>=1; i--)
+        ans[i] = max(ans[i], ans[i+1]);
+Below is implementation of above algorithm.  
+
+// An efficient Java program to find
+// maximum of all minimums of
+// windows of different size
+
+import java.util.Stack;
+
+class Test
+{
+	static int arr[] = {10, 20, 30, 50, 10, 70, 30};
+	
+	static void printMaxOfMin(int n)
+	{
+		// Used to find previous and next smaller
+		Stack<Integer> s = new Stack<>();
+	
+		// Arrays to store previous and next smaller
+		int left[] = new int[n+1];
+		int right[] = new int[n+1];
+	
+		// Initialize elements of left[] and right[]
+		for (int i=0; i<n; i++)
+		{
+			left[i] = -1;
+			right[i] = n;
+		}
+	
+		// Fill elements of left[] using logic discussed on
+		// https://www.geeksforgeeks.org/next-greater-element/
+		for (int i=0; i<n; i++)
+		{
+			while (!s.empty() && arr[s.peek()] >= arr[i])
+				s.pop();
+	
+			if (!s.empty())
+				left[i] = s.peek();
+	
+			s.push(i);
+		}
+	
+		// Empty the stack as stack is
+// going to be used for right[]
+		while (!s.empty())
+			s.pop();
+	
+		// Fill elements of right[] using same logic
+		for (int i = n-1 ; i>=0 ; i-- )
+		{
+			while (!s.empty() && arr[s.peek()] >= arr[i])
+				s.pop();
+	
+			if(!s.empty())
+				right[i] = s.peek();
+	
+			s.push(i);
+		}
+	
+		// Create and initialize answer array
+		int ans[] = new int[n+1];
+		for (int i=0; i<=n; i++)
+			ans[i] = 0;
+	
+		// Fill answer array by comparing minimums of all
+		// lengths computed using left[] and right[]
+		for (int i=0; i<n; i++)
+		{
+			// length of the interval
+			int len = right[i] - left[i] - 1;
+	
+			// arr[i] is a possible answer for this length
+			// 'len' interval, check if arr[i] is more than
+			// max for 'len'
+			ans[len] = Math.max(ans[len], arr[i]);
+		}
+	
+		// Some entries in ans[] may not be filled yet. Fill
+		// them by taking values from right side of ans[]
+		for (int i=n-1; i>=1; i--)
+			ans[i] = Math.max(ans[i], ans[i+1]);
+	
+		// Print the result
+		for (int i=1; i<=n; i++)
+			System.out.print(ans[i] + " ");
+	}
+	
+	// Driver method
+	public static void main(String[] args)
+	{
+		printMaxOfMin(arr.length);
+	}
+}
+
+
+Complexity Analysis:  
+
+Time Complexity: O(n). 
+Every sub-task in this approach takes Linear time.
+Auxiliary Space : O(n). 
+Use of stack for calculating next minimum and arrays to store the intermediate results.
+
