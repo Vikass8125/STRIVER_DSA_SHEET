@@ -1,0 +1,566 @@
+Given an input string s, reverse the order of the words.
+
+A word is defined as a sequence of non-space characters. The words in s will be separated by at least one space.
+
+Return a string of the words in reverse order concatenated by a single space.
+
+Note that s may contain leading or trailing spaces or multiple spaces between two words. 
+The returned string should only have a single space separating the words. Do not include any extra spaces.
+
+ 
+
+Example 1:
+
+Input: s = "the sky is blue"
+Output: "blue is sky the"
+Example 2:
+
+Input: s = "  hello world  "
+Output: "world hello"
+Explanation: Your reversed string should not contain leading or trailing spaces.
+Example 3:
+
+Input: s = "a good   example"
+Output: "example good a"
+Explanation: You need to reduce multiple spaces between two words to a single space in the reversed string.
+ 
+
+Constraints:
+
+1 <= s.length <= 104
+s contains English letters (upper-case and lower-case), digits, and spaces ' '.
+There is at least one word in s.
+ 
+
+Follow-up: If the string data type is mutable in your language, can you solve it in-place with O(1) extra space?
+
+
+// https://www.youtube.com/watch?v=2GFy13zpRw8&ab_channel=AlgorithmsMadeEasy
+
+MY_SOLUTION
+
+Solution 1(Brute Force)
+Intuition: We just need to print the words in reverse order. Can we somehow store them in reverse order of the occurrence and then simply add it to our answer?
+
+Approach
+Use a stack to push all the words in a stack
+Now, all the words of the string are present in the stack, but in reverse order
+Pop elements of the stack one by one and add them to our answer variable. Remember to add a space between the words as well. 
+
+import java.util.*;
+class Test
+{
+public static void main(String[] args)
+{
+	String s = "TUF is great for interview preparation";
+	System.out.println("After reversing words: ");
+	System.out.println(s);
+	s += " ";
+	Stack<String> st = new Stack<String>();
+	int i;
+	String str = "";
+	for (i = 0;i < s.length();i++)
+	{
+		if (s.charAt(i) == ' ')
+		{
+			st.push(str);
+			str = "";
+		}
+		else
+		{
+			str += s.charAt(i);
+		}
+	}
+	String ans = "";
+	while (st.size() != 1)
+	{
+		ans += st.peek() + " ";
+		st.pop();
+	}
+	ans += st.peek(); // The last word should'nt have a space after it
+	System.out.println("After reversing words: ");
+	System.out.print(ans);
+}
+}
+Output:
+
+Before reversing words:
+TUF is great for interview preparation
+After reversing words:
+preparation interview for great is TUF
+
+Time Complexity: O(N), Traversing the entire string
+
+Space Complexity: O(N), Stack and ans variable
+
+Solution 2(Optimized Solution)
+Intuition: Notice, that we are using a stack in order to perform our task. Can we somehow not use it and reverse the words as we move through the string? Could we store a word in reverse order when we are adding it to our answer variable?
+
+Approach:
+We start traversing the string from the end until we hit a space. It indicates that we have gone past a word and now we need to store it.
+We check if our answer variable is empty or not
+If it’s empty, it indicates that this is the last word we need to print, and hence, there shouldn’t be any space after this word.
+If it’s empty we add it to our result with a space after it. Here’s a quick demonstration of the same
+
+
+Code:
+
+import java.io.*;
+class Test
+{
+static private String result(String s)
+{
+	int left = 0;
+	int right = s.length() - 1;
+
+	String temp = "";
+	String ans = "";
+
+	//Iterate the string and keep on adding to form a word
+	//If empty space is encountered then add the current word to the result
+	while (left <= right)
+	{
+		char ch = s.charAt(left);
+		if (ch != ' ')
+		{
+			temp += ch;
+		}
+		else if (ch == ' ')
+		{
+			if (!ans.equals(""))
+			{
+				ans = temp + " " + ans;
+			}
+			else
+			{
+				ans = temp;
+			}
+			temp = "";
+		}
+		left++;
+	}
+
+	//If not empty string then add to the result(Last word is added)
+	if (!temp.equals(""))
+	{
+		if (!ans.equals(""))
+		{
+			ans = temp + " " + ans;
+		}
+		else
+		{
+			ans = temp;
+		}
+	}
+
+	return ans;
+}
+public static void main(String[] args)
+{
+	String st = "TUF is great for interview preparation";
+	System.out.println("Before reversing words: ");
+    System.out.println(st);
+    System.out.println("After reversing words: ");
+	System.out.print(result(st));
+}
+}
+Output:
+
+Before reversing words:
+TUF is great for interview preparation
+After reversing words:
+preparation interview for great is TUF
+
+Time Complexity: O(N), N~length of string
+
+Space Complexity: O(1), Constant Space
+
+===============================================================================================================================================
+
+
+class Solution {
+  public String reverseWords(String s) {
+    // remove leading spaces
+    s = s.trim();
+    // split by multiple spaces
+    List<String> wordList = Arrays.asList(s.split("\\s+"));
+    Collections.reverse(wordList);
+    return String.join(" ", wordList);
+  }
+}
+
+class Solution {
+  public String reverseWords(String s) {
+    int left = 0, right = s.length() - 1;
+    // remove leading spaces
+    while (left <= right && s.charAt(left) == ' ') ++left;
+
+    // remove trailing spaces
+    while (left <= right && s.charAt(right) == ' ') --right;
+
+    Deque<String> d = new ArrayDeque();
+    StringBuilder word = new StringBuilder();
+    // push word by word in front of deque
+    while (left <= right) {
+      char c = s.charAt(left);
+
+      if ((word.length() != 0) && (c == ' ')) {
+        d.offerFirst(word.toString());
+        word.setLength(0);
+      } else if (c != ' ') {
+        word.append(c);
+      }
+      ++left;
+    }
+    d.offerFirst(word.toString());
+
+    return String.join(" ", d);
+  }
+}
+
+====================================================================================================================================
+Brute force
+Create a String ans to store the reversed string.
+Initialize a variable i to 0 and iterate the whole string through a while loop.
+Skip initial spaces by just incrementing i.
+Create a String that will store the current word.
+Add the currentword and space at the beginning of ans.
+After traversing the whole string, check if the length of ans is greater than 0 then return ans after removing the last space otherwise return an empty string.
+Time Complexity
+O(N ^ 2), where N is the length of the string 
+
+ 
+
+As for every word we are attaching in front of the String.
+
+Space Complexity
+O(N), where N is the length of the string
+
+ 
+
+For storing the reversed string.
+
+/*
+    Time Complexity  = O(N * 2)
+    Space Complexity = O(N)
+   
+    Where N is the length of the string
+*/
+
+public class Solution 
+{
+
+	public static String reverseString(String str) 
+	{
+
+		int n = str.length();
+		StringBuffer ans = new StringBuffer("");
+		int i = 0;
+
+		while (i < n) 
+		{
+			int j = i;
+
+			// Skip multiple spaces
+			while (j < n && str.charAt(j) == ' ') 
+			{
+				j++;
+			}
+
+			StringBuffer currentWord = new StringBuffer("");
+
+			// Get the current word
+			while (j < n && str.charAt(j) != ' ') 
+			{
+				currentWord.append(str.charAt(j));
+				j++;
+			}
+
+			// add current word in the ans with a space
+			if (currentWord.length() != 0) 
+			{
+				ans.insert(0, currentWord + " ");
+			}
+
+			i = j + 1;
+		}
+
+		if (ans.length() == 0) 
+		{
+			return ans.toString();
+		}
+
+		// remove the last space
+		return ans.substring(0, ans.length() - 1).toString();
+
+	}
+
+}
+=====================================
+Backward Traversal
+If the string is null or empty return an empty string.
+If the string is “ “ then return an empty string.
+Initialize a String ans to store the reversed string.
+Initialize a pointer to the end of the string and run a while loop until the pointer reaches the start of the string.
+Skip multiple spaces by decreasing the pointer.
+Add a space to the String ans.
+Run a nested while loop to extract the current word.
+Add the word in the ans.
+After traversing the whole string, return the ans.
+Time Complexity
+O(N), where N is the length of the string
+
+ 
+
+As for every word we are attaching it in the String.
+
+Space Complexity
+O(N), where N is the length of the string
+
+ 
+
+For storing the reversed string.
+
+/*
+    Time Complexity  = O(N)
+    Space Complexity = O(N)
+   
+    Where N is the length of the string
+*/
+
+public class Solution 
+{
+
+	public static String reverseString(String str) 
+	{
+
+		if (str == null || str.length() == 0) 
+		{
+			return str;
+		}
+
+		StringBuilder ans = new StringBuilder();
+
+		// if the string is " " then return ""
+		if (str.length() == 1 && str.charAt(0) == ' ') 
+		{
+			return ans.toString();
+		}
+
+		int start = str.length() - 1;
+
+		while (start >= 0) 
+		{
+
+			// Skip multiple spaces
+			if (str.charAt(start) == ' ') 
+			{
+				start--;
+			}
+
+			else 
+			{
+
+				// Add space between words
+				if (ans.length() > 0) 
+				{
+					ans.append(" ");
+				}
+
+				int j = start;
+
+				// Loop for extracting word
+				while (j >= 0 && str.charAt(j) != ' ') 
+				{
+					j--;
+				}
+
+				// add current word to ans
+				ans.append(str.substring(j + 1, start + 1));
+				start = j;
+			}
+		}
+
+		return ans.toString();
+	}
+}
+
+=========================================================================================================
+
+public class Solution {
+  
+  public String reverseWords(String s) {
+    if (s == null) return null;
+    
+    char[] a = s.toCharArray();
+    int n = a.length;
+    
+    // step 1. reverse the whole string
+    reverse(a, 0, n - 1);
+    // step 2. reverse each word
+    reverseWords(a, n);
+    // step 3. clean up spaces
+    return cleanSpaces(a, n);
+  }
+  
+  void reverseWords(char[] a, int n) {
+    int i = 0, j = 0;
+      
+    while (i < n) {
+      while (i < j || i < n && a[i] == ' ') i++; // skip spaces
+      while (j < i || j < n && a[j] != ' ') j++; // skip non spaces
+      reverse(a, i, j - 1);                      // reverse the word
+    }
+  }
+  
+  // trim leading, trailing and multiple spaces
+  String cleanSpaces(char[] a, int n) {
+    int i = 0, j = 0;
+      
+    while (j < n) {
+      while (j < n && a[j] == ' ') j++;             // skip spaces
+      while (j < n && a[j] != ' ') a[i++] = a[j++]; // keep non spaces
+      while (j < n && a[j] == ' ') j++;             // skip spaces
+      if (j < n) a[i++] = ' ';                      // keep only one space
+    }
+  
+    return new String(a).substring(0, i);
+  }
+  
+  // reverse a[] from a[i] to a[j]
+  private void reverse(char[] a, int i, int j) {
+    while (i < j) {
+      char t = a[i];
+      a[i++] = a[j];
+      a[j--] = t;
+    }
+  }
+  
+}
+=========================================
+// reverses the part of an array and returns the input array for convenience
+public char[] reverse(char[] arr, int i, int j) {
+    while (i < j) {
+        char tmp = arr[i];
+        arr[i++] = arr[j];
+        arr[j--] = tmp;
+    }
+    return arr;
+}
+
+public String reverseWords(String s) {
+    // reverse the whole string and convert to char array
+    char[] str = reverse(s.toCharArray(), 0, s.length()-1);
+    int start = 0, end = 0; // start and end positions of a current word
+    for (int i = 0; i < str.length; i++) {
+        if (str[i] != ' ') { // if the current char is letter 
+            str[end++] = str[i]; // just move this letter to the next free pos
+        } else if (i > 0 && str[i-1] != ' ') { // if the first space after word
+            reverse(str, start, end-1); // reverse the word
+            str[end++] = ' '; // and put the space after it
+            start = end; // move start position further for the next word
+        }
+    }
+    reverse(str, start, end-1); // reverse the tail word if it's there
+    // here's an ugly return just because we need to return Java's String
+    // also as there could be spaces at the end of original string 
+    // we need to consider redundant space we have put there before
+    return new String(str, 0, end > 0 && str[end-1] == ' ' ? end-1 : end);
+}
+=================================================
+public String reverseWords(String s) {
+        Stack<String> st = new Stack<String>();
+        for (String a : s.trim().split(" ")) {
+            if (!a.isEmpty())
+                st.push(a);
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        while (!st.isEmpty()) {
+            sb.append(st.pop());
+            sb.append(" ");            
+        }
+        
+        return sb.toString().trim();
+    }
+}
+
+==============================================
+public class Solution {
+    public String reverseWords(String s) {
+        String [] words = s.split(" ");
+        StringBuilder sb = new StringBuilder();
+        int end = words.length - 1;
+        for(int i = 0; i<= end; i++){
+            if(!words[i].isEmpty()) {
+                sb.insert(0, words[i]);
+                if(i < end) sb.insert(0, " ");
+            }
+        }
+        return sb.toString();
+    }
+}
+===============================================
+Java Solutions
+
+trim() function is used to remove side spaces of whole string!
+fg is used to check space if it is already added in between words!
+
+Approach 1
+
+Store words and add them in reverse order to answer with single space!
+
+Java Solution 1
+
+public String reverseWords(String s) {
+    
+    s=s.trim()+" ";
+    String ans="",word="";
+    int fg=0;
+    for(int i=0;i<s.length();i++)
+    {
+        if(s.charAt(i)!=' ')
+        {
+            fg=0;
+            word+=s.charAt(i);
+        }
+        else if(fg==0)
+        {
+            fg=1;
+            ans=word+" "+ans;
+            word="";
+        }
+    }
+    return ans.trim();
+}
+Approach 2
+
+Reverse the String and store words in reverse order and add it to answer with single space!
+
+Java Solution 2
+
+public String reverseWords(String s) {
+    
+    StringBuilder str=new StringBuilder(s);
+    
+    //reverse the string and trim the side spaces!
+    s=str.reverse().toString().trim()+" ";
+    
+    String word="",ans=""; int fg=0;
+    
+    for(int i=0;i<s.length();i++)
+    {
+    	if(s.charAt(i)!=' ')
+        {
+            fg=0;
+            word=s.charAt(i)+word;
+        }
+    	else if(fg==0) 
+    	{
+    		ans+=" "+word;
+    		fg=1;
+    		word="";
+    	}
+    }
+    return ans.trim();
+}
