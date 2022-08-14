@@ -1,0 +1,735 @@
+Given a string s, return the longest palindromic substring in s.
+
+ 
+
+Example 1:
+
+Input: s = "babad"
+Output: "bab"
+Explanation: "aba" is also a valid answer.
+Example 2:
+
+Input: s = "cbbd"
+Output: "bb"
+ 
+
+Constraints:
+
+1 <= s.length <= 1000
+s consist of only digits and English letters.If “aba” is a palindrome, is “xabax” a palindrome? Similarly is “xabay” a palindrome?
+
+
+
+HINTS:
+How can we reuse a previously computed palindrome to compute a larger palindrome?
+
+If “aba” is a palindrome, is “xabax” a palindrome? Similarly is “xabay” a palindrome?
+
+Complexity based hint:
+If we use brute-force and check whether for every start and end position a substring is a 
+palindrome we have O(n^2) start - end pairs and O(n) palindromic checks. 
+Can we reduce the time for palindromic checks to O(1) by reusing some previous computation.
+
+
+MY_SOLUTION
+
+class Solution {
+    public String longestPalindrome(String s) {
+        int start = 0, end = 0;
+        for(int i = 0; i < s.length(); i++){
+            int odd = expand(s,i,i);
+            int even = expand(s,i,i+1);
+            int len = Math.max(odd, even);
+            if(len > end-start){
+                //Even len (6)-> 2 start --> i-2, end -> i+3
+                //Odd len (5) -> 2 start i-2, end -> i+2
+                start = i - (len-1)/2;
+                end = i+ len/2;
+            }
+        }
+        return s.substring(start, end+1);
+    }
+    int expand(String s, int left, int right){
+        while(left >= 0 && right <s.length() && s.charAt(left) == s.charAt(right)){
+            left--;
+            right++;
+        }
+        return right-left-1;
+    }
+}
+
+=======================================================================================================================
+
+
+Brute Force
+Generate substrings of the given string such that substring having greater length will be generated first.
+To do this, run a loop where iterator ‘LEN’ will go from N to 1, where N is the length of the given string.
+Run a nested loop and fix an iterator ‘j’ that will point at the starting index of the substring.
+Get the substring from ‘j’ to ‘j’ + ‘LEN’.
+If the substring is a palindrome, return the substring (as the substring will be of the longest length and minimum starting index).
+Time Complexity
+O(N ^ 3), where N is the length of the given string.
+
+ 
+
+We are creating every substring which takes N ^ 2 time. Checking whether the substring is palindromic takes O(length of substring) time, which can be maximum O(N). Thus, the total time complexity is O(N ^ 3).
+
+Space Complexity
+O(N), where N is the length of the given string.
+
+ 
+
+We are storing substring in a variable string.
+
+/*
+    Time Complexity = O(N ^ 3)
+    Space Complexity = O(N)
+    
+    Where N is the length of the string.
+*/
+
+public class Solution {
+
+	private static boolean isPalindrome(String sub) {
+		int n = sub.length();
+
+		int i = 0, j = n - 1;
+
+		while (i < j) {
+			if (sub.charAt(i) != sub.charAt(j)) {
+				return false;
+			}
+			i++;
+			j--;
+		}
+
+		return true;
+	}
+
+	public static String longestPalinSubstring(String str) {
+
+		int n = str.length();
+
+		// Start finding palindrome having maximum length.
+		for (int len = n; len >= 1; len--) {
+			for (int j = 0; j + len <= n; j++) {
+
+				// Get the input starting from j and having length len.
+				String input = str.substring(j, j + len);
+
+				if (isPalindrome(input)) {
+					return input;
+				}
+			}
+		}
+
+		return "";
+	}
+}
+
+
+==================================================================
+Dynamic Programming
+If the string length is less than or equal to 1 then return the string, as one length string is always palindromic.
+Initialize a ‘DP’ array of data type boolean, ‘DP’[i][j] will store false if STR[i, j] is not palindromic otherwise it will store true.
+Store all the diagonal elements (DP[i][i]) as true, as STR[i, i] will always be palindromic.
+For substring of length 2, check if STR[i] is equal to STR[i + 1] then store DP[i][i + 1] as true.
+Run a loop for the length of a substring greater than 2, fill the DP array diagonally.
+To calculate DP[i][j], check the value of DP[i + 1][j - 1], if the value is true and STR[i] is same as STR[j], then we make DP[i][j] true otherwise false.
+For every DP[i][j] true, update the length and starting index of the substring.
+Return the substring of the string having starting index as start and of maximum length.
+Time Complexity
+O(N ^ 2), where N is the length of the given string as 
+
+ 
+
+We are traversing the ‘DP’ array once.
+
+Space Complexity
+O(N ^ 2), where N is the length of the given string.
+
+ 
+
+We are using a ‘DP’ array of N*N dimensions.
+
+
+/*
+    Time Complexity = O(N ^ 2)
+    Space Complexity = O(N ^ 2)
+    
+    Where N is the length of the string.
+*/
+
+public class Solution {
+
+	public static String longestPalinSubstring(String str) {
+
+		int n = str.length();
+
+		if (n < 1) {
+			return "";
+		}
+
+		/*
+			dp[i][j] will be true if str[i..j] is palindrome.
+			Else dp[i][j] will be false.
+		*/
+		boolean[][] dp = new boolean[n][n];
+
+		int maxLength = 1;
+
+		// Single letter is always palindromic.
+		for (int i = 0; i < n; ++i) {
+			dp[i][i] = true;
+		}
+
+		int start = 0;
+
+		// Substring of length 2.
+		for (int i = 0; i < n - 1; ++i) {
+			if (str.charAt(i) == str.charAt(i + 1)) {
+				dp[i][i + 1] = true;
+				
+				if (maxLength < 2) {
+					start = i;
+					maxLength = 2;
+				}
+			}
+		}
+
+		/*
+			Check for lengths greater than 2.
+			k is length of substring.
+		*/
+		for (int len = 3; len <= n; len++) {
+
+			// Fix the starting index.
+			for (int i = 0; i < n - len + 1; ++i) {
+
+				// Ending index of length len.
+				int j = i + len - 1;
+
+				// Condition of str[i,j] to be palindromic.
+				if (dp[i + 1][j - 1] && str.charAt(i) == str.charAt(j)) {
+					dp[i][j] = true;
+
+					// Update the starting index and the length.
+					if (len > maxLength) {
+						start = i;
+						maxLength = len;
+					}
+				}
+
+			}
+		}
+
+		return str.substring(start, start + maxLength);
+	}
+
+}
+
+
+===========================================================================
+
+Expanding around the centres
+If the string length is less than or equal to 1 then return the string, as a single character is always palindromic.
+The idea is to generate all even length and odd length palindromes and keep track of the longest palindrome seen so far.  Run a loop where ‘i’ will be from 0 to ‘N’ - 1.
+To generate odd length palindrome, fix center ‘i’, and expand in both directions for longer palindromes. Odd length palindromes will have a character at the center.
+Similarly, for even length palindrome, fix the center as ‘i’, ‘i’ + 1, and expand in both directions. Even palindrome will have a partition between ith char and i+1th char as the center.
+If the length of the current palindromic substring length is greater then update the starting length of the string and length of the palindromic substring.
+Return the substring of the string having starting index as ‘START’ and of maximum length.
+ 
+
+For expanding :
+
+For expanding around a center ‘i’ for odd length, initialize two variables ‘LEFT’ and ‘RIGHT’ to ‘i’ and go until ‘LEFT and ’RIGHT' are in range and STR[LEFT] == STR[RIGHT]. Decrement the ‘LEFT’ and increment the ‘RIGHT’.
+For expanding around a centre ‘i’ and ‘i’ + 1 for even length, initialise two variables ‘LEFT’ = ‘i’ and ‘RIGHT’ = ‘i’ + 1, and go until ‘LEFT’ and ‘RIGHT’ are in range and STR[LEFT] == STR[RIGHT]. Decrement the ‘LEFT’ and increment the ‘RIGHT’.
+Return the length of the palindromic substring.
+Time Complexity
+O(N ^ 2), where N is the length of the given string.
+
+ 
+
+As we are expanding twice for every index and expanding could take O(N) in the worst case.
+
+Space Complexity
+O(1).
+
+ 
+
+As we are not using any extra space.
+
+
+/*
+    Time Complexity = O(N ^ 2)
+    Space Complexity = O(1)
+    
+    Where N is the length of the string.
+*/
+
+public class Solution {
+
+	private static int expandAroundCenter(String str, int left, int right) {
+
+		int start = left, end = right;
+		int n = str.length();
+
+		// Expand the center.
+		while (start >= 0 && end < n && str.charAt(start) == str.charAt(end)) {
+			start--;
+			end++;
+		}
+
+		return end - start - 1;
+	}
+
+	public static String longestPalinSubstring(String str) {
+
+		int n = str.length();
+
+		if (n < 1) {
+			return "";
+		}
+
+		int start = 0, end = 0;
+
+		for (int i = 0; i < n; i++) {
+
+			// Longest odd length palindrome with center points as i.
+			int len1 = expandAroundCenter(str, i, i);
+
+			// Longest even length palindrome with center points as i and i + 1.
+			int len2 = expandAroundCenter(str, i, i + 1);
+
+			int len = Math.max(len1, len2);
+
+			// Update the start and end.
+			if (len > end - start + 1) {
+				start = i - (len - 1) / 2;
+				end = i + (len) / 2;
+			}
+
+		}
+
+		return str.substring(start, end + 1);
+	}
+
+}
+
+
+==================================================================================================================================================
+
+
+
+ANOTHER_SOLUTION
+
+//https://leetcode.com/problems/longest-palindromic-substring/discuss/650496/All-approaches-code-in-Java-including-Manacher's-Algorithm-explanation
+
+Approach 1: Longest Common Substring
+Based on dynamic programming.
+
+class Solution {
+    public String longestPalindrome(String s) {
+        int len = s.length();
+
+        if (len == 0) {
+            return "";
+        }
+
+        char[] sChars = s.toCharArray();
+
+        /*
+         * length of common string found
+         * set dp[i][j] to 0 if s[i - 1] != s[j];
+         */
+        int[][] dp = new int[2][len + 1];
+        int currRow = 0;
+        int maxLen = 0;
+        int start = 0;
+
+        /*
+         * find longest common string between s and s' (reversed s)
+         * for orginal string, from sChars[0] to sChars[len - 1]
+         * for reversed view, from sChars[len - 1] to sChars[0];
+         */
+        for (int i = 0; i <= len; i++) {
+            for (int j = len; j >= 0; j--) {
+                if (i == 0 || j == len) {
+                    dp[currRow][j] = 0;
+                } else if (sChars[i - 1] == sChars[j]) {
+                    dp[currRow][j] = dp[1 - currRow][j + 1] + 1;
+                    int currLen = dp[currRow][j];
+
+                    /*
+                     * 1. longest common substring length
+                     * 2. skip those common substrings doesn't "produced" by reverse.
+                     */
+                    if (i - 1 == j + currLen - 1 && i - currLen == j && currLen > maxLen) {
+                        start = j;
+                        maxLen = currLen;
+                    }
+                } else {
+                    dp[currRow][j] = 0;
+                }
+            }
+
+            // * switch the working row of dp[][] to the next row (i)
+            currRow = 1 - currRow;
+        }
+
+        return s.substring(start, start + maxLen);
+    }
+}
+Space Complexity: O(n)
+
+Approach 2: Brute Force (962ms)
+class Solution {
+    public String longestPalindrome(String s) {
+        char[] charArray = s.toCharArray();
+        int start = 0;
+        int maxLen = 0;
+        for (int i = 0; i < charArray.length; i++) {
+            for (int len = 0; i + len < charArray.length; len++) {
+                if (isPalindrome(charArray, i, len) && len + 1 > maxLen) {
+                    maxLen = len + 1;
+                    start = i;
+                }
+            }
+        }
+
+        return s.substring(start, start + maxLen);
+    }
+
+    public boolean isPalindrome(char[] charArray, int start, int len) {
+        while (len > 0) {
+            if (charArray[start] != charArray[start + len]) {
+                return false;
+            }
+
+            start++;
+            len -= 2;
+        }
+
+        return true;
+    }
+}
+Approach 3: Dynamic Programming
+image
+
+image
+
+class Solution {
+    public String longestPalindrome(String s) {
+        char[] sChars = s.toCharArray();
+
+        int m = s.length();
+
+        // * dp[i][len + 1] means substring starting from i with length of len;
+        boolean[][] dp = new boolean[m][2];
+        int currCol = 0;
+
+        int maxLen = 0;
+        int ans = 0; // record start index of s
+
+        for (int len = 0; len < m; len++) {
+            for (int start = 0; start + len < m; start++) {
+                int end = start + len;
+                if (len == 0) {
+                    dp[start][currCol] = true;
+                } else if (len == 1) {
+                    dp[start][currCol] = (sChars[start] == sChars[end]);
+                } else {
+                    dp[start][currCol] = (sChars[start] == sChars[end] && dp[start + 1][currCol]);
+                }
+
+                if (dp[start][currCol] && len + 1 > maxLen) {
+                    ans = start;
+                    maxLen = len + 1;
+                }
+            }
+
+            currCol = 1 - currCol;
+        }
+
+        return maxLen == 0 ? "" : s.substring(ans, ans + maxLen);
+    }
+}
+Space complexity: O(n). It uses O(2n) space to store the table.
+
+Approach 4: Expand Around Center
+class Solution {
+    public String longestPalindrome(String s) {
+        if (s.length() == 0) {
+            return "";
+        }
+
+        char[] sChars = s.toCharArray();
+
+        int start = 0;
+        int end = 0;
+
+        for (int i = 0; i < sChars.length; i++) {
+            int len = Math.max(expand(sChars, i, i), expand(sChars, i, i + 1));
+
+            if (len > end - start + 1) {
+                start = i - (len - 1) / 2;
+                end = i + len / 2;
+            }
+        }
+
+        return s.substring(start, end + 1);
+    }
+
+    public int expand(char[] sChars, int i, int j) {
+        while (i >= 0 && j < sChars.length && sChars[i] == sChars[j]) {
+            i--;
+            j++;
+        }
+        return j - i - 1;
+    }
+}
+Approach 5: Manacher's Algorithm
+!!!Based on the solution video on leetcode-cn.com
+The copyright belongs to the original author
+In Approach 4, we do lots of comparisons which is unnecessary. Manacher's algorithm achieves the time complexity O(n) by skip the unnecessary comparisons.
+e.g.
+image
+
+For indice 8 which is a, we don't need to do the expandAroundCenter since we have learned from indice 2, that the expand length is 0. And to make it true, the indice 8 and indice 2 should be in the same palindrome. Meanwhile they have the same distance to the center of the palindrome.
+
+We could divide the problem into several cases.
+p[i] means the expand length of substring with the center of indice i .
+[a, a, b, c, b, a, d] => p[3] = 2
+
+1. i + p[mirror] < maxRight
+image
+2. i + p[mirror] == maxRight
+image
+3. i + p[mirror] > maxRight
+image
+
+if i >= maxRight
+    expand the substring with the center of i
+else if i + p[mirror] < maxRight
+    p[i] = p[mirror]
+else if i + p[mirror] == maxRight
+    p[i] = p[mirror] = maxRight - i
+    expand the substring with the center of i, beginning from maxRight
+else
+    p[i] = maxRight - i
+We actually could make the code more concise:
+
+if i < maxRight
+    p[i] = min(p[mirror], maxRight - i)
+    
+expand substring with center of i, beginning from i + p[i]
+The algorithm only solve the string with odd size, so we add '#' to the string to make the size of string always be odd.
+
+class Solution {
+    public String longestPalindrome(String s) {
+
+        // code line +8 to line +15
+        int strLen = 2 * s.length() + 3;
+        char[] sChars = new char[strLen];
+
+        /*
+         * To ignore special cases at the beginning and end of the array
+         * "abc" -> @ # a # b # c # $
+         * "" -> @#$
+         * "a" -> @ # a # $
+         */
+        sChars[0] = '@';
+        sChars[strLen - 1] = '$';
+        int t = 1;
+        for (char c : s.toCharArray()) {
+            sChars[t++] = '#';
+            sChars[t++] = c;
+        }
+        sChars[t] = '#';
+
+        int maxLen = 0;
+        int start = 0;
+        int maxRight = 0;
+        int center = 0;
+        int[] p = new int[strLen]; // i's radius, which not includes i
+        for (int i = 1; i < strLen - 1; i++) {
+            if (i < maxRight) {
+                p[i] = Math.min(maxRight - i, p[2 * center - i]);
+            }
+
+            // expand center
+            while (sChars[i + p[i] + 1] == sChars[i - p[i] - 1]) {
+                p[i]++;
+            }
+
+            // update center and its bound
+            if (i + p[i] > maxRight) {
+                center = i;
+                maxRight = i + p[i];
+            }
+
+            // update ans
+            if (p[i] > maxLen) {
+                start = (i - p[i] - 1) / 2;
+                maxLen = p[i];
+            }
+        }
+
+        return s.substring(start, start + maxLen);
+    }
+}
+Time complexity: O(n)
+Space complexity: O(n) We need O(n) space to form p[i].
+
+=======================================================================================================================================================
+ANOTHER_SOLUTION
+// https://leetcode.com/problems/longest-palindromic-substring/discuss/578435/Evolution-from-Recursion-to-Top-Down-DP-to-Bottoms-Up-DP.-Easy-understanding-code
+
+Recursion
+class Solution {
+    public String longestPalindrome(String s) {
+        
+        int len = s.length();
+        
+        int maxLen = 0;
+        String res = "";
+        
+        
+        for (int left = 0; left < len; left++){
+            for (int right = left; right < len; right++){
+                
+             if (s.charAt(left) == s.charAt(right) && isPalin(s,left + 1, right -1)){
+                if (maxLen < right - left + 1) {
+                    maxLen = right - left + 1;
+                    res = s.substring(left, right + 1);
+                    }
+                }   
+            }
+        }
+        
+        return res;
+    }
+    
+    
+    public boolean isPalin(String s, int left, int right){
+        
+        if (left >= right){
+            return true;
+        }
+        
+        if (s.charAt(left) != s.charAt(right)) {
+            return false;
+        }
+        
+        if (right - left <= 2){
+            return true;
+        }
+        
+        return isPalin(s,left + 1, right - 1);
+        
+    }
+    
+}
+Top Down
+class Solution {
+    
+    Boolean[][] memo ;
+    
+    public String longestPalindrome(String s) {
+        
+        int len = s.length();
+        
+        int maxLen = 0;
+        String res = "";
+        memo = new Boolean[len][len];
+        
+        for (int left = 0; left < len; left++){
+            for (int right = left; right < len; right++){
+                
+             if (s.charAt(left) == s.charAt(right) && isPalin(s,left + 1, right -1)){
+                if (maxLen < right - left + 1) {
+                    maxLen = right - left + 1;
+                    res = s.substring(left, right + 1);
+                    }
+                }   
+            }
+        }
+        
+        return res;
+    }
+    
+    
+    public boolean isPalin(String s, int left, int right){
+        
+        if (left >= right){
+            return true;
+        }
+        
+        if (memo[left][right] != null){
+            return memo[left][right] ;
+        }
+        
+        if (s.charAt(left) != s.charAt(right)) {
+            memo[left][right] = false;
+            return memo[left][right];
+        }
+        
+        if (right - left <= 2){
+            memo[left][right] = true;
+            return memo[left][right];
+        }
+        
+        memo[left][right] = isPalin(s,left + 1, right - 1);
+        return memo[left][right];
+        
+    }
+    
+}
+Bottoms Up DP
+class Solution {
+    
+    boolean[][] memo ;
+    
+    public String longestPalindrome(String s) {
+        
+        int len = s.length();
+        
+        int maxLen = 0;
+        String res = "";
+        memo = new boolean[len][len];
+        
+        for (int left = len -1; left >= 0; left--){ // notice this goes backwards
+            for (int right = left; right < len; right++){
+                
+             if (s.charAt(left) == s.charAt(right)){
+                 
+                if (right - left <=2){
+                    memo[left][right] = true;
+                } else{
+                    memo[left][right] = memo[left + 1][right - 1]; 
+                }
+             }
+    
+            if (memo[left][right]  && maxLen < right - left + 1) {
+                maxLen = right - left + 1;
+                res = s.substring(left, right + 1);
+                }
+            }   
+            
+        }
+        
+        return res;
+    }
+    
+}
+While converting a Top Down to A Bottoms up solution, it is important to make sure the outermost loop is reversed.
+
+During the top down, the order of execution is reverse. So to make sure this also happens in bottoms up, it is important to reverse the direction.
+
+This is true for ALL dynamic programming problems.
+
+Another hint is because the main equation has memo[left][right] = memo[left + 1][right - 1];
+
+This means, before left can be computed left+1 must be precomputed. So left goes from n,n-1,...0.
+
+Also, before right can be computed right-1 must be precomputed.So right goes 0,1,2....n.
