@@ -1,0 +1,716 @@
+Implement the myAtoi(string s) function, which converts a string to a 32-bit signed integer (similar to C/C++'s atoi function).
+
+The algorithm for myAtoi(string s) is as follows:
+
+Read in and ignore any leading whitespace.
+Check if the next character (if not already at the end of the string) is '-' or '+'. 
+Read this character in if it is either. This determines if the final result is negative or positive respectively. 
+Assume the result is positive if neither is present.
+Read in next the characters until the next non-digit character or the end of the input is reached. The rest of the string is ignored.
+Convert these digits into an integer (i.e. "123" -> 123, "0032" -> 32). If no digits were read, then the integer is 0. 
+Change the sign as necessary (from step 2).
+If the integer is out of the 32-bit signed integer range [-231, 231 - 1], then clamp the integer so that it remains in the range. 
+Specifically, integers less than -231 should be clamped to -231, and integers greater than 231 - 1 should be clamped to 231 - 1.
+Return the integer as the final result.
+Note:
+
+Only the space character ' ' is considered a whitespace character.
+Do not ignore any characters other than the leading whitespace or the rest of the string after the digits.
+ 
+
+Example 1:
+
+Input: s = "42"
+Output: 42
+Explanation: The underlined characters are what is read in, the caret is the current reader position.
+Step 1: "42" (no characters read because there is no leading whitespace)
+         ^
+Step 2: "42" (no characters read because there is neither a '-' nor '+')
+         ^
+Step 3: "42" ("42" is read in)
+           ^
+The parsed integer is 42.
+Since 42 is in the range [-231, 231 - 1], the final result is 42.
+Example 2:
+
+Input: s = "   -42"
+Output: -42
+Explanation:
+Step 1: "   -42" (leading whitespace is read and ignored)
+            ^
+Step 2: "   -42" ('-' is read, so the result should be negative)
+             ^
+Step 3: "   -42" ("42" is read in)
+               ^
+The parsed integer is -42.
+Since -42 is in the range [-231, 231 - 1], the final result is -42.
+Example 3:
+
+Input: s = "4193 with words"
+Output: 4193
+Explanation:
+Step 1: "4193 with words" (no characters read because there is no leading whitespace)
+         ^
+Step 2: "4193 with words" (no characters read because there is neither a '-' nor '+')
+         ^
+Step 3: "4193 with words" ("4193" is read in; reading stops because the next character is a non-digit)
+             ^
+The parsed integer is 4193.
+Since 4193 is in the range [-231, 231 - 1], the final result is 4193.
+ 
+
+Constraints:
+
+0 <= s.length <= 200
+s consists of English letters (lower-case and upper-case), digits (0-9), ' ', '+', '-', and '.'.
+
+
+MY_SOLUTION
+
+class Solution {
+    public int myAtoi(String s) {
+        if(s==null) return 0;
+
+        s=s.trim();
+        
+        if(s.length()==0) return 0;
+        
+        int sign = +1;
+        long ans = 0;
+        if(s.charAt(0) == '-') sign = -1;
+        
+        int MAX = Integer.MAX_VALUE, MIN = Integer.MIN_VALUE;
+		
+		// initiate the starting pointer
+        int i = (s.charAt(0) == '+' || s.charAt(0) == '-') ? 1 : 0;
+		
+        while(i < s.length()) {
+            if(s.charAt(i) == ' ' || !Character.isDigit(s.charAt(i))) break;  // s.charAt(i) >= '0' && s.charAt(i) <= '9'
+            ans = ans * 10 + s.charAt(i)-'0';
+            // check the conditions
+            if(sign == -1 && -1*ans < MIN) return MIN;
+            if(sign == 1 && ans > MAX) return MAX;
+            
+            i++;
+        }
+        
+        return (int)(sign*ans);
+    }
+}
+
+
+==================================================
+Analysis
+From the problem statement and examples, it is clear that we only want to convert those strings which starts either 
+from <whitespace>, -, + or numbers 0,1,2,3,4,5,6,7,8,9 and we also don’t care about the non-number characters after the number characters.
+
+Approach
+This is a very straightforward problem which can be easily solved with the following steps -
+
+Check if the string is null or empty string. If it is, return 0.
+Remove all the leading whitespaces from the given string (if any).
+If the string has - or + character at the start, we will keep it stored in a boolean flag.
+Loop for each character in the remaining string if and only if they are from the set [0,1,2,3,4,5,6,7,8,9].
+Store the result after each iteration in a variable number.
+Check if the resultant number is less than -231 or more than 231 - 1 and return the return the result accordingly.
+Else return the calculated number as result.
+And thattsss it!!! Easy peasy, right? 😄
+
+Time Complexity
+Since we are going through the entire number digit by digit, the time complexity should be O(log10n). 
+The reason behind log10 is because we are dealing with integers which are base 10.
+
+Space Complexity
+We are not using any data structure for interim operations, therefore, the space complexity is O(1).
+
+Code
+Java
+public class StringToInteger {
+
+    private static int myAtoi(String str) {
+        // Base condition
+        if (str == null || str.length() < 1) {
+            return 0;
+        }
+        // MAX and MIN values for integers
+        final int INT_MAX = 2147483647;
+        final int INT_MIN = -2147483648;
+        // Trimmed string
+        str = str.replaceAll("^\\s+", "");
+        // Counter
+        int i = 0;
+        // Flag to indicate if the number is negative
+        boolean isNegative = str.startsWith("-");
+        // Flag to indicate if the number is positive
+        boolean isPositive = str.startsWith("+");
+        if (isNegative) {
+            i++;
+        } else if (isPositive) {
+            i++;
+        }
+        // This will store the converted number
+        double number = 0;
+        // Loop for each numeric character in the string iff numeric characters are leading
+        // characters in the string
+        while (i < str.length() && str.charAt(i) >= '0' && str.charAt(i) <= '9') {
+            number = number * 10 + (str.charAt(i) - '0');
+            i++;
+        }
+        // Give back the sign to the converted number
+        number = isNegative ? -number : number;
+        if (number < INT_MIN) {
+            return INT_MIN;
+        }
+        if (number > INT_MAX) {
+            return INT_MAX;
+        }
+        return (int) number;
+    }
+}
+================================================================
+
+Recursive Approach
+We can solve the problem recursively by just checking if the current character is a digit or not. If yes, we add it in our number and then recursively check the complete string to construct the number.
+
+ 
+
+ Here is the algorithm : 
+
+ 
+
+First of all, check if the number is a negative number or not. For that simply check if the first character of the string is a ‘-’ character or not.
+Then we use our recursive function helper which takes in 3 parameters ‘CURIDX’, ‘N’ and string ‘STR’ where ‘N’ is the number of characters in the string.
+Base case : If we are at the last character of the string.
+If it is a number, we return that number.
+else, we return 0.
+Then we recursively calculate the answer if the ‘CURIDX’ is a digit we multiply our answer by 10 to shift it to the right and then add this digit.
+Finally, return the answer.
+Time Complexity
+O(N), where ‘N’ denotes the length of the string.
+
+ 
+
+Each recursive call has only 1 option so there will be ‘N’ recursive states, therefore the overall time complexity will be O(N).
+
+Space Complexity
+O(N), where ‘N’ denotes the length of the string.
+
+ 
+
+Recursive stack will use maximum ‘N’ space as the length of string is  ‘N’. Therefore, the overall space complexity will be O(N).
+
+/*
+    Time Complexity: O(N)
+    Space Complexity: O(N)
+
+    Where 'N' is the length of the string.
+*/
+
+public class Solution {
+	public static int atoi(String str) {
+		boolean isNegative = false;
+		int n = str.length();
+		if (str.charAt(0) == '-') {
+			isNegative = true;
+		}
+
+		// Store ans here.
+		int ans1 = 0;
+
+		int ans = atoiRecursive(str, n, 0, ans1);
+
+		// If negative, make the number negative.
+		if (isNegative) {
+			return -1 * ans;
+		} 
+        else {
+			return ans;
+		}
+	}
+
+	private static int atoiRecursive(String str, int n, int curIdx, int ans) {
+
+		// Base case (Only one digit).
+		if (curIdx == n) {
+			return ans;
+		}
+
+		// Recur for (n-1), multiply result with 10 and add last digit.
+		if (str.charAt(curIdx) >= '0' && str.charAt(curIdx) <= '9') {
+			ans = ans * 10 + str.charAt(curIdx) - '0';
+			return atoiRecursive(str, n, curIdx + 1, ans);
+		} 
+        else {
+			return atoiRecursive(str, n, curIdx + 1, ans);
+		}
+	}
+
+}
+
+=============================================
+Iterative Approach
+We can solve the problem iteratively by just checking if the current digit is a number we construct the number and then finally when we traverse the whole string we return the number.
+
+ 
+
+Here is the algorithm :
+
+ 
+
+First of all, check if the number is a negative number or not. For that simply check if the first character of the string is a ‘-’ character or not.
+Initialise a variable (say, ‘NUMBER’) to store the number.
+Then traverse the string and if the character is a whole number, multiply the ‘NUMBER’ variable by 10 and add this digit in ‘NUMBER’.
+Finally, return the ‘NUMBER’.
+Time Complexity
+O(N), where ‘N’ denotes the length of the string.
+
+ 
+
+We traverse the string once, therefore the overall time complexity will be O(N).
+
+Space Complexity
+O(1)
+
+ 
+
+Since, we are not using any extra space. Therefore, the overall space complexity will be O(1).
+
+
+/*
+    Time Complexity: O(N)
+    Space Complexity: O(1)
+
+    Where 'N' is the length of the string.
+*/
+
+public class Solution {
+
+    public static int atoi(String str) {
+        boolean isNegative = false;
+
+        // Check Negative.
+        if (str.charAt(0) == '-') {
+            isNegative = true;
+        }
+
+        int number = 0;
+        for (int i = 0; i < str.length(); i++) {
+
+            // If the charecter is a digit.
+            if (str.charAt(i) >= '0' && str.charAt(i) <= '9') {
+                int digit = (char) str.charAt(i) - '0';
+                number = number * 10 + digit;
+            }
+        }
+        
+        if (isNegative) {
+            number *= -1;
+        }
+
+        return number;
+    }
+}
+============================
+
+
+akshayaamar05's avatar
+akshayaamar05
+1072
+Last Edit: February 4, 2022 4:26 PM
+
+7.3K VIEWS
+
+ 
+
+BASIC IDEA:
+
+Start traversing the provided string(str)
+Skip all the leading white spaces. eg: " -123456" --> "-123456"
+Check for sign cases(+-). eg: "-123456". If +, then set the variable(boolean) isNegative to true and if it's -, set isNegative to false
+Iterate over the next remaining characters and keep adding them in result by converting the digits(in character form) to integer form. eg: "-123456" --> -123456, until the non-digit character is found.
+NOTE: Logic is implemented in such a way that after performing above 3 steps, if it finds characters(English letters (lower-case and upper-case), digits (0-9), ' ', '+', '-', and '.') before the digit character, it will give output as 0(zero) eg: "abc-123456" --> 0 and if it finds characters(English letters (lower-case and upper-case), digits (0-9), ' ', '+', '-', and '.') after the digit characters, it will return the number eg: "-123456abc" --> -123456
+
+class Solution {
+  public int myAtoi(String str) {
+    
+    final int len = str.length();
+    
+    if (len == 0){
+        return 0;
+    }
+    
+    int index = 0;
+    
+    // skipping white spaces
+    while (index < len && str.charAt(index) == ' '){
+        ++index;
+    }
+    
+    boolean isNegative = false;
+    
+    // to handle sign cases
+    if (index < len) {
+      
+      if (str.charAt(index) == '-') {
+        isNegative = true;
+        ++index;
+      } else if (str.charAt(index) == '+'){
+          ++index;
+      }
+      
+    }
+    
+    int result = 0;
+    
+    // converting digit(in character form) to integer form
+    // iterate until non-digit character is not found or we can say iterate till found character is a digit
+    while (index < len && isDigit(str.charAt(index))) {
+      
+      /* str.charAt(index) - '0' is to convert the char digit into int digit eg: '5' - '0' --> 5
+      or else it will store the ASCII value of 5 i.e. 53,
+      so we do 53(ASCII of 5) - 48(ASCII of 0(zero)) to get 5 as int*/
+      int digit = str.charAt(index) - '0';
+      
+      // to avoid integer overflow
+      if (result > (Integer.MAX_VALUE / 10) || (result == (Integer.MAX_VALUE / 10) && digit > 7)){
+          return isNegative ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+      }
+      
+      // adding digits at their desired place-value
+      result = (result * 10) + digit;
+      
+      ++index;
+    }
+      
+    return isNegative ? -result : result;
+  }
+  
+  private boolean isDigit(char ch) {
+    return ch >= '0' && ch <= '9';
+  }
+}
+
+
+========
+
+
+Let's understand what
+if(result > (Integer.MAX_VALUE / 10) || (result == (Integer.MAX_VALUE / 10) && digit > 7)){
+         return isNegative ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+}
+means in JAVA? You will be able to figure out this statement easily for C++ code too.
+
+result > (Integer.MAX_VALUE / 10) means:
+Suppose,
+result = 214748365(9 digits)
+Integer.MAX_VALUE = 2147483647(10 digits) and Integer.MAX_VALUE / 10 = 214748364(9 digits)
+Here, it is clearly evident that result > Integer.MAX_VALUE / 10( i.e. 214748365 > 214748364) and if we try to add even 0(zero) in result 214748365(9 digits), the number will become 2147483650(10 digits) which is obviously greater than 2147483647(Integer.MAX_VALUE which is of 10 digits). So even before adding 0(zero) or any other digit, we return the Integer.MAX_VALUE or Integer.MIN_VALUE, according to the sign case, in order to avoid integer overflow.
+
+And, result == (Integer.MAX_VALUE / 10) && digit > 7 means:
+Suppose,
+result = 214748364(9 digits), and
+Integer.MAX_VALUE / 10 = 214748364(9 digits)
+Now, if the result is equal to the Integer.MAX_VALUE / 10 (214748364 == 214748364) and the digit is greater than 7 i.e. digit > 7 and if we try to add 8(assume the digit greater than 7 to be 8) to the result, then the number will become 2147483648(10 digits), which will result in integer overflow. So, even before adding the digit which is greater than 7, we return the Integer.MAX_VALUE or Integer.MIN_VALUE, according to the sign case, to avoid integer overflow.
+
+More optimized by using char and int variable in order to avoid calling charAt(index) and Integer.MAX_VALUE / 10 repeatedly
+
+class Solution {
+    public int myAtoi(String str) {
+        
+        final int len = str.length();
+        
+        if(len == 0){
+            return 0;
+        }
+        
+        int index = 0;
+        while(index < len && str.charAt(index) == ' '){
+            index++;
+        }
+        
+        if(index == len){
+            return 0;
+        }
+        
+        char ch;
+        boolean isNegative = (ch = str.charAt(index)) ==  '-';
+        
+        if(isNegative || ch == '+'){
+            ++index;
+        }
+            
+        final int maxLimit = Integer.MAX_VALUE / 10;
+        int result = 0;
+        while(index < len && isDigit(ch = str.charAt(index))){
+            
+            int digit = ch - '0';
+            
+            if(result > maxLimit || (result == maxLimit && digit > 7)){
+                return isNegative ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+            }
+            
+            result = (result * 10) + digit;
+            
+            ++index;
+        }
+        
+        return isNegative ? -result : result;
+    }
+    
+    private boolean isDigit(char ch){
+        return ch >= '0' && ch <= '9';
+    }
+}
+
+
+SUGGESTION:
+In JAVA, you can replace the following condition
+
+if(result > (Integer.MAX_VALUE / 10) || (result == (Integer.MAX_VALUE / 10) && digit > 7))
+                return isNegative ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+with
+
+if(result > (Integer.MAX_VALUE - digit) / 10)
+                return isNegative ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+And, In C++, you can replace the following condition
+
+if(result > (INT_MAX / 10) || (result == (INT_MAX / 10) && digit > 7))
+                return isNegative ? INT_MIN : INT_MAX;
+with
+
+if(result > (INT_MAX - digit) / 10)
+                return isNegative ? INT_MIN : INT_MAX;
+COMPLEXITY:
+
+Time: O(n), where n is the length of String
+Space: O(1), in-place
+
+Refer to the following github repsitory for more leetcode solutions
+https://github.com/Akshaya-Amar/LeetCodeSolutions
+
+=============================
+
+public int myAtoi(String str) {
+    str = str.trim();
+    if (str.isEmpty()) 
+    	return 0;
+    int sign = 1; int i = 0;
+    if (str.charAt(0) == '-' || str.charAt(0) == '+'){
+    	sign = (str.charAt(0) == '-')? -1 : 1;
+    	if (str.length() < 2 || !Character.isDigit(str.charAt(1))) {
+    		return 0;
+    	}
+    	i++;
+     }
+    int n = 0;
+    while (i < str.length()) {
+    	if (Character.isDigit(str.charAt(i))) {
+    		int d = str.charAt(i) - '0';
+    		if (n > (Integer.MAX_VALUE - d) / 10) { //Detect the integer overflow.
+    			n = (sign == -1)? Integer.MIN_VALUE : Integer.MAX_VALUE;
+    			return n;
+    		}
+    		n = n*10 + d;
+    	} else {
+    		break;
+    	}
+    	i++;
+    }
+    return sign * n;
+}
+
+
+============================================================================
+
+/**
+ * Ignoring the leading whitespace and then iterate over the remaining to find
+ * digits
+ *
+ * Time Complexity: O(N)
+ *
+ * Space Complexity: O(1)
+ *
+ * N = Length of the input string.
+ */
+class Solution {
+    public int myAtoi(String s) {
+        if (s == null) {
+            throw new IllegalArgumentException("Input string is null");
+        }
+
+        int len = s.length();
+        if (len == 0) {
+            return 0;
+        }
+
+        int idx = 0;
+
+        // Ignoring the leading whitespace
+        while (idx < len && s.charAt(idx) == ' ') {
+            idx++;
+        }
+        if (idx == len) {
+            return 0;
+        }
+
+        // Checking for sign
+        int sign = 1;
+        char c = s.charAt(idx);
+        if (c == '-' || c == '+') {
+            if (c == '-') {
+                sign = -1;
+            }
+            idx++;
+        }
+
+        int result = 0;
+
+        while (idx < len && Character.isDigit(s.charAt(idx))) {
+            int digit = s.charAt(idx) - '0';
+            if (result > Integer.MAX_VALUE / 10 || (result == Integer.MAX_VALUE / 10
+                    // Here Checking for sign is not required as for Int.MIN last digit is 8 which
+                    // is greater than 7.
+                    && digit > Integer.MAX_VALUE % 10)) {
+                return sign == -1 ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+            }
+            result = result * 10 + digit;
+            idx++;
+        }
+
+        return sign * result;
+    }
+}
+
+======================================================================
+
+class Solution {
+    public int myAtoi(String s) {
+        int i = 0;
+        int result = 0;
+        int sign = 1;
+        //base
+        if (s.length() == 0) return 0;
+        
+        //discard white space
+        while (i < s.length() && s.charAt(i) == ' ') i++;
+        
+        //check the sign
+        if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-'))
+            sign = (s.charAt(i++) == '-') ? -1 : 1;
+        
+        // proceed only if the char is digits
+        while (i < s.length() && s.charAt(i) >= '0' && s.charAt(i) <= '9'){
+            // Since we are doing r =  r * 10 + digit formula
+            // when r > max / 10 if u do * 10 it will overflow
+            // if r == max / 10 then any number + 7 will overflow
+            // same case for under flow also 
+            // both case we should handle
+            if (result > Integer.MAX_VALUE / 10 ||
+                (result == Integer.MAX_VALUE / 10 && s.charAt(i) - '0' > Integer.MAX_VALUE % 10))
+                return (sign == 1) ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+            
+            result = result * 10 + (s.charAt(i++) - '0');
+        }
+        
+        return result * sign;
+    }
+}
+=============================================
+
+// https://leetcode.com/problems/string-to-integer-atoi/discuss/1688555/Explaination-Java-C%2B%2B-oror-Easy-for-mind-to-Accept-it
+
+
+If we look at 1st testcase. We have Given a string with numerical values & we will simply return in Integral value and return 42.
+If we look at 2nd testcase. First we see we have some space "and it's clearly mentioned in question, we need to discard whitespace", then we takecare of sign & use sign as it is & finally use numerical value return -42.
+If we look at 3rd testcase. We look for whitespace, but we dont have it. Then we will see wether it have a sign or not. Then we will see wether the 1st value numerical or not. So, we found it is and simply go for 4193, again we will check after this numerical value do we have more numerical value & states No. then we simply return 4193
+Coming to 4th testcase. We see that it dont have whitespace, dont have any sign. And very first sequence is non-numerical and simply return 0
+Coming to 5th testcase. We clearly see that no is out of range, we simply return -2^31.
+
+class Solution {
+    public int myAtoi(String s) {
+        if (s.equals("")) {
+			return 0;
+		}
+		
+		// helper variables
+		int res = 0, i = 0, sign = 1;
+		
+		// get rid of whitespace
+		while (i < s.length() && s.charAt(i) == ' ') {
+			i++;
+		}
+		
+		// check for sign
+		if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
+			// change if negative, iterate
+			if (s.charAt(i++) == '-') {
+				sign = -1;
+			}
+		}
+		
+		// now iterate across digits if any
+		// should only be in range 0-9
+		while (i < s.length() && s.charAt(i) >= '0' && s.charAt(i) <= '9') {
+			// check if we will go over the max
+			if (res > Integer.MAX_VALUE / 10 || (res == Integer.MAX_VALUE / 10 && s.charAt(i) - '0' > 7)) {
+				if (sign == -1) {
+					return Integer.MIN_VALUE;
+				}
+				return Integer.MAX_VALUE;
+			}
+			
+			// update res
+			res = res * 10 + (s.charAt(i++) - '0');
+		}
+		return sign * res;
+    }
+}
+=================================
+
+class Solution {
+    public int myAtoi(String str) {
+        StringBuilder s = new StringBuilder();
+        
+        for (Character c : str.toCharArray()) {
+            if (s.length() == 0 && c == ' ') { 
+                // Ignore white space before numbers or word
+                continue;
+            } else if ((c == '-' || c == '+') && s.length() == 0) { 
+                // Append only one sign
+                s.append(c);
+            } else if (c != ' ' && Character.isDigit(c)) { 
+                // Append only valid numbers
+                s.append(c);
+            } else { 
+                // If space or letter is encountered break out of loop
+                break;
+            }
+            
+        } 
+    
+        return convertString(s.toString());    
+    }
+
+    public int convertString(String s) {
+       int result = 0;
+        
+        // If string is empty or only contains a sign, skip
+       if (!s.isEmpty() && !s.equals("-") && !s.equals("+")) {
+            try {
+                // Will throw an error if string is large or smaller than possible max/min integer values
+                 result = Integer.parseInt(s);
+            }
+            catch(Exception e) {
+                if (s.charAt(0) == '-'){
+                    result = Integer.MIN_VALUE;
+                } else {
+                    result = Integer.MAX_VALUE;   
+                }
+            }
+         }
+        
+        return result;
+    }
+}
+Time complexity: O(n)
+Space complexity: O(n)
