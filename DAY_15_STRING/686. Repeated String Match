@@ -1,0 +1,658 @@
+Given two strings a and b, return the minimum number of times you should repeat string a so that string b is a substring of it.
+If it is impossible for b to be a substring of a after repeating it, return -1.
+
+Notice: string "abc" repeated 0 times is "", repeated 1 time is "abc" and repeated 2 times is "abcabc".
+
+ 
+
+Example 1:
+
+Input: a = "abcd", b = "cdabcdab"
+Output: 3
+Explanation: We return 3 because by repeating a three times "abcdabcdabcd", b is a substring of it.
+Example 2:
+
+Input: a = "a", b = "aa"
+Output: 2
+ 
+
+Constraints:
+
+1 <= a.length, b.length <= 104
+a and b consist of lowercase English letters.
+
+
+MY_SOLUTION
+
+class Solution {
+    public int repeatedStringMatch(String a, String b) {
+      String dup=a;int ans=1;
+        while(a.length()<b.length())
+        {
+            a=a+dup;
+            ans++;// if a.length()== b.length() then whole a should match b else there might be possiblity to add                   one more duplicate so that the resultant might have the substring b in the answer.
+        }
+        
+        if(check(a,b))// ans is not present in the string a so there is possibility that a+dup will have it
+            return ans;
+        if(check(a+dup,b))// if a+dup has the substring b then we incerment ans+1 as we have added a duplicate
+            return ans+1;
+        
+        return -1;// substring cannot be found no matter how much duplicates we add.
+    }
+    public static boolean check(String a,String b){
+        int n=a.length(),m=b.length();
+        for(int i=0;i<=n-m;i++){// n-m is done to prevent IndexOutOfBoundsException            
+            int j;
+            for(j=0;j<m;j++)
+            {
+                if(a.charAt(i+j)!=b.charAt(j))
+                    break;
+            }
+         if(j==m)// means that we have successfully moved through all the length of b i.e b is present in a
+             return true;
+        }
+
+        return false;
+    }
+}
+Using String Builder
+ public int repeatedStringMatch(String a, String b) {
+        StringBuilder sb =new StringBuilder();int ans=0;
+        while(sb.length()<b.length())
+        {
+        	ans++;
+        	sb.append(a);
+        }
+        
+        if(sb.toString().contains(b)) // indexOf method of String Builder can also be used
+        	return ans;
+        
+        sb.append(a);
+        if(sb.toString().contains(b))
+        	return ans+1;
+        
+        return -1;
+    }
+
+
+=============================================================================================
+
+// https://www.youtube.com/watch?v=BQ9E-2umSWc&ab_channel=TECHDOSE
+
+import java.nio.file.Path;
+import java.util.*;
+
+public class Solution
+{
+
+  private static final int d = 26; // Base value of alphabets
+  private static final int p = 5381; // Large prime number
+
+  public static void search(String pat, String txt)
+  {
+    int patHash = 0; // Hash value of pattern
+    int txtHash = 0; // Hash value of text
+
+    for (int i = 0; i < pat.length(); i++) // Generating Hash values for pattern and first window text
+    {
+      patHash = patHash * d;
+      txtHash = txtHash * d;
+      patHash = patHash + ((pat.charAt(i) - 'A' + 1) % p);
+      txtHash = txtHash + ((txt.charAt(i) - 'A' + 1) % p);
+    }
+
+    
+    for (int i = 0; i < txt.length() - pat.length(); i++) // Loop of text size minus  window
+    {
+      if (patHash == txtHash)
+      {
+        System.out.println("Pattern found at index " + i);
+      }
+
+      if (i < txt.length() - pat.length())
+      {
+        txtHash = txtHash - ((txt.charAt(i) - 'A' + 1) * (int)Math.pow(d, pat.length() - 1));  
+        // Subtracting first element from current hash of d^window-1
+        txtHash = txtHash * d + (txt.charAt(i + pat.length()) - 'A' + 1);  
+        // multiplying obtained hash with d to left shift the number and then adding the next new element
+      }
+    }
+  }
+    
+  public static void main(String []args)
+  {
+    String txt = "GEEKS FOR GEEKS";
+    String pat = "GEEK";
+
+    search(pat, txt);
+  }  
+}
+===================================================================================
+
+// https://www.youtube.com/watch?v=Y4J7_1SyTEk&ab_channel=GeeksforGeeksPractice
+
+
+Brute Force
+The key idea in solving this problem using this approach is that we can naively search for pattern ‘ptr’ in ‘str’ by simply iterating through the ‘str’. If we find a match we add the current index in our array/list ‘result’.
+
+      The algorithm will be -
+
+We start iterating from the start of the string ‘str’ to (size of ‘str’ - size of ‘pat’) to check for a match.
+In each iteration, we define a variable ‘j’ which and take a loop from ‘i’ to ‘i+ size of ‘pat’) to match the pattern string with the current string from index ‘i’. If the current substring from index ‘i’ matches the pat string, we add ‘i’ to our array/list ‘result’.
+Finally, we return the array/list ‘result’.
+Time Complexity
+O(N*M), where ‘N’ is the length of the string str and ‘M’ is the length of string pat.
+
+ 
+
+In the worst case we need to check for each character if it matches ‘pat’ or not so the complexity will be O(N*M)
+
+Space Complexity
+O(N), where ‘N’ is the length of the string ‘str’
+
+ 
+
+The maximum size of the array/list ‘result’ will be O(N).
+
+/*
+    Time Complexity: O(N*M)
+    Space Complexity: O(N)
+
+    Where 'N' is the length of the string 'str' and 'M' is the length of 'pat'
+*/
+
+import java.util.ArrayList;
+
+public class Solution {
+	public static ArrayList<Integer> stringMatch(String str, String pat) {
+
+		ArrayList<Integer> result = new ArrayList<Integer>();
+
+		// Iterate through all possible starting indices
+		for (int i = 0; i <= str.length() - pat.length(); i++) {
+
+			boolean flag = true;
+
+			for (int j = 0; j < pat.length(); j++) {
+				// If a character mismatch occurs
+				if (str.charAt(i + j) != pat.charAt(j)) {
+					flag = false;
+				}
+			}
+
+			if (flag) {
+				result.add(i);
+			}
+		}
+
+		return result;
+	}
+}
+
+==========================================================
+
+Rabin Carp
+We can optimize the brute force approach by improving the searching algorithm. We can use hashing for it.
+
+      The algorithm will be -
+
+We first create a hash function. A hash function is simply a function that returns a value if some string is passed to it and it returns the same 
+value when the same string is passed to it.
+For this, we can take a sufficiently large base and use the numeric equivalent of characters i.e 1=A 2=b 3=C and so on.
+We can take any base but let us assume we take it as 31.
+For example, the string ABC will have its hash value: 3*31^3 +2*31^2+1*31=902.
+Now for a larger string, it is possible that the hash value becomes very big, So we take a suitable mod to avoid collisions. 
+A collision happens when the hash function gives the same value for 2 different strings.  Let us that that to be 998244353.
+After taking such a large mod, the probability of collision will be 1/mod.
+Now to check if the pattern matches we just need to compare the hash values.
+We can calculate the hash value from 0 to any index i using the hash value calculated from 0 to i - 1:
+hash( str[0 .. i] ) = ( hash(str[0…(i - 1)]) + (str[i] - ‘A’ + 1) * power(base, i)) mod q 
+Where q is any prime number.
+power(base, i) represents the value when the base is raised to i.
+We will use the following approach:
+
+We first make an array ‘primePower’ in which we store all the powers of the prime number till ‘n’ where ‘n’ is the size of ‘str’
+Then we find the hash value of ‘pat’ string ‘hashPattern’ as discussed above.
+We store the hash of str till index ‘i’ in an array/list h.
+Now, for each i from 0 to N - M + 1:
+We calculate the hash of substring of length M starting at index i by (h[i + M] - h[i] + mod)%mod.
+If the calculated hash value is equal to (hashPattern *primePower[i])%mod, we include the index i in our array/list 'occurrences'.
+Finally, we return the occurrences array.
+Time Complexity
+O(N + M), where ‘N’ is the length of the string str and ‘M’ is the length of string pat.
+
+ 
+
+Since we are traversing the string ‘str’ and ‘ptr’ at most once the time complexity will be O(N + M).
+
+Space Complexity
+O(N), where N is the length of ‘str’
+
+ 
+
+In the worst case the length of the occurrences array/list can be  O(N).
+
+/*
+    Time Complexity: O(N + M)
+    Space Complexity: O(1)
+
+    Where 'N' is the length of the string 'str' and 'M' is the length of pat
+*/
+
+import java.util.ArrayList;
+
+public class Solution {
+	public static ArrayList<Integer> stringMatch(String str, String pat) {
+
+		int prime = 31;
+		int mod = 998244353;
+
+		int m = pat.length();
+		int n = str.length();
+
+		// Array/list to store power of prime i.e 31^i
+		ArrayList<Long> primePower = new ArrayList<Long>();
+		for (int i = 0; i < n; i++) {
+			primePower.add((long) 0);
+		}
+
+		primePower.set(0, (long) 1);
+		for (int i = 1; i < n; i++) {
+			primePower.set(i, (primePower.get(i - 1) * prime) % mod);
+		}
+
+		// Store hash values for string 'str' till each index i starting from 0
+		ArrayList<Long> h = new ArrayList<Long>();
+		for (int i = 0; i < n + 1; i++) {
+			h.add((long) 0);
+		}
+
+		for (int i = 0; i < n; i++) {
+			h.set(i + 1, (h.get(i) + (str.charAt(i) - 'A' + 1) * primePower.get(i)) % mod);
+		}
+
+		// Finding the hash value of pattern
+		long hashPattern = 0;
+		for (int i = 0; i < m; i++) {
+			hashPattern = (hashPattern + (pat.charAt(i) - 'A' + 1) * primePower.get(i)) % mod;
+		}
+
+		ArrayList<Integer> occurences = new ArrayList<Integer>();
+
+		// Rolling hash
+		for (int i = 0; i + m - 1 < n; i++) {
+			long currentHash = (h.get(i + m) + mod - h.get(i)) % mod;
+
+			// If a match is found, insert it in our answer
+			if (currentHash == hashPattern * primePower.get(i) % mod) {
+				occurences.add(i);
+			}
+		}
+
+		return occurences;
+	}
+}
+================================================================================
+
+Approach : 
+Imagine we wrote S = A+A+A+… If B is a substring of S, we only need to check whether some index 0 or 1 or …. length(A) -1 starts with B, as S is long 
+enough to contain B, and S has a period of length(A).
+Now, suppose ans is the least number for which length(B) <= length(A * ans). We only need to check whether B is a substring of A * ans or A * (ans+1). 
+If we try k < ans, then B has a larger length than A * ans and therefore can’t be a substring.
+When k = ans+1, A * k is already big enough to try all positions for B( A[i:i+length(B)] == B for i = 0, 1, …, length(A) – 1).
+
+Below is the implementation of the above approach: 
+
+
+// Java program to find minimum number
+// of times 'A' has to be repeated
+// such that 'B' is a substring of it
+class GFG
+{
+ 
+// Function to check if a number
+// is a substring of other or not
+static boolean issubstring(String str2,
+                           String rep1)
+{
+    int M = str2.length();
+    int N = rep1.length();
+ 
+    // Check for substring from starting
+    // from i'th index of main string
+    for (int i = 0; i <= N - M; i++)
+    {
+        int j;
+ 
+        // For current index i,
+        // check for pattern match
+        for (j = 0; j < M; j++)
+            if (rep1.charAt(i + j) != str2.charAt(j))
+                break;
+ 
+        if (j == M) // pattern matched
+            return true;
+    }
+ 
+    return false; // not a substring
+}
+ 
+// Function to find Minimum number
+// of times 'A' has to be repeated
+// such that 'B' is a substring of it
+static int Min_repetation(String A, String B)
+{
+    // To store minimum number of repetitions
+    int ans = 1;
+     
+    // To store repeated string
+    String S = A;
+     
+    // Until size of S is less than B
+    while(S.length() < B.length())
+    {
+        S += A;
+        ans++;
+    }
+     
+    // ans times repetition makes required answer
+    if (issubstring(B, S)) return ans;
+     
+    // Add one more string of A
+    if (issubstring(B, S + A))
+        return ans + 1;
+         
+    // If no such solution exists
+    return -1;
+}
+ 
+// Driver code
+public static void main(String[] args)
+{
+    String A = "abcd", B = "cdabcdab";
+     
+    // Function call
+    System.out.println(Min_repetation(A, B));
+}
+}
+ 
+// This code is contributed by PrinciRaj1992
+Output
+3
+Time Complexity: O(N * M) 
+Auxiliary Space: O(1).  
+
+Approach 2:
+
+Idea here is to try and find the string using a brute force string searching algorithm (n * m). 
+The only difference here is to calculate the modulus (i % n) when the counter reaches the end of the string.
+
+/*package whatever //do not write package name here */
+ 
+import java.io.*;
+ 
+class GFG {
+    static int repeatedStringMatch(String A, String B)
+    {
+        int m = A.length();
+        int n = B.length();
+ 
+        int count;
+        boolean found = false;
+ 
+        for (int i = 0; i < m; ++i) {
+            int j = i;
+ 
+            int k = 0;
+ 
+            count = 1;
+ 
+            while (k < n && A.charAt(j) == B.charAt(k)) {
+ 
+                if (k == n - 1) {
+                    found = true;
+                    break;
+                }
+ 
+                j = (j + 1) % m;
+ 
+                // if j = 0, it means we have repeated the
+                // string
+                if (j == 0)
+                    ++count;
+ 
+                k += 1;
+            }
+ 
+            if (found)
+                return count;
+        }
+ 
+        return -1;
+    }
+    public static void main(String[] args)
+    {
+ 
+        String A = "abcd", B = "cdabcdab";
+ 
+        // Function call
+        System.out.println(repeatedStringMatch(A, B));
+    }
+}
+ Time Complexity: O(N * M) 
+
+Auxiliary Space: O(1). 
+============================================================================================================
+
+Pattern Matching Algorithms
+
+KMP
+Rabin-Karp
+
+class Solution {
+    public int repeatedStringMatch(String a, String b) {
+        Set<Character> set = new HashSet<>();
+        for(char c: a.toCharArray())
+            set.add(c);
+        for(char c: b.toCharArray())
+            if(!set.contains(c)) return -1;
+        
+        int count = 1;
+        String newA = a;
+        while(newA.length() < b.length()){
+            newA += a;
+            count++;
+        }
+
+        // b substring (pattern) exist in newA
+        if(matchPattern(newA, b)) return count;
+        else if(matchPattern(newA+""+a, b)) return count+1;    
+        return -1;
+    }
+    //Finding b substring in a
+    private boolean matchPattern(String a, String b){
+        // if(rabinKarp(a, b)) return true;
+        if(KMP(a, b)) return true;
+        return false;
+    }
+    
+    private boolean rabinKarp(String a, String b){
+        if(a.length() < b.length()) return false;
+        long patternHash = 0, hash = 0, prime = 7, MOD = (int)(1e9+7);
+        int i = 0, j = 0;
+        
+        // Generating pattern hash
+        while(i<b.length())
+            patternHash = ((patternHash * prime) % MOD + (int)(b.charAt(i++))) % MOD;
+        
+        // Generating initial hash of initial b.length() characters of a
+        i = 0;
+        while(i<b.length())
+            hash = ((hash * prime) % MOD + (a.charAt(i++))) % MOD;
+        
+        if(patternHash == hash && b.equals(a.substring(0, i))) return true;
+        while(i < a.length()){
+            // Removing first value of hash
+            hash = hash - ((long)(a.charAt(j++)) * (long)(Math.pow(prime, b.length()-1)));
+            // Adding new value at the end and generating new Hash
+            hash = ((hash * prime) % MOD + (a.charAt(i++))) % MOD;
+            // if below condition return true -> Pattern matched!
+            if(patternHash == hash && b.equals(a.substring(j, i))) return true;
+        }
+        return false;
+    }
+    
+    
+    private boolean KMP(String string, String pattern){
+        if(string.length() < pattern.length()) return false;
+        int[] lps = new int[pattern.length()];
+        fillLPS(pattern, lps);
+        int i = 0, j = 0;
+        
+        while(i<string.length()){
+            if(string.charAt(i) == pattern.charAt(j)){
+                i++;j++;
+            }
+            if(j == pattern.length()){
+                j = lps[pattern.length()-1];
+                return true;
+            }else if(i < string.length() && string.charAt(i) != pattern.charAt(j)){
+                if(j == 0) i++;
+                else j = lps[j - 1];
+            }
+        }
+        return false;
+    }
+    
+    private void fillLPS(String s, int[] lps){
+        lps[0] = 0;
+        int j = 0, i = 1;
+        while(i < s.length()){
+            if(s.charAt(i) == s.charAt(j)){
+                j++;
+                lps[i] = j;
+                i++;
+            }else{
+                if(j == 0){
+                    lps[i] = 0;
+                    i++;
+                }else j = lps[j - 1]; 
+            }
+        }
+    }
+}
+
+======================================================
+Assume the repeated string does exist. Then, we must have
+B = [some nullable suffix of A] AA..AA (k times) [some nullable prefix of A] where k = floor(|B| / |A|).
+
+Then, we just need to test
+
+whether the string by repeating A k times contains B as a substring,
+whether the string by repeating A (k+1) times contains B as a substring,
+whether the string by repeating A (k+2) times contains B as a substring.
+We can combine and case 1& case 2 into case 3.
+Based on start and end of match of B with (k+2) A's, we can get exact k.
+
+If starting of the match is 0 then suffix of A is null.
+Based on start + length of the match, we can check if prefix of A is null.
+Java solution based on same idea:
+
+class Solution {
+    private int kmp(String t, String p) {
+        int m = p.length();
+        int n = t.length();
+        int[] table = new int[m + 1];
+        table[0] = -1;
+        int i = 0, k = -1;
+        for(i = 1; i <= m; ++i) {
+            while(k >= 0 && p.charAt(k) != p.charAt(i - 1)) {
+                k = table[k];
+            }
+            table[i] = ++k;
+        }
+        k = 0;
+        for(i = 1; i <= n; ++i) {
+            while(k >= 0 && p.charAt(k) != t.charAt(i - 1)) {
+                k = table[k];
+            }
+            ++k;
+            if(k == m) {
+                return i-m;
+            }
+        }
+        return -1;
+    }
+    public int repeatedStringMatch(String a, String b) {
+        int m = a.length();
+        int n = b.length();
+        int ans = (n-1)/m;
+        StringBuilder sb = new StringBuilder(ans + 2);
+        sb.append(a);
+        sb.append(a);
+        for(int i = 0; i < ans; ++i) {
+            sb.append(a);
+        }
+        int x = kmp(sb.toString(), b); // x denoted starting of the match
+        if(x == -1)
+            return -1;
+        if(x != 0)
+            ++ans;
+        if((x+n-1) >= (ans)*m)
+            ++ans;
+        return ans;
+    }
+}
+KMP implementation is based on slides - https://web.stanford.edu/class/cs97si/10-string-algorithms.pdf [slide starting from 10 to 22/23]
+
+
+=========================================================================================================================================
+
+class Solution {
+public int repeatedStringMatch(String A, String B) {
+
+// create string builder for storing A
+    StringBuilder sb= new StringBuilder(A);
+
+    int i=1;
+    
+// Add in A until it is less then B
+    while(sb.length()<B.length()){
+        i++;
+        sb.append(A);
+    }
+
+    
+// now check after adding in A b is substring of A or not   
+    if(sb.indexOf(B)!=-1)
+        return i;
+
+ //  else add one more time   
+    sb.append(A);
+    i++;
+
+ // check after appended B is substring of A or not if yes then      return i else return -1;
+    
+    return sb.indexOf(B)!=-1?i:-1;
+}
+}
+===================================================================================
+
+/*
+n: length of a, m: length of b , k = n / m ~= constant 
+TC: O(nm * k) ~= O(nm), each iteration StringBuilder content size will grow at most n size but it will repeat constant times. 
+Then we can asuume time complexity will be O(nm)
+SC: O(kn) ~= O(n)
+*/
+class Solution {
+    public int repeatedStringMatch(String a, String b) {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 1; i <= b.length() / a.length() + 2; i++) //starting 1 and ending with maximum 2 repeations is enough 
+            if(sb.append(a).toString().contains(b))
+                return i;
+        return -1;
+    }
+}
+
+
