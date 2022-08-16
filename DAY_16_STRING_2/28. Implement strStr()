@@ -26,3 +26,617 @@ Constraints:
 haystack and needle consist of only lowercase English characters.
 
 MY_SOLUTION
+
+Analysis
+This problem can be rephrased in simple words as, given two strings haystack and needle. Find if needle is present in the haystack.
+
+We can easily do it by using library methods but since this is an algorithmic problem, we should not do it.
+
+If the needle is present in the haystack, return its starting index, else return -1.
+
+Approach
+We will follow the below steps —
+
+!. Take the length of the needle as needleLength.
+
+Scan the haystack from left to right.
+Check if substrings of length needleLength are present in it.
+Time Complexity
+The string is traversed once so the time complexity will be O(n).
+
+Space Complexity
+We may have to create n substrings of length 1 each, therefore, the space complexity will also be O(n).
+
+Code
+Java
+public class ImplementStrStr {
+
+    public int strStr(String haystack, String needle) {
+        // Base condition
+        if (haystack == null || needle == null) {
+            return -1;
+        }
+        // Special case
+        if (haystack.equals(needle)) {
+            return 0;
+        }
+        // length of the needle
+        int needleLength = needle.length();
+        // Loop through the haystack and slide the window
+        for (int i = 0; i < haystack.length() - needleLength + 1; i++) {
+            // Check if the substring equals to the needle
+            if (haystack.substring(i, i + needleLength).equals(needle)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
+=================================
+
+class Solution {
+    public int strStr(String haystack, String needle) {
+        if(needle.isEmpty()) return 0;
+        int hayLen = haystack.length();
+        int needleLen = needle.length();
+        
+        if(hayLen < needleLen) return -1;
+        
+        for(int i = 0; i <= hayLen - needleLen; i++){
+            int j = 0;
+            for(j = 0; j < needleLen; j++){
+                if(haystack.charAt(i + j) != needle.charAt(j))
+                    break;
+            }
+            
+            if(j == needleLen){
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+}
+
+===============================================================
+Brute Force Approach
+A basic approach is to check all substrings of string ‘S’ and see if that substring is equal to ‘P’ or not. Let’s see how we’ll do this.
+
+ 
+
+Initialize an integer variable count = 0.
+Start by running an outer loop(loop variable i) from 0 to N - M.
+Then run a nested loop(loop variable j) from 0 to 'M'.
+For index ‘i’, check if S[i + j] != P[j], if this condition is true, we simply break the inner loop and move to the next i. 
+We do this to check every substring of length ‘M’ if it is equal to 'P' or not.
+Later on, we check if ‘j’ is equal to 'M' or not, if this condition is true, we increment our count by 1 because we have found a substring of 
+length M which is equal to 'P'.
+Finally, we return the count which is our final answer.
+ 
+
+For example-  String S = ababa and String P = ab
+
+Here N = 5 and M = 2
+
+ 
+
+We first run a loop from 0 to 3(N - M) with loop variable ‘i’.
+In this loop, we run another loop with a loop variable ‘j’. First, we see if S[i + j] = P[j] or not, and since it is true(S[0] = P[0]),
+we move to the next ‘j’ and check if S[1] = P[1] or not and since it is also true we move further.
+But now on moving further ‘j’ becomes 2 and we exit this inner loop but we see that since j == M(2), we increment our count by 1.
+Now we move further to our next ‘i’ and see if S[1 + 0] = P[0] or not and since this condition doesn’t hold true, we simply break the inner loop 
+and move further and see if S[2 + 0] = P[0] is true or not and this is true since both the characters are ‘a’, then we check if S[2 + 1] = P[1] and 
+again we see that this condition is true and again j = 2 and we increment our count once again by 1.
+Now for the last ‘i’ we check if S[3 + 0] = P[0] or not and since this condition isn’t true we come out of this nested loop. 
+We also see that the outer loop variable has also reached N - M(3), therefore we exit this loop also and return our final count which is 2.
+Time Complexity
+O(N * M), where ‘N' and ‘M’ are the lengths of String ‘S’ and ‘P’ respectively. 
+
+ 
+
+As for every index we’re checking if there is a substring that is equal to ‘P’ or not, hence we’re using nested loops for that. 
+The outer loop runs from 0 to “N - M” and the inner loop runs from 0 to ‘M’. 
+
+Space Complexity
+O(1)
+
+Since we are using constant extra memory
+
+
+/*
+    Time Complexity: O(N * M)
+    Space Complexity: O(1),
+
+    where N and M is the length of string S and P respectively.
+*/
+
+public class Solution {
+
+    public static int zAlgorithm(String s, String p, int n, int m) {
+
+        int count = 0;
+        for (int i = 0; i <= n - m; i++) {
+            int j;
+            
+            // For each i, we're checking if the substring matches P or not.
+            for (j = 0; j < m; j++) {
+                if (p.charAt(j) != s.charAt(i + j)) {
+                    break;
+                }
+
+            }
+
+            // Found a Substring that matches P.
+            if (j == m) {
+                count++;
+            }
+
+        }
+
+        return count;
+    }
+
+}
+
+=========================================================
+
+Z Algorithm Approach
+As we are supposed to find the number of occurrences of 'P' in ‘S’ in linear time. We can do this by maintaining a Z array. 
+The Z array for any string 'S' of length 'N' is an array of size 'N' where the ith element is equal to the greatest number of 
+characters starting from the position ‘i’ that coincide with the first characters of ‘S’.
+
+ 
+
+The idea here is to concatenate both 'S' and 'P' and make a string “P#S”, where ‘#’ is a special character that we are using. 
+Now, for this concatenated string we will make a Z array. 
+In this Z array, if the value at any index(z[i]) is equal to ‘M', we increment our answer(initially=0) by 1 because this indicates that ‘P’ is present at that index.
+
+ 
+
+Let’s understand how we will reach our final answer using the following points. 
+
+ 
+
+Start by making a concatenated string ‘C’, where C = P + # + S and initialize an integer variable count=0.
+Make an array(Z array) of size 'K', where 'K' is the length of string ‘C’.
+Now initialize two integer values L=0 and R=0. We will be using these variables to create an interval to check if the string inside this interval matches 'P' or not.
+Now run a loop(loop variable i) from 1 till K and check if i > ‘R’ or not.
+If i > 'R'. This means that there is no substring that is starting before i and ending after i. 
+So we reset the values of ‘L’ and ‘R’ and calculate this new interval of [L, R] by using the Z array method where we use a
+while loop and we simply check if C[R - L] = C[R] and ‘R’ < ‘K’(to check if we are still inside the string C), and till the 
+time both of these conditions are wet me simply increment our 'R' by 1 and finally obtain the Z array element(z[i]) by using z[i] = R - L and 
+then we decrease ‘R’ by 1.
+If i <= 'R'. Start by making another integer variable pos = i - ‘L’.
+We first check if z[pos] is less than the remaining interval(R - i + 1) or not. If it is so then we simply make z[i] = z[pos] because this means 
+that there is no prefix substring that starts at C[i] because if it was so then z[pos] would have been larger than the remaining interval(R-i+1).
+If z[pos] was greater than or equal to the remaining interval (R-i+1). This condition implies that we can still extend our [L, R] interval. 
+To do so we set L = i and from there starting with ‘R’ we check manually as we did in the case where i > 'R' where we calculated z[i] = R-L and
+then we decrease 'R' by 1.
+Since our Z array is created, we just traverse our array once and check if the current value of the array is equal to 'M' or not. 
+If it is equal to 'M', we increment the count by 1.
+Finally, we return count, which is our final answer.
+ 
+
+For example- String S = abba and String P = ab
+
+Here N = 4 and M = 2
+
+ 
+
+We start by making a string C = ab + “#” + abba = ab#abba
+Make a Z array, whose size is K, where K is the length of the string C(here, K = 7).
+Make two integer variables L = 0 and R = 0.
+Run a loop from 1 till K(loop variable i) and start by checking if i less R or not.
+Since our i > R we reset L = i and R = i. While R < K(7) and C[R-L] = C[R] we keep incrementing R and after coming out of this 
+while loop we calculate z[1] and since this while loop is never executed because of C[0] != C[1]. Hence,  z[1] = R - L = 1 - 1 = 0.
+Next for index 2 we see that i > R just like index 1.  Here also since C[0] != C[2] we find z[2] = R - L = 2 - 2 = 0
+For index 3 still i < R. But here we see that C[0] = C[3], hence we increment R by 1 and still C[1] = C[4], hence we again 
+increment by 1 and finally since C[2] != C[5] we get out of the while loop and calculate z[3] = R - L = 5 - 3 = 2 and change R to 4.
+For index 4 we see that still i >= R. We make another variable pos = 4 - 3 = 1. And since  z[1] < R - i + 1, z[4] = z[1] = 0.
+Similarly for the next index also z[5] = 0.
+For the final index z[6]. Since our i >= R. We make another variable pos = 6 - 5 = 1. And since  z[1] < R - i + 1, z[6] = z[1] = 0.
+Our final Z array is [0, 0, 0, 2, 0, 0, 1] and in this array, there is only one element equal to M(2), which is our answer.
+Time Complexity
+O(N + M), where ‘N’ and ‘M’ are the lengths of String ‘S’ and 'P' respectively.
+
+ 
+
+As we are traversing the string ‘C’ only once and the length of ‘C’ is N + M.
+
+Space Complexity
+O(K), where ‘K’ is the length of the concatenated string ‘C’.
+
+ 
+
+As we are making an array of length 'K'.
+
+/*
+    Time Complexity: O(N + M)
+    Space Complexity: O(K),
+
+    where N, M and K is the length of string S, P and concatenated string C respectively.
+*/
+
+public class Solution {
+
+    public static int zAlgorithm(String s, String p, int n, int m) {
+
+        int count = 0, l = 0, r = 0, pos;
+        String c = p + "#" + s;
+        int k = c.length();
+
+        // Making an array(z array) of length K
+        int[] zarr = new int[k];
+        zarr[0] = 0;
+        for (int i = 1; i < k; i++) {
+            if (i > r) {
+
+                // Resetting L and R
+                l = i;
+                r = i;
+
+                // Calulting z[i]
+                while (r < k && c.charAt(r - l) == c.charAt(r)) {
+                    r++;
+                }
+
+                zarr[i] = (r--) - l;
+
+                // Checking if this zarr[i] is equal to the length of p or not.
+                if (zarr[i] == m) {
+                    count++;
+                }
+
+            }
+
+            else {
+                pos = i - l;
+
+                if (zarr[pos] < r - i + 1) {
+                    zarr[i] = zarr[pos];
+
+                    // Checking if this zarr[i] is equal to the length of p or not.
+                    if (zarr[i] == m) {
+                        count++;
+                    }
+
+                }
+
+                else {
+                    l = i;
+
+                    // Calulting z[i]
+                    while (r < k && c.charAt(r - l) == c.charAt(r)) {
+                        r++;
+                    }
+
+                    zarr[i] = (r--) - l;
+
+                    // Checking if this zarr[i] is equal to the length of p or not.
+                    if (zarr[i] == m) {
+                        count++;
+                    }
+
+                }
+
+            }
+
+        }
+
+        return count;
+    }
+}
+
+======================================================================================
+public int strStr(String haystack, String needle) {
+        // empty needle appears everywhere, first appears at 0 index
+        if (needle.length() == 0)
+            return 0;
+        if (haystack.length() == 0)
+            return -1;
+        
+        
+        for (int i = 0; i < haystack.length(); i++) {
+            // no enough places for needle after i
+            if (i + needle.length() > haystack.length()) break;
+            
+            for (int j = 0; j < needle.length(); j++) {
+                if (haystack.charAt(i+j) != needle.charAt(j))
+                    break;
+                if (j == needle.length()-1)
+                    return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    ==============================
+    public String strStr(String haystack, String needle) {
+	//KMP algorithms
+	if(needle.equals("")) return haystack;
+	if(haystack.equals("")) return null;
+	char[] arr = needle.toCharArray();
+	int[] next = makeNext(arr);
+
+	for(int i = 0, j = 0, end = haystack.length(); i < end;){
+		if(j == -1 || haystack.charAt(i) == arr[j]){
+			j++;
+			i++;
+			if(j == arr.length) return haystack.substring(i - arr.length);
+		}
+		if(i < end && haystack.charAt(i) != arr[j]) j = next[j];
+	}
+    return null;
+}
+
+private int[] makeNext(char[] arr){
+	int len = arr.length;
+	int[] next = new int[len];
+
+	next[0] = -1;
+	for(int i = 0, j = -1; i + 1 < len;){
+		if(j == -1 || arr[i] == arr[j]){
+			next[i+1] = j+1;
+			if(arr[i+1] == arr[j+1]) next[i+1] = next[j+1];
+			i++;
+			j++;
+		}
+		if(arr[i] != arr[j]) j = next[j];
+	}
+
+	return next;
+}
+
+=============================================
+Brute Force string matching
+
+/**
+ * Brute Force string matching.
+ *
+ * Time Complexity: O(M * N)
+ *
+ * Space Complexity: O(1)
+ *
+ * M = Length of haystack string. N = length of needle string.
+ */
+class Solution {
+    public int strStr(String haystack, String needle) {
+        if (haystack == null || needle == null) {
+            throw new IllegalArgumentException("Input strings are null");
+        }
+
+        int hLen = haystack.length();
+        int nLen = needle.length();
+        if (nLen == 0) {
+            return 0;
+        }
+        if (hLen < nLen) {
+            return -1;
+        }
+
+        for (int i = 0; i <= hLen - nLen; i++) {
+            int j = 0;
+            while (j < nLen && haystack.charAt(i + j) == needle.charAt(j)) {
+                j++;
+            }
+            if (j == nLen) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+}
+Using KMP Algorithm
+
+/**
+ * Using KMP Algorithm
+ *
+ * Time Complexity: O(M + N). O(N) to create lookup table. O(M) to find the
+ * needle in haystack.
+ *
+ * Space Complexity: O(N). This is required to save the lookup table.
+ *
+ * M = Length of haystack string. N = length of needle string.
+ */
+class Solution {
+    public int strStr(String haystack, String needle) {
+        if (haystack == null || needle == null) {
+            return -1;
+        }
+
+        int nLen = needle.length();
+        int hLen = haystack.length();
+        if (nLen == 0) {
+            return 0;
+        }
+        if (hLen == 0) {
+            return -1;
+        }
+
+        int[] table = kmpLookupTable(needle);
+        int i = 0;
+        int j = 0;
+        while (i < hLen && j < nLen) {
+            if (haystack.charAt(i) == needle.charAt(j)) {
+                i++;
+                j++;
+            } else {
+                if (j > 0) {
+                    j = table[j - 1];
+                } else {
+                    i++;
+                }
+            }
+        }
+
+        if (j == nLen) {
+            return i - j;
+        }
+        return -1;
+    }
+
+    private int[] kmpLookupTable(String s) {
+        int[] table = new int[s.length()];
+        int i = 1;
+        int index = 0;
+        while (i < s.length()) {
+            if (s.charAt(i) == s.charAt(index)) {
+                table[i] = index + 1;
+                index++;
+                i++;
+            } else {
+                if (index > 0) {
+                    index = table[index - 1];
+                } else {
+                    table[i] = 0;
+                    i++;
+                }
+            }
+        }
+        return table;
+    }
+}
+=======================================================================
+The time complexity for this solution should be O(m + n). First of all, we generate the "next" array to show any possible duplicates of prefix and postfix within needle. Then we go through haystack. Every time we see a bad match, move j to next[j] and keep i in current position; otherwise, move both of them to next position.
+public int strStr(String haystack, String needle){
+    if (haystack == null || needle == null)
+        return -1;
+    //generate next array, need O(n) time
+    int i = -1, j = 0, m = haystack.length(), n = needle.length();
+    int[] next = new int[n];
+    if (next.length > 0) 
+        next[0] = -1;
+    while (j < n - 1) {
+        if (i == -1 || needle.charAt(i) == needle.charAt(j))
+            next[++j] = ++i;
+        else 
+            i = next[i];
+    }
+    //check through the haystack using next, need O(m) time
+    i = 0; j = 0;
+    while (i < m && j < n) {
+        if (j == -1 || haystack.charAt(i) == needle.charAt(j)) {
+            i++;
+            j++;
+        }
+        else 
+            j = next[j];
+    }
+    if (j == n)
+        return i - j;
+    return -1;
+}
+
+==============================================================
+I have seen many Rabin-Karp solutions here, but all of them left me confused to some degree (I guess I'm not as smart as other folks, or I failed to 
+find the best solution for me in the haystack of so many solutions). So I wrote my own, and I hope my explanation works better for some people.
+
+This solution when submitted runs in about 4ms (at least in August 2021... these things change apparently). 
+The solution is linear in time, it should run in worst case O(n+m), n being the length of haystack and m being the length of needle.
+Memory is O(1), we just use a few integer variables to hold the hashes, indexes, prime, etc. 
+I had originally written this to process the char[] version of the Strings (by calling toCharArray() on them at the beginning), 
+but this duplicates the memory used to store each string, as can be seen in the code for toCharArray(). That version was a bit faster on most runs.
+
+When stripped of comments, this implementation has fewer than 50 lines.
+
+For more information, please check Wikipedia's article on Rabin-Karp and the explanation in Sedgewick and Wayne's "Algorithms" book, 
+where this problem is specifically addressed (their code is here). I also found these slides explaining this and the other 
+linear string matching algorithms: Substring search.
+
+class Solution {
+    // Returns the index of the first occurrence of needle in haystack, using an 
+    // implementation of the Rabin–Karp algorithm
+    public int strStr(String haystack, String needle) {
+        // We need a prime to minimize the chance of collisions, as in a HashMap.
+        // The reason a prime is better is that when we generate hashcodes that are
+        // multiples of each other, they don't land on the same bucket when we calculate
+        // their mod (num_buckets) (unless they are multiples of the chosen prime).
+        // As of where I got this from, I just searched for primes on Wikipedia ;)
+        final int prime = 9999991;
+        // Most people use a base here representative of the base the data is encoded in.
+        // I have found 10 to be more intuitive and to work as fast as others,
+        // at least for the leetcode test dataset.
+		// Sedgewick uses 256, so feel free to switch to that, or to 26 if you restrict your values
+		// to a-z.
+        final int base = 10;
+        
+        // Handle cornercase: needle is empty
+        if (needle.length() == 0) return 0;
+        // Handle cornercase: needle is longer than haystack
+        if (haystack.length() < needle.length()) return -1;
+        
+        // Since we are expressing the string in the hashcode as 
+        // char[i]*base^N + char[i-1] * base^N-1....+char[window.length()-1],
+        // when we remove the most significant digit in each step a few lines down from here,
+        // we need to multiply the letter we are removing from the window by the base elevated
+        // to the number of digits in the window (char[i]*base^N) mod prime.
+        // Needle (and the window) can have up to 50,000 characters as per requirements,
+        // so this can go up to Math.pow(10, 50,000), which in Java just returns "Infinity" - it's a huge number.
+        // To mitigate this, since we are going to be using this number to calculate a hash mod prime,
+        // we can multiply the base n times and calculate its mod prime factor by factor.
+        // This works because (a*b)%p = ((a%p)*(b%p))%p 
+        // (https://en.wikipedia.org/wiki/Modulo_operation#Properties_(identities))
+        // Here we pre-calculate this number so we can reuse it, as we must do it iteratively 
+        // and it would consume cycles character by character otherwise.
+        int maxBase = 1;
+        for (int i = 1; i < needle.length(); i++) {
+            maxBase = (maxBase * base) % prime;
+        }
+
+        int needlehash = hash(needle, needle.length(), base, prime);
+        int haystackhash = hash(haystack, needle.length(), base, prime);
+        
+        // Did we get lucky with the first (needle.length()) characters?
+        if (needlehash == haystackhash) return 0;
+        
+		// This loop slides the window of size needle.length() along the haystack.
+		// For example for [a,b,c,d,...] and a needle of size 3,
+		// it goes from [a,b,c] to [b,c,d] and so on.
+		// At each step, it recalculates the window's hashcode in O(1), by reusing the previous result. This is the key of the algorithm.
+		// For more info, please check https://en.wikipedia.org/wiki/Rolling_hash
+        for (int i = needle.length(); i < haystack.length(); i++) {
+            // Take first char out of the hash. You may note here that instead of subtracting the value for the most significant
+			// character directly from haystackhash, I'm subtracting it from haystackhash+prime. The reason is that, since I'm
+			// subtracting 2 numbers mod prime, the result could easily become negative. To prevent this, we add prime as the result 
+			// should be the same (a%p = (a+p)%p) https://en.wikipedia.org/wiki/Modulo_operation#Properties_(identities)
+			// since now the number on the left of the subtraction is larger than the number on the right, the result
+			// cannot be negative.
+            haystackhash = (haystackhash+prime - (maxBase*haystack.charAt(i-needle.length())%prime))%prime;
+            
+            // Shift to the left, add new char
+            haystackhash = (haystackhash*base + haystack.charAt(i))%prime;
+            
+            // hashes matching can mean a match or a collision. Only way to tell one from the other
+            // is to linearly verify if the match on hash is also a match character by character.
+            if (needlehash == haystackhash && checkSolution(haystack, needle, i-needle.length()+1)) return i-needle.length()+1;
+        }
+        
+        return -1;
+    }
+    
+    // Calculates a hashcode similar to how java.lang.String does it.
+    // We reimplement it here because we need control over what the prime and the base is.
+    // Java uses base=31 and prime=Integer.MAX_VALUE (implicitly)
+    private int hash(String chars, int count, int base, int prime) {
+        int hash = 0;
+        for (int i = 0; i < count; i++) {
+            char c = chars.charAt(i);
+            hash = (hash * base + c) % prime;
+        }
+        
+        return hash;
+    }
+    
+    // Check solution linearly, fail fast on first character not matching
+    private boolean checkSolution(String haystack, String needle, int i) {
+        // Many strings have the same hashcode, we need to check whether this is a collision
+        for (int j = 0; j < needle.length(); j++) {
+            if (haystack.charAt(j+i) != needle.charAt(j)) return false;
+        }
+        
+        return true;
+    }
+}
