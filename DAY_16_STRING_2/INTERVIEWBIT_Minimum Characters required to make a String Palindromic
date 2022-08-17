@@ -1,0 +1,473 @@
+Given an string A. The only operation allowed is to insert  characters in the beginning of the string.
+
+Find how many minimum characters are needed to be inserted to make the string a palindrome string.
+
+
+
+
+Input Format
+
+The only argument given is string A.
+Output Format
+
+Return the minimum characters that are needed to be inserted to make the string a palindrome string.
+For Example
+
+Input 1:
+    A = "ABC"
+Output 1:
+    2
+    Explanation 1:
+        Insert 'B' at beginning, string becomes: "BABC".
+        Insert 'C' at beginning, string becomes: "CBABC".
+
+Input 2:
+    A = "AACECAAAA"
+Output 2:
+    2
+    Explanation 2:
+        Insert 'A' at beginning, string becomes: "AAACECAAAA".
+        Insert 'A' at beginning, string becomes: "AAAACECAAAA".
+        
+MY_SOLUTION
+
+Brute Force
+The idea is pretty simple, as we can add only at the front, thus, we need to work on the prefix of the string.
+We need to find the largest prefix that is a palindrome. For example, in case of “abbac”, the largest prefix that is a palindrome is “abba”,
+now all you need to do is add the reverse of left out suffix i.e. “ca” at the front to make it a palindrome.
+This can be done in the following way:-
+Until the string becomes a palindrome:
+Remove the last character from the string.
+Once the string becomes a palindrome or empty:
+Subtract the current length of string with the actual length of the string and return the function.
+In the case of “xxaxxxr” of length 7:
+As, “xxaxxxr” is not a palindrome, remove the last character, the new string will be “xxaxxx”
+As, “xxaxxx” is not a palindrome either, remove the last character, the new string will be “xxaxx”. 
+Now, as, “xxaxx” is a palindrome:
+Answer = actual length - current length
+Answer = 7 - 5 i.e. 2.
+Time Complexity
+O(N ^ 2) per test case, where N is the size of the given string. 
+
+ 
+
+In the worst case, for N number of times, we are checking if the string is a palindrome of not taking O(N) time.
+
+Space Complexity
+O(1) per test case,
+
+ 
+
+In the worst case, only constant extra space is used. 
+
+/*
+    Time complexity: O(N ^ 2)
+    Space complexity: O(1)
+    
+    Where N is length of the string.    
+*/
+
+public class Solution {
+
+    public static int minCharsforPalindrome(String str) {
+
+        int count = 0;
+
+        while (str.length() > 0) {
+
+            // If current string is palindrome break the loop
+            if (isPalindrome(str)) {
+                break;
+            }
+            // Otherwise remove the last char and go to next iteration
+            else {
+                count++;
+                str = str.substring(0, str.length() - 1);
+            }
+        }
+
+        return count;
+    }
+
+    // Function for checking a string is palindrome or not
+    public static boolean isPalindrome(String str) {
+
+        int l = str.length();
+        int i = 0;
+        int j = l - 1;
+
+        while (i < j) {
+
+            if (str.charAt(i) != str.charAt(j)) {
+                return false;
+            }
+            i++;
+            j--;
+
+        }
+
+        return true;
+
+    }
+
+}
+
+
+=================================================================================================
+
+Using LPS Array
+Let's first understand with an example what a LPS (Longest Proper Prefix which is also a Suffix) array is:-
+For a string “AAAA”, the LPS array is [0, 1, 2, 3].
+As for string[0]: Proper Prefix from index 0 to 0 = {“”} and Suffix from 0 to 0 = {“”}. Largest length of the prefix which is also a suffix is 0, thus, LPS[0] = 0.
+For string[1]: Proper Prefix from 0 to 1 = {‘ \0 ’, ‘A’ } and Suffix from 0 to 1 = {‘AA’, ‘A, ‘\0’’}. Largest length of prefix which is also a suffix is 1(‘A’), thus, LPS[ 1 ] = 1.
+For string[2]: Proper Prefix from 0 to 2 = { ‘ \0 ’, ‘A’, ‘AA’ } and Suffix = {‘AAA’, ‘AA’, ‘A, ‘\0’’}. Largest length of prefix which is also a suffix is 2(‘AA’), thus, LPS[2] = 2.
+For string[3]: Proper Prefix from 0 to 3 = {‘\0’, ‘A’, ‘AA’, ‘AAA’} and Suffix = {‘AAAA’, ‘AAA’, ‘AA’ ,‘A, ‘\0’’}. Largest length of prefix which is also a suffix is 3(‘AAA’), thus, LPS[3] = 3.
+Now, Similarly for string “AABAACAABAA”, the LPS array is [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5].
+ 
+
+Steps :
+
+The idea is to find out the largest prefix which is a palindrome. This can be found out in an optimised way by updating the string by concatenating it with a special symbol along with reverse of the string. For example: for string BBA, after concatenating it with a special symbol ‘$’ and then with its reverse, we get the updated string as “BBA$ABB”.
+Now, we will find out the LPS array for the above updated string.
+It should be noted that the last index (LAST) of the LPS array is useful. As we have already concatenated the original string with its reverse, LPS[LAST] is the length of palindromic prefix of the original string. In case of above string “BBA”:
+Original string: “BBA”.
+Updated string: “BBA$ABB”
+LPS = [0, 1, 0, 0, 0, 1, 2]
+Last element of LPS array: 2, which is the length of the longest palindromic prefix of original string as, Original string: “BBA”. Palindromic prefix: “BB”
+The answer will be the difference between the length of the original string and LPS[LAST] i.e. (3-2)=1 for the above example.
+Note: We can easily find LPS array, using Algorithm for LPS(Prefix Function).
+
+Time Complexity
+O(N) per test case, where N is the size of the given string. 
+
+ 
+
+In the worst case, we are traversing the whole string once for finding out the LPS array.
+
+Space Complexity
+O(N) per test case, where N is the size of the given string.
+
+ 
+
+In the worst case, (2 * N) extra space is used by the LPS array.
+
+/*
+    Time complexity: O(N)
+    Space complexity: O(N)
+    
+    Where N is length of the string.    
+*/
+
+public class Solution {
+
+    public static int minCharsforPalindrome(String str) {
+
+        String revStr = reverse(str);
+
+        // Concatenate string with $ symbol and reverse string.
+        String concat = str + "$" + revStr;
+
+        // Get LPS array of this concatenated string
+        int[] lps = calculateLPSArray(concat);
+
+        return (str.length() - lps[lps.length - 1]);
+
+    }
+
+    // Function for calculating lps array
+    public static int[] calculateLPSArray(String str) {
+
+        int n = str.length();
+        int[] lps = new int[n];
+
+        int len = 0;
+
+        // As, lps[0] is always 0
+        lps[0] = 0;
+
+        // The loop calculates lps[i] for i = 1 to n-1.
+        int i = 1;
+        while (i < n) {
+
+            // We get new prefix and new suffix, so increase length of  current lps by 1 and go to next iteration.
+            if (str.charAt(i) == str.charAt(len)) {
+                len++;
+                lps[i] = len;
+                i++;
+            } else {
+
+                // Don't increment i here
+                if (len != 0) {
+                    len = lps[len - 1];
+                } else {
+
+                    // There isn't any lps ends with pat[i], so set lps[i] = 0 and go to next iteration.
+                    lps[i] = 0;
+                    i++;
+                }
+            }
+        }
+
+        return lps;
+
+    }
+
+    // Function for reverse a string
+    public static String reverse(String s) {
+
+        int n = s.length();
+        StringBuffer sb = new StringBuffer(s);
+        for (int i = n - 1; i >= 0; i--) {
+            sb.append(s.charAt(i));
+        }
+
+        return sb.toString();
+
+    }
+
+}
+
+===============================================================================
+
+Naive approach: Start checking the string each time if it is a palindrome and if not, then delete the last character and check again. When the string gets reduced to either a palindrome or empty string then the number of characters deleted from the end till now will be the answer as those characters could have been inserted at the beginning of the original string in the order which will make the string a palindrome.
+Below is the implementation of the above approach:
+ 
+
+
+// Java program for getting minimum character to be
+// added at front to make string palindrome
+ 
+class GFG {
+ 
+// function for checking string is palindrome or not
+    static boolean ispalindrome(String s) {
+        int l = s.length();
+ 
+        for (int i = 0, j = l - 1; i <= j; i++, j--) {
+            if (s.charAt(i) != s.charAt(j)) {
+                return false;
+            }
+        }
+        return true;
+    }
+ 
+// Driver code
+    public static void main(String[] args) {
+        String s = "BABABAA";
+        int cnt = 0;
+        int flag = 0;
+ 
+        while (s.length() > 0) {
+            // if string becomes palindrome then break
+            if (ispalindrome(s)) {
+                flag = 1;
+                break;
+            } else {
+                cnt++;
+ 
+                // erase the last element of the string
+                s = s.substring(0, s.length() - 1);
+                //s.erase(s.begin() + s.length() - 1);
+            }
+        }
+ 
+        // print the number of insertion at front
+        if (flag == 1) {
+            System.out.println(cnt);
+        }
+    }
+}
+ 
+
+Output
+2
+Time complexity: O(n2)
+
+Auxiliary Space: O(1)
+
+Thank you Sanny Kumar for suggesting this approach.
+Efficient approach: We can solve this problem efficiently in O(n) time using lps array of KMP algorithm. 
+First, we concat string by concatenating the given string, a special character and reverse of given string then we will get lps array for this concatenated string, recall that each index of lps array represents the longest proper prefix which is also a suffix. We can use this lps array to solve the problem. 
+ 
+
+For string = AACECAAAA
+Concatenated String = AACECAAAA$AAAACECAA
+LPS array will be {0, 1, 0, 0, 0, 1, 2, 2, 2, 
+                   0, 1, 2, 2, 2, 3, 4, 5, 6, 7}
+Here we are only interested in the last value of this lps array because it shows us the largest suffix of the reversed string that matches the prefix of the original string i.e these many characters already satisfy the palindrome property. Finally minimum number of characters needed to make the string a palindrome is the length of the input string minus the last entry of our lps array. Please see the below code for a better understanding
+ 
+
+
+// Java program for getting minimum character to be
+// added at front to make string palindrome
+import java.util.*;
+class GFG
+{
+ 
+// returns vector lps for given string str
+public static int[] computeLPSArray(String str)
+{
+    int n = str.length();
+    int lps[] = new int[n];
+    int i = 1, len = 0;
+    lps[0] = 0; // lps[0] is always 0
+     
+    while (i < n)
+    {
+        if (str.charAt(i) == str.charAt(len))
+        {
+            len++;
+            lps[i] = len;
+            i++;
+        }
+        else
+        {
+            // This is tricky. Consider the example.
+            // AAACAAAA and i = 7. The idea is similar
+            // to search step.
+            if (len != 0)
+            {
+                len = lps[len - 1];
+                 
+                // Also, note that we do not increment
+                // i here
+            }
+            else
+            {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    return lps;
+}
+ 
+// Method returns minimum character to be added at
+// front to make string palindrome
+static int getMinCharToAddedToMakeStringPalin(String str)
+{
+    StringBuilder s = new StringBuilder();
+    s.append(str);
+     
+    // Get concatenation of string, special character
+    // and reverse string
+    String rev = s.reverse().toString();
+    s.reverse().append("$").append(rev);
+     
+    // Get LPS array of this concatenated string
+    int lps[] = computeLPSArray(s.toString());
+    return str.length() - lps[s.length() - 1];
+}
+ 
+// Driver Code
+public static void main(String args[])
+{
+    String str = "AACECAAAA";
+    System.out.println(getMinCharToAddedToMakeStringPalin(str));
+}
+}
+ 
+
+Output
+2
+Time complexity: O(n)
+
+Auxiliary Space: O(n)
+
+=========================================
+
+INTERVIEW BIT SOLUTION
+
+Each index of LPS array contains the longest prefix which is also a suffix. Now take the string and reverse of a string and combine them with a sentinal character in between them and compute the LPS array of this combined string. Now take the last value of the LPS array and subtract it with the length of the original string, This will give us the minimum number of insertions required in the begining of the string .
+
+
+EDITORIAL
+
+public class Solution {
+    public int solve(String A) {
+        int len = A.length();
+        String reverse = new StringBuffer(A).reverse().toString();
+        A = A+"$"+reverse;
+        return len - KMP(A);
+    }
+    public static int KMP(String s){
+        int m =s.length();
+        int lps[] = new int[m];
+        int i=1,len=0;lps[0]=0;
+        while(i<m){
+            if(s.charAt(i)==s.charAt(len)){
+                len++;lps[i]=len;i++;
+            }
+            else{
+                if(len!=0){
+                    len = lps[len-1];
+                }
+                else{
+                    lps[i]=0;
+                    i++;
+                }
+            }
+        }
+        return lps[m-1];
+    }
+}
+
+
+=================================
+
+FATSER
+public class Solution {
+    public int solve(String A) {
+         int count = 0;
+        int end = A.length()-1;
+
+        for(int i=0;i<=end;i++){
+            if(isPalindrome(A,0,end-count)){
+                break;
+            }
+            count++;
+        }
+
+        return count;
+    }
+     boolean isPalindrome(String A, int start, int end){
+
+        while(start<=end){
+            if(A.charAt(start) != A.charAt(end)){
+                return false;
+            }
+            start++;
+            end--;
+        }
+
+        return true;
+    }
+}
+
+=====================================
+LIGHTWEIGHT
+
+public class Solution {
+    public int solve(String A) {
+        int i,j,l,ctr=0;
+        l=A.length();
+        i=0;j=l-1;
+        while(i<=j)
+        {
+            if(A.charAt(i)!=A.charAt(j))
+            {
+                ctr++;
+                j=l-ctr-1;
+                i=0;
+            }
+            else
+            {
+                i++;
+                j--;
+            }
+        }
+        return ctr;
+    }
+}
+
+
