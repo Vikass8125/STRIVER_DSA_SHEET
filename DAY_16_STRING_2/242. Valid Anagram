@@ -1,0 +1,427 @@
+Given two strings s and t, return true if t is an anagram of s, and false otherwise.
+
+An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.
+
+ 
+
+Example 1:
+
+Input: s = "anagram", t = "nagaram"
+Output: true
+Example 2:
+
+Input: s = "rat", t = "car"
+Output: false
+ 
+
+Constraints:
+
+1 <= s.length, t.length <= 5 * 104
+s and t consist of lowercase English letters.
+
+
+
+MY_SOLUTION
+Brute-Force
+The basic idea of this approach is to sort both the strings and compare the characters of the sorted strings.
+
+Sort both strings.
+Compare the characters of the sorted strings.
+Time Complexity
+O(N * log(N)), Where ‘N’ is the length of the strings.
+
+ 
+
+Since we are sorting the strings which have time complexity O(N * log(N)).
+
+Space Complexity
+O(1)
+
+ 
+
+Since we not using any extra space, the overall space complexity will be O(1).
+
+/*
+    Time complexity: O(N * log(N))
+    Space complexity: O(1)
+
+    Where 'N' is the length of the strings.
+*/
+
+import java.util.Arrays;
+
+public class Solution {
+	public static boolean areAnagram(String str1, String str2) {
+		// Get lengths of both strings.
+		int n1 = str1.length();
+		int n2 = str2.length();
+
+		// If length of both strings is not same then they cannot be anagram.
+		if (n1 != n2) {
+			return false;
+		}
+
+		// Convert input string to char array.
+		char tempArray1[] = str1.toCharArray();
+		char tempArray2[] = str2.toCharArray();
+
+		// Sort tempArray.
+		Arrays.sort(tempArray1);
+		Arrays.sort(tempArray2);
+
+		// Compare sorted strings.
+		for (int i = 0; i < n1; i++) {
+			if (tempArray1[i] != tempArray2[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+===================================================
+Hashing
+The idea is to create a ‘HASH’ array with all the values initialized to 0. 
+We increment the value in the ‘HASH’ array for characters in 'STR1' and decrement for characters in ‘STR1’. 
+Finally, if all ‘HASH’ array values are 0, then the two strings are anagram.
+
+ 
+
+If lengths of ‘STR1’ and ‘STR2’ are not the same, return false.
+Create a ‘HASH’ array with all values initialized to 0.
+Start traversing ‘STR1’ and ‘STR2’ simultaneously.
+Increment the value in the ‘HASH’ array for characters in ‘STR1’ and decrement the value in the ‘HASH’ array for characters in ‘STR2’.
+If all values in the ‘HASH’ array are 0 after the above operations, then the two strings are anagram.
+Time Complexity
+O(N), Where ‘N’ is the length of the strings.
+
+ 
+
+Since we are using a Hash Array to store the frequency of characters. We are traversing the string once so the overall time complexity will be O(N).
+
+Space Complexity
+O(Number of different characters).
+
+ 
+
+Since the size of the hash array will be equal to the number of different characters in the strings. 
+Thus the space complexity will be O(Number of different characters).
+
+/*
+    Time complexity: O(N)
+    Space complexity: O(Number of different characters).
+
+    Where 'N' is the length of the string.
+*/
+
+import java.util.ArrayList;
+
+public class Solution {
+	public static boolean areAnagram(String str1, String str2) {
+		if (str1.length() != str2.length()) {
+			return false;
+		}
+		int NO_OF_CHARS = 256;
+
+		// Create a count array and initialize all values as 0.
+		int[] hash = new int[NO_OF_CHARS];
+		for (int i = 0; i < NO_OF_CHARS; i++) {
+			hash[i] = 0;
+		}
+
+		int i;
+		/*
+		   For each character in input strings,
+		   increment count in the corresponding count array.
+		*/
+		for (i = 0; i < str1.length(); i++) {
+			hash[str1.charAt(i)]++;
+			hash[str2.charAt(i)]--;
+		}
+
+		// Check if all values in hash array are 0.
+		for (i = 0; i < NO_OF_CHARS; i++) {
+			if (hash[i] != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+=========================================================
+
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        
+        if(s.length()!=t.length()){
+            return false;
+         }
+        
+        int[] store = new int[26];
+        
+        for(int i = 0; i < s.length(); i++){
+            store[s.charAt(i) - 'a']++;
+        }
+        
+        for(int i = 0; i < t.length(); i++){
+            store[t.charAt(i) - 'a']--;
+        }
+        
+        for(int i : store){
+            if(i != 0) return false;
+        }
+        
+        return true;
+        
+    }
+}
+
+================================================================
+
+public class Solution {
+    public boolean isAnagram(String s, String t) {
+        if (s.length() != t.length()) return false;
+        char[] cs = s.toCharArray();
+        char[] ct = t.toCharArray();
+        int[] map = new int[127];
+        int count = 0;
+        for (int i = 0; i < cs.length; i++) {
+            if(++map[cs[i]] == 1) count ++;
+            if(--map[ct[i]] == 0) count --;
+        }
+        return count == 0;
+    }
+}
+=====================================================================
+The follow-up question is really tricky. For example, in Java, mentioning Unicode usually makes one thing of the char type and a HashMap. 
+However, strictly speaking, that will only allow to handle BMP, not the entire Unicode. 
+And good code should really be able to handle everything (as StringBuilder.reverse does, for example).
+
+However, it turns out that LeetCode doesn't even support anything but US-ASCII. I've just tried to run several test cases and it breaks saying
+
+'ascii' codec can't encode character u'\U0002f81a' in position 1:
+ordinal not in range(128)"
+
+Setting that aside, this problem isn't even strictly defined for Unicode characters, at least in Java. 
+Supplementary characters are represented by surrogate pairs, but what if one of the strings contains a surrogate that is not a part of a valid pair? 
+I think it makes sense to define an anagram as a string that has the same count of each BMP character, valid surrogate pair and lone surrogate.
+
+For example, "\uD87E\uDC1A\uD87E\uDC28" is a valid anagram of "\uD87E\uDC28\uD87E\uDC1A", but not of "\uDC1A\uD87E\uD87E\uDC28".
+
+Update: looks like Discuss is broken for supplementary characters too. I've just tried to post an example, but it got truncated at the first ideograph. 
+Good thing I always Ctrl+C the whole thing before clicking the post button.
+
+Here is the correct solution, as far as I was able to test it on my PC:
+
+public boolean isAnagram(String s, String t) {
+    if (s.length() != t.length()) {
+        return false;
+    }
+    Map<Integer, Integer> sm = computeFrequencyMap(s);
+    Map<Integer, Integer> tm = computeFrequencyMap(t);
+    return sm.equals(tm);
+}
+
+private Map<Integer, Integer> computeFrequencyMap(String s) {
+    Map<Integer, Integer> sm = new HashMap<>();
+    for (int i = 0; i < s.length(); ++i) {
+        char cs = s.charAt(i);
+        int cp;
+        if (i < s.length() - 1 && Character.isHighSurrogate(cs)) {
+            char cn = s.charAt(i + 1);
+            cp = Character.isLowSurrogate(cn) ? Character.toCodePoint(cs, cn) : cs;
+        } else {
+            cp = cs;
+        }
+        i = cp == cs ? i : i + 1;
+        sm.put(cp, sm.getOrDefault(cp, 0) + 1);
+    }
+    return sm;
+}
+
+=============================================================================================================================
+
+/**
+ * Time Complexity: O(N)
+ *
+ * Space Complexity: O(N)
+ *
+ * N = Length of input string S or T.
+ */
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        if (s == null || t == null || s.length() != t.length()) {
+            return false;
+        }
+
+        int len = s.length();
+        // Finding the count of each character in string S
+        HashMap<Character, Integer> countMap = new HashMap<>();
+        for (int i = 0; i < len; i++) {
+            char c = s.charAt(i);
+            countMap.put(c, countMap.getOrDefault(c, 0) + 1);
+        }
+
+        // Subtracting the count for each character in string T.
+        // If an extra char is found, we can return false.
+        for (int i = 0; i < len; i++) {
+            char c = t.charAt(i);
+            Integer count = countMap.get(c);
+            if (count == null) {
+                return false;
+            }
+            if (count.equals(1)) {
+                countMap.remove(c);
+            } else {
+                countMap.put(c, count - 1);
+            }
+        }
+
+        return true;
+    }
+}
+Below solution can take twice extra space if all characters in S & T are different.
+
+/**
+ * Time Complexity: O(N)
+ *
+ * Space Complexity: O(2*N) = O(N). In worst case if both strings have all
+ * different characters, then map will have 2*N chars.
+ *
+ * N = Length of input string S or T.
+ */
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        if (s == null || t == null || s.length() != t.length()) {
+            return false;
+        }
+
+        int len = s.length();
+        // Finding the diff count of all characters in S & T
+        HashMap<Character, Integer> countMap = new HashMap<>();
+        for (int i = 0; i < len; i++) {
+            char charS = s.charAt(i);
+            char charT = t.charAt(i);
+            countMap.put(charS, countMap.getOrDefault(charS, 0) + 1);
+            countMap.put(charT, countMap.getOrDefault(charT, 0) - 1);
+        }
+
+        if (countMap.size() > len) {
+            return false;
+        }
+
+        // All Diff Counts should be zero.
+        // If not, then return false.
+        for (int count : countMap.values()) {
+            if (count != 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+=======================================================================================================================
+
+public class Solution {
+    //6ms solution for inputs contain unicode characters
+    public boolean isAnagram0(String s, String t) {
+        if(s==null || t==null || s.length()!=t.length())
+            return false;
+        char[] sc = s.toCharArray();
+        char[] tc = t.toCharArray();
+        Arrays.sort(sc);
+        Arrays.sort(tc);
+        if(new String(sc).equals(new String(tc)))
+            return true;
+        return false;
+    }
+    
+    //3ms basic ASCII 
+    public boolean isAnagram(String s, String t) {
+        if(s==null || t==null || s.length()!=t.length())
+            return false;
+        int[] alphabets = new int[256];
+        char[] sc = s.toCharArray();
+        char[] tc = t.toCharArray();
+        for(char c : sc){
+            alphabets[c]++;
+        }
+        for(char c : tc){
+            if(alphabets[c]>0)
+                alphabets[c]--;
+            else
+                return false;
+        }
+        return true;
+    }
+}
+
+====================================================================================================
+1.Sort
+
+public boolean isAnagram(String s, String t) {
+    if (s == t || s.equals(t)) {
+        return true;
+    }
+    char[] sArray = s.toCharArray();
+    Arrays.sort(sArray);
+    String sortedS = new String(sArray);
+    char[] tArray = t.toCharArray();
+    Arrays.sort(tArray);
+    String sortedT = new String(tArray);
+    return sortedS.equals(sortedT);
+}
+2.Hash Array
+
+public boolean isAnagram(String s, String t) {
+    int[] hash = new int[26];
+    for (int i = 0; i < s.length(); i++) {
+        hash[s.charAt(i) - 'a']++;
+    }
+    for (int i = 0; i < t.length(); i++) {
+        hash[t.charAt(i) - 'a']--;
+    }
+    for (int i = 0; i < hash.length; i++) {
+        if (hash[i] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+3.Prime
+
+private static final int[] PRIMES = new int[]{3, 5, 7, 11 ,13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+        73, 79, 83, 89, 97, 101, 107};
+public boolean isAnagram(String s, String t) {
+    return hash(s) == hash(t);
+}
+
+private long hash(String s) {
+    long hash = 1;
+    for (int i = 0; i < s.length(); i++) {
+        hash *= PRIMES[s.charAt(i) - 'a'];
+    }
+    return hash;
+}
+
+============================================================================================================================
+
+class Solution {
+    public boolean isAnagram(String s, String t) { // array mapping - don't have to sort
+        var fs = new int[26]; // create two empty arrays count number of offset for each char in the string array (from letter 'a')
+        var ft = new int[26];
+        for(var c: s.toCharArray()){
+            fs[c-'a']++; //any char inside of s.toCharArray() count++
+        }
+        for(var c: t.toCharArray()){ //same here
+            ft[c-'a']++;
+        }
+        for(int i = 0; i < 26; i++){ //compare the two arrays char by char if any not equal -> false
+            if(fs[i] != ft[i])
+                return false;
+        }
+        return true;
+    }
+}
