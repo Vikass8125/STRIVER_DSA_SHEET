@@ -1,0 +1,636 @@
+KMP Algorithm for Pattern Searching
+
+Given a text txt[0..n-1] and a pattern pat[0..m-1], write a function search(char pat[], char txt[]) that prints all occurrences of pat[] in txt[].
+You may assume that n > m. 
+
+Examples:
+
+Input:  txt[] = "THIS IS A TEST TEXT"
+        pat[] = "TEST"
+Output: Pattern found at index 10
+
+Input:  txt[] =  "AABAACAADAABAABA"
+        pat[] =  "AABA"
+Output: Pattern found at index 0
+        Pattern found at index 9
+        Pattern found at index 12
+        
+Pattern searching is an important problem in computer science. When we do search for a string in notepad/word file or browser or database, 
+pattern searching algorithms are used to show the search results. We have discussed Naive pattern searching algorithm in the previous post. 
+The worst case complexity of the Naive algorithm is O(m(n-m+1)). The time complexity of KMP algorithm is O(n) in the worst case. 
+KMP (Knuth Morris Pratt) Pattern Searching The Naive pattern searching algorithm doesn’t work well in cases where we see many matching characters 
+followed by a mismatching character. Following are some examples.
+
+==================================
+Naive algorithm for Pattern Searching
+
+Given a text txt[0..n-1] and a pattern pat[0..m-1], write a function search(char pat[], char txt[]) that prints all occurrences of pat[] in txt[]. 
+You may assume that n > m. 
+Examples: 
+
+Input:  txt[] = "THIS IS A TEST TEXT"
+        pat[] = "TEST"
+Output: Pattern found at index 10
+
+Input:  txt[] =  "AABAACAADAABAABA"
+        pat[] =  "AABA"
+Output: Pattern found at index 0
+        Pattern found at index 9
+        Pattern found at index 12
+
+
+
+ 
+Pattern searching is an important problem in computer science. When we do search for a string in notepad/word file or browser or database, 
+pattern searching algorithms are used to show the search results. 
+
+ 
+Naive Pattern Searching: 
+Slide the pattern over text one by one and check for a match. If a match is found, then slide by 1 again to check for subsequent matches. 
+
+
+// Java program for Naive Pattern Searching
+ 
+public class NaiveSearch {
+ 
+    static void search(String pat,String txt){
+        int l1=pat.length();
+        int l2=txt.length();
+        int i=0,j=l2-1;
+         
+        for(i=0,j=l2-1;j<l1;){
+             
+            if(txt.equals(pat.substring(i,j+1))){
+                System.out.println("Pattern found at index "+i);
+                
+            }
+                i++;
+                j++;
+        }
+    }
+             
+             
+    public static void main(String args[]){
+        String pat="AABAACAADAABAAABAA";
+        String txt="AABA";
+         
+        search(pat,txt);
+    }
+}
+// This code is contributed by D. Vishnu Rahul Varma
+Output
+Pattern found at index 0 
+Pattern found at index 9 
+Pattern found at index 13 
+==================================
+
+   txt[] = "AAAAAAAAAAAAAAAAAB"
+   pat[] = "AAAAB"
+
+   txt[] = "ABABABCABABABCABABABC"
+   pat[] =  "ABABAC" (not a worst case, but a bad case for Naive)
+The KMP matching algorithm uses degenerating property (pattern having same sub-patterns appearing more than once in the pattern) of the pattern and 
+improves the worst case complexity to O(n). The basic idea behind KMP’s algorithm is: whenever we detect a mismatch (after some matches), 
+we already know some of the characters in the text of the next window. 
+We take advantage of this information to avoid matching the characters that we know will anyway match. Let us consider below example to understand this.
+
+Matching Overview
+txt = "AAAAABAAABA" 
+pat = "AAAA"
+
+We compare first window of txt with pat
+txt = "AAAAABAAABA" 
+pat = "AAAA"  [Initial position]
+We find a match. This is same as Naive String Matching.
+
+In the next step, we compare next window of txt with pat.
+txt = "AAAAABAAABA" 
+pat =  "AAAA" [Pattern shifted one position]
+This is where KMP does optimization over Naive. In this 
+second window, we only compare fourth A of pattern
+with fourth character of current window of text to decide 
+whether current window matches or not. Since we know 
+first three characters will anyway match, we skipped 
+matching first three characters. 
+
+Need of Preprocessing?
+An important question arises from the above explanation, 
+how to know how many characters to be skipped. To know this, 
+we pre-process pattern and prepare an integer array 
+lps[] that tells us the count of characters to be skipped. 
+Preprocessing Overview:
+
+KMP algorithm preprocesses pat[] and constructs an auxiliary lps[] of size m (same as size of pattern) which is used to skip characters while matching.
+name lps indicates longest proper prefix which is also suffix.. A proper prefix is prefix with whole string not allowed. 
+For example, prefixes of “ABC” are “”, “A”, “AB” and “ABC”. Proper prefixes are “”, “A” and “AB”. Suffixes of the string are “”, “C”, “BC” and “ABC”.
+We search for lps in sub-patterns. More clearly we focus on sub-strings of patterns that are either prefix and suffix.
+For each sub-pattern pat[0..i] where i = 0 to m-1, lps[i] stores length of the maximum matching proper prefix which is also a suffix of the sub-pattern pat[0..i].
+   lps[i] = the longest proper prefix of pat[0..i] 
+              which is also a suffix of pat[0..i]. 
+Note : lps[i] could also be defined as longest prefix which is also proper suffix.
+We need to use properly at one place to make sure that the whole substring is not considered.
+
+Examples of lps[] construction:
+For the pattern “AAAA”, 
+lps[] is [0, 1, 2, 3]
+
+For the pattern “ABCDE”, 
+lps[] is [0, 0, 0, 0, 0]
+
+For the pattern “AABAACAABAA”, 
+lps[] is [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]
+
+For the pattern “AAACAAAAAC”, 
+lps[] is [0, 1, 2, 0, 1, 2, 3, 3, 3, 4] 
+
+For the pattern “AAABAAA”, 
+lps[] is [0, 1, 2, 0, 1, 2, 3]
+Searching Algorithm:
+Unlike Naive algorithm, where we slide the pattern by one and compare all characters at each shift,
+we use a value from lps[] to decide the next characters to be matched. The idea is to not match a character that we know will anyway match.
+
+How to use lps[] to decide next positions (or to know a number of characters to be skipped)?
+
+We start comparison of pat[j] with j = 0 with characters of current window of text.
+We keep matching characters txt[i] and pat[j] and keep incrementing i and j while pat[j] and txt[i] keep matching.
+When we see a mismatch
+We know that characters pat[0..j-1] match with txt[i-j…i-1] (Note that j starts with 0 and increment it only when there is a match).
+We also know (from above definition) that lps[j-1] is count of characters of pat[0…j-1] that are both proper prefix and suffix.
+From above two points, we can conclude that we do not need to match these lps[j-1] characters with txt[i-j…i-1] because we know that these 
+characters will anyway match. Let us consider above example to understand this.
+txt[] = "AAAAABAAABA" 
+pat[] = "AAAA"
+lps[] = {0, 1, 2, 3} 
+
+i = 0, j = 0
+txt[] = "AAAAABAAABA" 
+pat[] = "AAAA"
+txt[i] and pat[j] match, do i++, j++
+
+i = 1, j = 1
+txt[] = "AAAAABAAABA" 
+pat[] = "AAAA"
+txt[i] and pat[j] match, do i++, j++
+
+i = 2, j = 2
+txt[] = "AAAAABAAABA" 
+pat[] = "AAAA"
+pat[i] and pat[j] match, do i++, j++
+
+i = 3, j = 3
+txt[] = "AAAAABAAABA" 
+pat[] = "AAAA"
+txt[i] and pat[j] match, do i++, j++
+
+i = 4, j = 4
+Since j == M, print pattern found and reset j,
+j = lps[j-1] = lps[3] = 3
+
+Here unlike Naive algorithm, we do not match first three 
+characters of this window. Value of lps[j-1] (in above 
+step) gave us index of next character to match.
+i = 4, j = 3
+txt[] = "AAAAABAAABA" 
+pat[] =  "AAAA"
+txt[i] and pat[j] match, do i++, j++
+
+i = 5, j = 4
+Since j == M, print pattern found and reset j,
+j = lps[j-1] = lps[3] = 3
+
+Again unlike Naive algorithm, we do not match first three 
+characters of this window. Value of lps[j-1] (in above 
+step) gave us index of next character to match.
+i = 5, j = 3
+txt[] = "AAAAABAAABA" 
+pat[] =   "AAAA"
+txt[i] and pat[j] do NOT match and j > 0, change only j
+j = lps[j-1] = lps[2] = 2
+
+i = 5, j = 2
+txt[] = "AAAAABAAABA" 
+pat[] =    "AAAA"
+txt[i] and pat[j] do NOT match and j > 0, change only j
+j = lps[j-1] = lps[1] = 1 
+
+i = 5, j = 1
+txt[] = "AAAAABAAABA" 
+pat[] =     "AAAA"
+txt[i] and pat[j] do NOT match and j > 0, change only j
+j = lps[j-1] = lps[0] = 0
+
+i = 5, j = 0
+txt[] = "AAAAABAAABA" 
+pat[] =      "AAAA"
+txt[i] and pat[j] do NOT match and j is 0, we do i++.
+
+i = 6, j = 0
+txt[] = "AAAAABAAABA" 
+pat[] =       "AAAA"
+txt[i] and pat[j] match, do i++ and j++
+
+i = 7, j = 1
+txt[] = "AAAAABAAABA" 
+pat[] =       "AAAA"
+txt[i] and pat[j] match, do i++ and j++
+
+We continue this way till there are sufficient characters in the text to be compared with the characters in the pattern...
+
+// JAVA program for implementation of KMP pattern
+// searching algorithm
+ 
+class KMP_String_Matching {
+    void KMPSearch(String pat, String txt)
+    {
+        int M = pat.length();
+        int N = txt.length();
+ 
+        // create lps[] that will hold the longest
+        // prefix suffix values for pattern
+        int lps[] = new int[M];
+        int j = 0; // index for pat[]
+ 
+        // Preprocess the pattern (calculate lps[]
+        // array)
+        computeLPSArray(pat, M, lps);
+ 
+        int i = 0; // index for txt[]
+        while ((N - i) >= (M - j)) {
+            if (pat.charAt(j) == txt.charAt(i)) {
+                j++;
+                i++;
+            }
+            if (j == M) {
+                System.out.println("Found pattern "
+                                + "at index " + (i - j));
+                j = lps[j - 1];
+            }
+ 
+            // mismatch after j matches
+            else if (i < N && pat.charAt(j) != txt.charAt(i)) {
+                // Do not match lps[0..lps[j-1]] characters,
+                // they will match anyway
+                if (j != 0)
+                    j = lps[j - 1];
+                else
+                    i = i + 1;
+            }
+        }
+    }
+ 
+    void computeLPSArray(String pat, int M, int lps[])
+    {
+        // length of the previous longest prefix suffix
+        int len = 0;
+        int i = 1;
+        lps[0] = 0; // lps[0] is always 0
+ 
+        // the loop calculates lps[i] for i = 1 to M-1
+        while (i < M) {
+            if (pat.charAt(i) == pat.charAt(len)) {
+                len++;
+                lps[i] = len;
+                i++;
+            }
+            else // (pat[i] != pat[len])
+            {
+                // This is tricky. Consider the example.
+                // AAACAAAA and i = 7. The idea is similar
+                // to search step.
+                if (len != 0) {
+                    len = lps[len - 1];
+ 
+                    // Also, note that we do not increment
+                    // i here
+                }
+                else // if (len == 0)
+                {
+                    lps[i] = len;
+                    i++;
+                }
+            }
+        }
+    }
+ 
+    // Driver program to test above function
+    public static void main(String args[])
+    {
+        String txt = "ABABDABACDABABCABAB";
+        String pat = "ABABCABAB";
+        new KMP_String_Matching().KMPSearch(pat, txt);
+    }
+}
+// This code has been contributed by Amit Khandelwal.
+Output
+Found pattern at index 10 
+Preprocessing Algorithm:
+In the preprocessing part, we calculate values in lps[]. To do that, we keep track of the length of the longest prefix suffix
+value (we use len variable for this purpose) for the previous index. We initialize lps[0] and len as 0. If pat[len] and pat[i] match, 
+we increment len by 1 and assign the incremented value to lps[i]. If pat[i] and pat[len] do not match and len is not 0, we update len to lps[len-1]. 
+See computeLPSArray () in the below code for details.
+
+Illustration of preprocessing (or construction of lps[])
+
+pat[] = "AAACAAAA"
+
+len = 0, i  = 0.
+lps[0] is always 0, we move 
+to i = 1
+
+len = 0, i  = 1.
+Since pat[len] and pat[i] match, do len++, 
+store it in lps[i] and do i++.
+len = 1, lps[1] = 1, i = 2
+
+len = 1, i  = 2.
+Since pat[len] and pat[i] match, do len++, 
+store it in lps[i] and do i++.
+len = 2, lps[2] = 2, i = 3
+
+len = 2, i  = 3.
+Since pat[len] and pat[i] do not match, and len > 0, 
+set len = lps[len-1] = lps[1] = 1
+
+len = 1, i  = 3.
+Since pat[len] and pat[i] do not match and len > 0, 
+len = lps[len-1] = lps[0] = 0
+
+len = 0, i  = 3.
+Since pat[len] and pat[i] do not match and len = 0, 
+Set lps[3] = 0 and i = 4.
+We know that characters pat
+len = 0, i  = 4.
+Since pat[len] and pat[i] match, do len++, 
+store it in lps[i] and do i++.
+len = 1, lps[4] = 1, i = 5
+
+len = 1, i  = 5.
+Since pat[len] and pat[i] match, do len++, 
+store it in lps[i] and do i++.
+len = 2, lps[5] = 2, i = 6
+
+len = 2, i  = 6.
+Since pat[len] and pat[i] match, do len++, 
+store it in lps[i] and do i++.
+len = 3, lps[6] = 3, i = 7
+
+len = 3, i  = 7.
+Since pat[len] and pat[i] do not match and len > 0,
+set len = lps[len-1] = lps[2] = 2
+
+len = 2, i  = 7.
+Since pat[len] and pat[i] match, do len++, 
+store it in lps[i] and do i++.
+len = 3, lps[7] = 3, i = 8
+
+We stop here as we have constructed the whole lps[].
+
+===================================================================================================================================
+
+//  https://www.codingninjas.com/codestudio/library/kmp-string-matching-algorithm
+
+Introduction
+This article aims to familiarise you with the KMP(Knuth Morris Pratt) string matching algorithm. 
+
+We will see how the KMP algorithm makes string search very efficient. Due to its efficiency and usefulness, we use it almost everywhere.
+Knowingly or unknowingly, we use the KMP algorithm every day.
+
+Let’s see the problem statement in the next section.
+
+Problem Statement
+We are given a target string “target” and a search string “search”. We have to find out all the possible locations of the search string in the target string. 
+Then we have to return the index of all the occurrences of the search string in the target string.
+
+Consider n= length(search) and m= length(target).
+
+The overlapping of the answers is also allowed. See example 2 below for a clear understanding.
+
+Note: Throughout this article, we will be using the term “KMP”, a short form for Knuth Morris Pratt and “Lps” which stands for the longest proper
+prefix which is also a suffix.
+
+ 
+
+Now, let us see a few of the examples of the problem statement:
+
+1. target= ”heyhihey” search=”hey”
+
+Output: [1,6]
+
+Explanation: The search key “hey” occurs twice in the target key. It appears on position 1 and position 6 of the target.
+Thus we have returned array [1,6]. See the below figure for a better understanding.
+
+
+Figure I:”hey” matches at index 1 and at index 6. 
+
+2. target=”aaaa” search = “aaa”
+
+Output: [1,2]
+
+Explanation: The search key occurs on index 1 and index 2. Here we have to note that the second “a” and the third “a” is counted twice. 
+Thus the answers of index 1 and index 2 overlap, i.e. one character can be in more than one answer. See the below figure for better understanding.
+
+
+Figure II: The positions of “aaa” in “aaaa”
+
+3. target=”abcdefghij” search = “abcj”
+
+Output: []
+
+Explanation: The search string is not present in the target string.
+
+You can see the naive approach for the string matching algorithm here but it is not efficient as the time complexity is O(n*m), 
+where m=length(search) and n=length(target). Let us learn in this blog how with the help of the KMP algorithm, we can achieve a linear time complexity.
+
+Approach
+For the algorithm, we must first precompute the lps_array. 
+
+Then using the LPS array, we will search the “search” string in the “target” string. 
+We do the following, Whenever a match is found, we move ahead and whenever a mismatch occurs, we find the last index of the search string which matches 
+with the target string using the lps_array.
+
+Steps to find LPS array
+1. First, we make an LPS array of size m where m=length(search) to store integers. LPS[i] is used to get the last longest matching. 
+The LPS array is initialised with 0.
+
+2. We make previous = 0. The previous variable tells us the last longest proper prefix which was also a suffix.
+
+3. As we are looking for the proper prefix we start searching from index 1 to the last index of the search array.
+
+4. We compare search[current index] with the search[previous].
+If they match we increment the previous and current index pointers and also update lps[current index] as previous+1.
+
+5. If they don’t match we do the following:
+
+i) If the previous variable is equal to 0, this means that there is no suffix that ends at search[current index] and is also a proper prefix in search. 
+Thus we make lps[current index] = 0.
+
+ii) If the previous variable is not equal to 0, this means that there was a previous match. Thus we make previous= lps[previous-1].
+
+6. At last, we return the LPS array.
+
+Note: LPS[i] means the longest proper prefix which is also a suffix for the substring search[0:i].
+The whole string can’t be lps because we are looking for a proper prefix.
+
+ 
+
+Let us write a code to find the LPS array in python.
+
+def get_lps(search):
+    # lps array is the longest proper prefix which is also a suffix
+    lps_arr=[0 for i in range(len(search))]
+    # previous is the last longest proper prefix which is also a suffix
+    previous=0
+    # Here we are checking proper prefix so that we start with the index 1
+    # as the prefix can't be itself
+    curr_index=1
+    while curr_index<len(lps_arr):
+        if search[curr_index]==search[previous]:
+            """This means that we have found a match for the last longest lps
+            and the current prefix
+            Thus we update the lps array"""
+            previous+=1
+            lps_arr[curr_index]=previous
+            curr_index+=1
+        elif previous==0:
+            """This means that we have not found a match for the current prefix with the
+            last lps.
+            As previous=0 then there does not exist previous longest lps."""
+            # no lps[curr index] exist so lps[curr_index]=0
+            lps_arr[curr_index]=0
+            curr_index+=1
+        else:
+            # we replace current_index
+            previous=lps_arr[previous-1]
+    return lps_arr
+
+
+search="abcdabcabcd"
+answer=get_lps(search)
+print(answer)
+Output
+
+[0, 0, 0, 0, 1, 2, 3, 1, 2, 3, 4]
+Explanation:
+
+lps_array[0] is always 0. Because we are searching for a proper prefix.
+
+lps_array[1], lps_array[2] and lps_array[3] all are 0 because none of them makes a proper prefix that is also a suffix.
+
+Now search[4] matches with search[0].
+
+See the below figure for more information.
+
+
+Figure 1: search[0] = search[4].
+
+Thus the longest proper prefix is “a” because it is also a prefix and also a suffix.
+
+Thus lps_array[4]=1.
+
+Now again search[1] = search[5].
+
+Thus these two characters match with the prefix as shown in the figure.
+
+
+Figure 2:  search[0] = search[4] and search[1]=search[5].
+
+Thus lps_array[5]=2.
+
+Thus similarly, we get lps_array[6]=3.
+
+For the 7th index, search[7] is not equal to search[3].
+
+Thus, the largest proper prefix which is also a suffix is only “a” as shown in the following figure.
+
+
+Figure 3:search[7]=search[0]
+
+Thus lps[7]=1.
+
+In this way we get lps[8]=2, lps[9]= 3 and lps[10]=4.
+
+We can also see this in the following figure.
+
+
+Figure 4: Strings match indices.
+
+Thus our lps_array is [0, 0, 0, 0, 1, 2, 3, 1, 2, 3, 4].
+
+ 
+
+Steps of KMP algorithm
+1. First, we get the lps_array by calling the function get_lps and passing search as an argument.
+
+2. We then make two variables, namely search_iter and target_iter, for iterating search and target respectively.
+
+3. Whenever search[search iter] equals target[target iter], we increment both of them for comparing further indices.
+
+4. When search iterator equals search.length, this means that the search string is found in the target at target_iter- search_iter. 
+Thus we print that the search is found in target at the found index.
+
+5. If they do not match, we update the search_iter with the last index that matches with the target[target_iter] using the precomputed LPS array.
+
+6. Thus, we print all the indices where the search is found in the target string in the above way.
+
+Having understood the LPS array formation, we can easily understand the KMP algorithm.
+
+Pseudocode for KMP algorithm
+DEFINE FUNCTION get_lps(search):
+    lps_arr: array of length len(search) initialized with 0
+    previous=0
+    curr_index=1
+    WHILE curr_index is length than the length of (lps_arr):
+        IF search[curr_index] is equal to search[previous]:
+            previous+=1
+            set lps_arr[curr_index] as previous
+            curr_index+=1
+        ELSEIF previous==0:
+            lps_arr[curr_index]=0
+            curr_index+=1
+        ELSE:
+            previous=lps_arr[previous-1]
+    RETURN lps_arr
+
+DEFINE FUNCTION kmp_algo(search,target):
+
+    we get lps array from get_lps function
+    i.e. lps= get_lps(search)
+    search_iter=0
+    target_iter=0
+    WHILE target_iter<lenght of the target:
+
+        IF search[search_iter] is equal to target[target_iter]:
+            search_iter+=1
+            target_iter+=1
+
+        IF search_iter is equal to the length of (search):
+            OUTPUT("Search found at index:",target_iter-search_iter+1)
+            search_iter=lps[search_iter-1]
+
+        ELSEIF target_iter is less than the length of (target):
+            IF target[target_iter]!=search[search_iter]:
+                IF search_iter!=0:
+                    search_iter=lps[search_iter-1]
+                ELSE:
+                    target_iter+=1
+ 
+ Time Complexity
+The time complexity of the KMP algorithm is O(n+m) where n=len(target) and m=len(search).
+
+The get_lps function takes O(m) time to precompute the LPS array. Then the kmp_algo function takes O(n+m) time.
+
+Space Complexity
+The space complexity of the KMP algorithm is O(m) because we are doing precomputation for the LPS array of size m.
+
+Frequently Asked Questions
+1. Where is the KMP algorithm used?
+
+The algorithm is used in Gmail, Microsoft word, google docs, Google sheets and browsers for string search, in various text editors and databases 
+for string searching and matching. KMP is also inbuilt in python3.
+
+2. What are the other similar algorithms?
+
+KMP is a prefix search algorithm. Another algorithm, z-function, also searches text in a target string. Both of them have the same time and space complexity.
+But when we want to find the first occurrence of the search string in the target string, KMP uses less space than the z-algorithm. 
+There are also algorithms like Boyer Moore and Rabin Karp. The space complexity for Rabin Karp is O(1).
+        
