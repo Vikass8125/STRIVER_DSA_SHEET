@@ -24,3 +24,704 @@ Constraints:
 -10 <= nums[i] <= 10
 The product of any prefix or suffix of nums is guaranteed to fit in a 32-bit integer.
 
+
+
+MY_SOLUTION
+-> KADANE'S ALGO MAINTAIN A MAXpRODUCT.
+-> TRAVERSE FROM BOTH SIDES (LEFT -> RIGHT) AND (RIGHT -> LEFT)
+-> IF PRODUCT(CURRENT) == 0 THEN SET PRODUCT = 1;
+
+
+class Solution {
+    public int maxProduct(int[] nums) {
+        //T.C -> O(N) + O(N) ~ O(N), S.C -> O(1)
+        int n = nums.length;
+        int maxP = Integer.MIN_VALUE;
+        int prod = 1;
+        
+        for(int i = 0; i < n; i++){
+            prod *= nums[i];
+            maxP = Math.max(maxP, prod);
+            if(prod == 0) prod = 1;
+        }
+        
+        prod = 1;
+        for(int i = n - 1; i >= 0; i--){
+            prod *= nums[i];
+            maxP = Math.max(maxP, prod);
+            if(prod == 0) prod = 1;
+        }
+        
+        return maxP;
+        
+    }
+}
+
+=============================================================
+
+
+Solution: Brute Force
+
+Approach:
+
+Find all possible subarrays of the given array. Find the product of each subarray. Return the maximum of all them.
+
+Following are the steps for the approach:-
+
+Run a loop on the array to choose the start point for each subarray.
+Run a nested loop to get the end point for each subarray.
+Multiply elements present in the chosen range.
+Dry Run:
+
+
+
+Code:
+
+import java.util.*;
+public class Main
+{
+	static int maxProductSubArray(int arr[]) {
+	    int result = Integer.MIN_VALUE;
+	    for(int i=0;i<arr.length-1;i++) 
+	        for(int j=i+1;j<arr.length;j++) {
+	            int prod = 1;
+	            for(int k=i;k<=j;k++) 
+	                prod *= arr[k];
+	            result = Math.max(result,prod);
+	        }
+	   return result;     
+	}
+	public static void main(String[] args) {
+		int nums[] = {1,2,-3,0,-4,-5};
+		int answer = maxProductSubArray(nums);
+		System.out.print("The maximum product subarray is: "+answer);
+	}
+}
+Output: The maximum product subarray: 20
+
+Time Complexity: O(N3)
+
+Reason: We are using 3 nested loops for finding all possible subarrays and their product.
+
+Space Complexity: O(1)
+
+Reason: No extra data structure was used
+
+Solution: Optimised Brute Force
+
+Approach:
+
+We can optimize the brute force by making 3 nested iterations to 2 nested iterations
+
+Following are the steps for the approach:
+
+Run a loop to find the start of the subarrays.
+Run another nested loop
+Multiply each element and store the maximum value of all the subarray.
+Dry Run:
+
+
+
+Code:
+
+import java.util.*;
+public class Main
+{
+	static int maxProductSubArray(int arr[]) {
+	    int result = arr[0];
+	    for(int i=0;i<arr.length-1;i++) {
+	        int p = arr[i];
+	        for(int j=i+1;j<arr.length;j++) {
+	            result = Math.max(result,p);
+	            p *= arr[j];
+	        }
+	        result = Math.max(result,p);
+	    }
+	   return result;     
+	}
+	public static void main(String[] args) {
+		int nums[] = {1,2,-3,0,-4,-5};
+		int answer = maxProductSubArray(nums);
+		System.out.print("The maximum product subarray is: "+answer);
+	}
+}
+Output: The maximum product subarray: 20
+
+Time Complexity: O(N2)
+
+Reason: We are using two nested loops
+
+Space Complexity: O(1)
+
+Reason: No extra data structures are used for computation
+
+Solution: Two Traversals
+
+Approach:
+
+Idea is to find the maximum product from both sides,i.e, once in a forwarding direction and another in the backward direction.
+
+Following are the steps for the approach:
+
+Iteration from left to right once to get maximum product for forward direction.
+If zero is encountered, we set all variables again to initial value.
+Iteration from right to left once again to get maximum product for backward direction.
+If zero is encountered, we set all variables again to zero to find a new subarray with maximum product.
+Once both iterations are completed, the overall result for the maximum product subarray of the given array is the maximum product obtained from both the iterations. 
+Code:
+
+import java.util.*;
+public class Main
+{
+	static int maxProductSubArray(int arr[]) {
+	    int maxLeft = arr[0];
+	    int maxRight = arr[0];
+	    
+	    boolean zeroPresent = false;
+	    
+	    int prod = 1;
+	    
+	    for(int i:arr) {
+	        prod *= i;
+	        if(i == 0) {
+	            zeroPresent = true;
+	            prod = 1;
+	            continue;
+	        }
+	        maxLeft = Math.max(maxLeft,prod);
+	    }
+	    
+	    prod = 1;
+	    
+	    for(int j=arr.length-1;j>=0;j--) {
+	        prod *= arr[j];
+	        if(arr[j] == 0) {
+	            zeroPresent = true;
+	            prod = 1;
+	            continue;
+	        }
+	        maxRight = Math.max(maxRight,prod);
+	    }
+	    
+	    if(zeroPresent) return Math.max(Math.max(maxLeft,maxRight),0);
+	    return Math.max(maxLeft,maxRight);
+	}
+	public static void main(String[] args) {
+		int nums[] = {1,2,-3,0,-4,-5};
+		int answer = maxProductSubArray(nums);
+		System.out.print("The maximum product subarray is: "+answer);
+	}
+}
+Output: The maximum product subarray: 20
+
+Time Complexity: O(N)
+
+Reason: O(N) iteration two times for computing maximum product.
+
+Space Complexity: O(1)
+
+Reason: No extra data structures are used for computation.
+
+Solution: Kadane’s Algorithm
+
+Approach:
+
+The following approach is motivated by Kandane’s algorithm. To know Kadane’s Algorithm follow Kadane’s Algorithm
+
+The pick point for this problem is that we can get the maximum product from the product of two negative numbers too.
+
+Following are the steps for the approach:
+
+Initially store 0th index value in prod1, prod2 and result.
+Traverse the array from 1st index. 
+For each element, update prod1 and prod2.
+Prod1 is maximum of current element, product of current element and prod1, product of current element and prod2
+Prod2 is minimum of current element, product of current element and prod1, product of current element and prod2
+Return maximum of result and prod1
+Code:
+
+import java.util.*;
+public class Main
+{
+	static int maxProductSubArray(int arr[]) {
+    int prod1 = arr[0],prod2 = arr[0],result = arr[0];
+    
+    for(int i=1;i<arr.length;i++) {
+        int temp = Math.max(arr[i],Math.max(prod1*arr[i],prod2*arr[i]));
+        prod2 = Math.min(arr[i],Math.min(prod1*arr[i],prod2*arr[i]));
+        prod1 = temp;
+        
+        result = Math.max(result,prod1);
+    }
+    
+    return result;
+	}
+	public static void main(String[] args) {
+		int nums[] = {1,2,-3,0,-4,-5};
+		int answer = maxProductSubArray(nums);
+		System.out.print("The maximum product subarray is: "+answer);
+	}
+}
+Output: The maximum product subarray: 20
+
+Time Complexity: O(N)
+
+Reason: A single iteration is used.
+
+Space Complexity: O(1)
+
+Reason: No extra data structure is used for computation
+
+==============================================================================================
+
+Brute-force
+Steps:
+
+Create an ans variable and initialize it to INT_MIN.
+Run a loop i = 0 to N and do:
+ ->Run a loop j = i to N and do:
+  ->Create a variable, say currentProduct and initialize it to 1.
+  ->Run a loop k = i to j and do:
+    ->currentProduct = currentProduct * arr[k]
+    ->Store the maximum of ans and the currentProduct in the ans variable.
+Finally, return the ans variable.
+Time Complexity
+O(N^3), where N denotes the number of elements of arr.
+
+ 
+
+As there are N*(N+1)/2 subarrays in total, and we are iterating over every subarray in linear time, the overall time complexity will be O(N^3).  
+
+Space Complexity
+O(1)
+
+ 
+
+Constant space is used.
+
+/*
+    Time Complexity - O(N^3)
+    Space Complexity - O(1)
+
+    Where N is size of the array "arr".
+*/
+
+import java.util.ArrayList;
+
+public class Solution {
+	public static int maximumProduct(ArrayList<Integer> arr, int n) {
+
+		int ans = Integer.MIN_VALUE;
+
+		for (int i = 0; i < n; i++) {
+			for (int j = i; j < n; j++) {
+
+				int currentProduct = 1;
+				for (int k = i; k <= j; k++) {
+					currentProduct = currentProduct * arr.get(k);
+					ans = Math.max(ans, currentProduct);
+				}
+			}
+		}
+
+		return ans;
+	}
+}
+
+
+========================
+Optimized Brute-force
+Steps:
+
+Create an ans variable and initialize it to INT_MIN.
+Run a loop i = 0 to N and do:
+ ->Create a variable, say currentProduct and initialize it to arr[i].
+  ->Store the maximum of ans and the currentProduct in the ans variable.
+  ->Run a loop from j = i + 1 to N and do:
+    ->currentProduct = currentProduct * arr[j].
+    ->Store the maximum of “ans” and the “currentProduct” in the “ans” variable.
+Finally, return the “ans” variable.
+Time Complexity
+O(N^2), where N denotes the number of elements of arr.
+
+ 
+
+We are visiting all the subarrays with the help of two nested loops. As there are N*(N+1)/2 subarrays in total, the time complexity will be O(N^2).
+
+Space Complexity
+O(1)
+
+ 
+
+Constant space is used.
+
+
+/*
+    Time Complexity - O(N^2)
+    Space Complexity - O(1)
+
+    Where N is size of the array "arr".
+*/
+
+import java.util.ArrayList;
+
+public class Solution {
+	public static int maximumProduct(ArrayList<Integer> arr, int n) {
+
+		int ans = Integer.MIN_VALUE;
+
+		for (int i = 0; i < n; i++) {
+			int currentProduct = arr.get(i);
+			ans = Math.max(ans, currentProduct);
+
+			// Find all possible subarrays starting from this current index.
+			for (int j = i + 1; j < n; j++) {
+				currentProduct = currentProduct * arr.get(j);
+				ans = Math.max(ans, currentProduct);
+			}
+		}
+
+		return ans;
+	}
+}
+
+===========================================
+
+Dynamic Programming
+In the previous approach, we were trying to find the product of all the possible subarrays of the array. 
+But, we can optimize this approach with a simple trick. Note that the product of an even number of negative integers is a positive integer. 
+
+ 
+
+Now, let’s say the number of negative integers in a subarray of the array is P. If P is even, then we should take all the negative integers as the
+product of these elements will be positive. If P is odd, then we have to take P - 1 negative integer. 
+Since this has to be a contiguous subarray, so we can either exclude one negative integer from the beginning or from the end.
+
+ 
+
+So, we can take two integers to calculate the product from the beginning and the product from the end of the array. We will traverse the array “arr”, 
+multiply arr[i] with the product from the beginning and arr[N - i - 1] with the product from the end. 
+Then calculate the maximum of these two products in every iteration. Also, if at any point, if we encounter a 0, i.e. 
+if either of the products become 0, then make that product 1 again.
+
+ 
+
+Steps:
+
+->Create an ans variable and initialize it to INT_MIN. Create two more integers i.e. productFromFront, productFromBack. Initialize them to 1.
+->Now for each i from 0 to N - 1:
+  ->productFromFront = productFromFront * arr[i]
+  ->productFromBack = productFromBack * arr[N - i - 1]
+  ->Store the maximum of ans, productFromFront and productFromBack in the ans variable.
+  ->If productFromFront becomes 0, make productFromFront = 1.
+  ->If productFromBack becomes 0, make productFromBack = 1.
+->Finally, return the ans variable.
+Time Complexity
+O(N), where N denotes the number of elements of arr.
+
+ 
+
+As every index will be visited at most once, the time complexity will be O(N).
+
+Space Complexity
+O(1)
+
+ 
+
+Constant space is used.
+/*
+    Time Complexity - O(N)
+    Space Complexity - O(1)
+
+    Where N is size of the array "arr".
+*/
+
+import java.util.ArrayList;
+
+public class Solution {
+	public static int maximumProduct(ArrayList<Integer> arr, int n) {
+
+		int ans = Integer.MIN_VALUE;
+
+		int productFromFront = 1, productFromBack = 1;
+
+		for (int i = 0; i < n; i++) {
+			productFromFront = productFromFront * arr.get(i);
+			productFromBack = productFromBack * arr.get(n - i - 1);
+
+			// Store the maximum of ans, productFromFront and productFromBack in the ans
+			// variable.
+			ans = Math.max(ans, Math.max(productFromFront, productFromBack));
+
+			// If any of the products become 0, make them 1 again.
+			if (productFromFront == 0) {
+				productFromFront = 1;
+			}
+			if (productFromBack == 0) {
+				productFromBack = 1;
+			}
+		}
+
+		return ans;
+	}
+}
+
+
+========================================
+
+Intution: Since we have to find the contiguous subarray having maximum product then your approach should be combination of following three cases :
+
+Case1 :- All the elements are positive : Then your answer will be product of all the elements in the array.
+Case2 :- Array have positive and negative elements both :
+If the number of negative elements is even then again your answer will be complete array because on multiplying all the negative numbers it will become positive.
+If the number of negative elements is odd then you have to remove just one negative element and for that u need to check your subarrays to get the max product.
+Case3 :- Array also contains 0 : Then there will be not much difference...its just that your array will be divided into subarray around that 0. 
+What u have to so is just as soon as your product becomes 0 make it 1 for the next iteration, now u will be searching new subarray and previous
+max will already be updated.
+*(These cases are much clear in approach 3)
+** As it is said "Talk is Cheap, Show me the Code", so based on above discussion we can frame our code in many different ways, out of which I
+have mentioned 3 intutive approaches.
+
+Approach 1: For each index i keep updating the max and min. We are also keeping min because on multiplying with any negative number your min 
+will become max and max will become min. So for every index i we will take max of (i-th element, prevMax * i-th element, prevMin * i-th element).
+
+class Solution {
+    public int maxProduct(int[] nums) {
+        
+        int max = nums[0], min = nums[0], ans = nums[0];
+        
+        for (int i = 1; i < nums.length; i++) {
+            
+            int temp = max;  // store the max because before updating min your max will already be updated
+            
+            max = Math.max(Math.max(max * nums[i], min * nums[i]), nums[i]);
+            min = Math.min(Math.min(temp * nums[i], min * nums[i]), nums[i]);
+            
+            if (max > ans) {
+                ans = max;
+            }
+        }
+        
+        return ans;
+
+    }
+}
+Approach 2: Just the slight modification of previous approach. As we know that on multiplying with negative number max will become min and min will become max,
+so why not as soon as we encounter negative element, we swap the max and min already.
+
+class Solution {
+    public int maxProduct(int[] nums) {
+        
+        int max = nums[0], min = nums[0], ans = nums[0];
+        int n = nums.length;
+        
+        for (int i = 1; i < n; i++) {
+        
+			// Swapping min and max
+            if (nums[i] < 0){
+                int temp = max;
+                max = min;
+                min = temp;
+            }
+                
+
+
+            max = Math.max(nums[i], max * nums[i]);
+            min = Math.min(nums[i], min * nums[i]);
+
+
+            ans = Math.max(ans, max);
+        }
+        
+        return ans;
+
+    }
+}
+Approach 3: Two pointer Approach
+Explanation :
+1.) Through intution explanation we know that if all the elements are positive or the negative elements are even then ur answer will be product of
+complete array which u will get in variable l and r at the last iteration.
+2.) But if negative elements are odd then u have to remove one negative element and it is sure that it will be either right of max prefix product 
+or left of max suffix product. So u need not to modify anything in your code as u are getting prefix product in l and suffix prduxt in r.
+3.) If array also contains 0 then your l and r will become 0 at that point...then just update it to 1(or else u will keep multiplying with 0) to
+get the product ahead making another subarray.
+
+image
+
+class Solution {
+    public int maxProduct(int[] nums) {
+        
+        int n = nums.length;
+        int l=1,r=1;
+        int ans=nums[0];
+        
+        for(int i=0;i<n;i++){
+            
+			//if any of l or r become 0 then update it to 1
+            l = l==0 ? 1 : l;
+            r = r==0 ? 1 : r;
+            
+            l *= nums[i];   //prefix product
+            r *= nums[n-1-i];    //suffix product
+            
+            ans = Math.max(ans,Math.max(l,r));
+            
+        }
+        
+        return ans;
+
+    }
+}
+===================================================
+DP
+
+public class Solution {
+  public int maxProduct(int[] A) {
+    if (A == null || A.length == 0) {
+        return 0;
+    }
+    int[] f = new int[A.length];
+    int[] g = new int[A.length];
+    f[0] = A[0];
+    g[0] = A[0];
+    int res = A[0];
+    for (int i = 1; i < A.length; i++) {
+        f[i] = Math.max(Math.max(f[i - 1] * A[i], g[i - 1] * A[i]), A[i]);
+        g[i] = Math.min(Math.min(f[i - 1] * A[i], g[i - 1] * A[i]), A[i]);
+        res = Math.max(res, f[i]);
+    }
+    return res;
+  }
+}
+f[i] means maximum product that can be achieved ending with i
+
+g[i] means minimum product that can be achieved ending with i
+
+==================================
+
+Idea is very similar to Maximum Subarray i.e either start subarray from myself or be a part of previous subarray. 
+but here we are looking for product and negative*negative became Positive. So Little modification in Kadane's Algorithm is needed here:
+
+Idea is to maintain maximum positive product and minimum negative product till previous .It will help us to find maximum positive product (as neg*neg = Positive) . 
+and keep update omax and mpp and mnp.
+mpp: maximum positive product
+mnp:minimum negative product
+omax: overall maximum
+
+now If I am positive value
+2.1 mpp = Math.max(val,mpp* val)
+2.2 mnp=Math.min(val,mnp* val)
+3.If I am negative value so mpp will be updated by mnp* current val
+3.1 mpp=Math.max(val,mnp* val);
+3.2 mnp=Math.min(val,mpp* val); // keep in mind that u have updated mpp in previous step and you want mpp till previous. will handle that part in code
+
+you have some idea now Code will give you more clearity :)
+
+ public int maxProduct(int[] nums) {
+        int mpp=nums[0]; // mpp: maximum Positive Product
+        int mnp=nums[0]; // mnp: Minimum Negative Product
+        int omax=nums[0]; // overall maximum Product
+        
+        
+        for(int i=1;i<nums.length;i++){
+            
+            int val=nums[i];
+            if(val<0){
+                int temp1=mnp;
+                int temp2=mpp;
+              mpp=Math.max(val,temp1*val);
+              mnp=Math.min(val,temp2*val);  
+            }else{
+               mpp=Math.max(val,val*mpp);
+               mnp=Math.min(val,val*mnp); 
+            }
+            omax=Math.max(mpp,omax);
+            
+        }
+        
+        return omax;
+        
+    }
+Time :O(N) and Space:O(1)
+Please Upvote if found it helpful:)
+
+Advice for you :
+1.Confirm your interviewer that array is containing negative values or not .(If he/she told no then ask what about zero..)
+2.can Product of number can exceed the Integer.MAX value ?
+3.Don't just rush to coding part without Clarifying these things else you may get rejection even after solving the question in most optmised way.
+
+
+
+=====================================================================
+So, the problem asks us to find the maximum subarray product. The only challenge here is that the array contains negatives!!!
+
+If the array doesn't contain any negatives we can simply multiply all the elements and we are done. 
+However, when there're negatives, the problem is split into two cases:
+
+case a) the number of negatives is even
+case b) the number of negatives is odd
+in case a) we can also simply multiply all the elements and we will have a positive number, so done.
+
+in case b) we can say, that there's one negative that converts our answer from positive to negative, for example:
+
+[2, -3, -2, 4, -4, -5, 2, 7, -1, 12]
+
+here we have 5 negatives, since they are odd, we have to remove one, and since we are dealing with subarrays, 
+it's illogical to delete one that is bounded between two negatives, because in this case we are losing all the numbers after it (or before it)
+
+so the only candidate negatives that are causing the problem are the first one (-3), and the last one (-1). So we are now left with two options,
+either we exelude -3 or we -1 and this will lead us into 4 different subarrays:
+
+possibility 1) [0: first negative number index)
+possibility 2) [0 : second negative number index)
+possibility 3) [first negative number index + 1 : arr.length)
+possibility 4) [second negative number index + 1 : arr.length)
+
+By this we covered all the possible cases of excluding the first negative or the last negative!
+
+But this is already too much, and coding it in a literal way would be ugly, the trick here is that possibility 1 and 2 can be done in a single loop from
+left to right and while keep taking the maximum and possibility 3 and 4 can be done the same way but from right to left! 
+Actually by this we also cover the case of even number of negatives :)!
+
+Code: Java
+
+    public int maxProduct(int[] nums) {
+        
+        if(nums == null || nums.length == 0){
+            return 0;
+        }
+        
+        if(nums.length == 1){
+            return nums[0];
+        }
+        
+       
+        int max = Integer.MIN_VALUE;
+        
+        int prod = 1;
+        
+        int result = 0;
+        
+        for(int i = 0 ; i < nums.length ; i++){
+            prod *= nums[i];
+            result = Math.max(result, prod);
+            if(prod == 0){
+                prod = 1;
+            }
+        }
+        
+        prod = 1;
+        
+        for(int i = nums.length -1 ; i>= 0 ; i--){
+            prod *= nums[i];
+            result = Math.max(result, prod);
+            if(prod == 0){
+                prod = 1;
+            }
+        }
+        
+        return result;
+    }
+
+
+
