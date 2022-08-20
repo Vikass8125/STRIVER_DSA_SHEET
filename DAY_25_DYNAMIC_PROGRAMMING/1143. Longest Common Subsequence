@@ -1,0 +1,1017 @@
+Given two strings text1 and text2, return the length of their longest common subsequence. If there is no common subsequence, return 0.
+
+A subsequence of a string is a new string generated from the original string with some characters (can be none) deleted without changing the relative order
+of the remaining characters.
+
+For example, "ace" is a subsequence of "abcde".
+A common subsequence of two strings is a subsequence that is common to both strings.
+
+ 
+
+Example 1:
+
+Input: text1 = "abcde", text2 = "ace" 
+Output: 3  
+Explanation: The longest common subsequence is "ace" and its length is 3.
+Example 2:
+
+Input: text1 = "abc", text2 = "abc"
+Output: 3
+Explanation: The longest common subsequence is "abc" and its length is 3.
+Example 3:
+
+Input: text1 = "abc", text2 = "def"
+Output: 0
+Explanation: There is no such common subsequence, so the result is 0.
+ 
+
+Constraints:
+
+1 <= text1.length, text2.length <= 1000
+text1 and text2 consist of only lowercase English characters.
+
+
+HINTS :
+Try dynamic programming. DP[i][j] represents the longest common subsequence of text1[0 ... i] & text2[0 ... j].
+
+
+DP[i][j] = DP[i - 1][j - 1] + 1 , if text1[i] == text2[j] DP[i][j] = max(DP[i - 1][j], DP[i][j - 1]) , otherwise
+
+
+MY_SOLUTION
+
+Solution :
+Approach 1: Using Brute Force
+
+We are given two strings, S1, and S2 (suppose of same length n), the simplest approach will be to generate all the subsequences and store them, 
+then manually find out the longest common subsequence.
+
+This naive approach will give us the correct answer but to generate all the subsequences, we will require exponential ( 2n ) time.
+Therefore we will try some other approaches.
+
+Approach 2: Using Dynamic Programming
+
+We would want to try something that can give us the longest common subsequence on the way of generating all subsequences.
+To generate all subsequences we will use recursion and in the recursive logic we will figure out a way to solve this problem.
+
+Steps to form the recursive solution: 
+
+We will first form the recursive solution by the three points mentioned in Dynamic Programming Introduction. 
+
+Step 1: Express the problem in terms of indexes.
+
+We are given two strings S1 and S2:
+
+
+A single variable can’t express both the strings at the same time, so we will use two variables ind1 and ind2. 
+They mean that we are considering string S1 from index 0 ind1 and string S2 from index 0 to S2. So our recursive function will look like this:
+
+
+
+Step 2: Explore all possibilities at a given index
+
+Intuition for Recursive Logic
+
+In the function f(ind1,ind2), ind1 and ind2 are representing two characters from strings S1 and S2 respectively.  For example: 
+
+
+Now, there can be two possibilities,
+
+if(S1[ind1] == S2[ind2]) as in the figure below. In this case this common element will represent a unit length common subsequence, 
+so we can say that we have found one character and we can shrink both the strings by 1 to find the longest common subsequence in the remaining pair of strings.
+
+if(S1[ind1] != S2[ind2]) as in the figure given below. In this case we know that the current characters represented by ind1 and ind 2 will be different. 
+So, we need to compare the ind1 character with shrunk S2 and ind2 with shrunk S1. But how do we make this comparison ?  
+If we make a single recursive call as we did above to f(ind1-1,ind2-1), we may lose some characters of the subsequence. 
+Therefore we make two recursive calls: one to f(ind1,ind2-1) (shrinking only S1) and one to f(ind1-1,ind2) (shrinking only S2). 
+Then when we return max of both the calls.
+
+Step 3:  Return the maximum of the choices
+
+In the first case, we have only one choice but in the second case we have two choices, as we have to return the longest common subsequences,
+we will return the maximum of both the choices in the second case.
+
+Base Case: 
+
+For a case like this:
+
+
+As S1[ind1] != S2[ind2]
+
+We will make a call to f(0-1,1), i.e f(-1,1) but a negative index simply means that there are no more indexes to be explored, so we simply return 0. 
+Same is the case when S1[ind1]==S2[ind2]
+
+If (ind1<0 || ind2<0) return 0.
+The final pseudocode after steps 1, 2, and 3:
+
+
+
+Recursive Tree
+
+We will dry run this example: 
+
+
+
+Steps to memoize a recursive solution:
+
+As we see there are overlapping subproblems in the recursive tree, we can memorize the recursive code to reduce the time complexity.
+
+Create a dp array of size [N][M] where N and M are lengths of S1 and S2 respectively. 
+It will store all the possible different states that our recursive function will take.
+We initialize the dp array to -1.
+Whenever we want to find the answer of particular parameters (say f(ind1,ind2)), we first check whether the answer is already calculated 
+using the dp array(i.e dp[ind][ind2]!= -1 ). If yes, simply return the value from the dp array.
+If not, then we are finding the answer for the given value for the first time, we will use the recursive relation as usual but
+before returning from the function, we will set dp[ind][ind2] to the solution we get.
+Code: 
+
+import java.util.*;
+
+class TUF{
+static int lcsUtil(String s1, String s2, int ind1, int ind2, int[][] dp){
+
+    if(ind1<0 || ind2<0)
+        return 0;
+        
+    if(dp[ind1][ind2]!=-1)
+        return dp[ind1][ind2];
+    
+    if(s1.charAt(ind1) == s2.charAt(ind2))
+        return dp[ind1][ind2] = 1 + lcsUtil(s1,s2,ind1-1,ind2-1,dp);
+    
+    else 
+        return dp[ind1][ind2] = 0 + Math.max(lcsUtil(s1,s2,ind1,ind2-1,dp),
+        lcsUtil(s1,s2,ind1-1,ind2,dp));
+   
+}
+
+
+static int lcs(String s1, String s2) {
+    
+    int n=s1.length();
+    int m=s2.length();
+
+    int dp[][]=new int[n][m];
+    for(int rows[]: dp)
+    Arrays.fill(rows,-1);
+    return lcsUtil(s1,s2,n-1,m-1,dp);
+}
+
+public static void main(String args[]) {
+
+  String s1= "acd";
+  String s2= "ced";
+                                 
+  System.out.println("The Length of Longest Common Subsequence is "+lcs(s1,s2));
+}
+}
+Output: The Length of Longest Common Subsequence is 2
+
+Time Complexity: O(N*M)
+
+Reason: There are N*M states therefore at max ‘N*M’ new problems will be solved.
+
+Space Complexity: O(N*M) + O(N+M)
+
+Reason: We are using an auxiliary recursion stack space(O(N+M)) (see the recursive tree, in the worst case,
+we will go till N+M calls at a time) and a 2D array ( O(N*M)).
+
+Steps to convert Recursive Solution to Tabulation one.
+To convert the memoization approach to a tabulation one, create a dp array with the same size as done in memoization. 
+
+Initialization: Shifting of indexes
+In the recursive logic, we set the base case to if(ind1<0 || ind2<0) but we can’t set the dp array’s index to -1.
+Therefore a hack for this issue is to shift every index by 1 towards the right.
+
+
+Therefore, now the base case will be if(ind1==0 || ind2==0).
+Similarly, we will implement the recursive code by keeping in mind the shifting of indexes, therefore S1[ind1] will be converted to S1[ind1-1]. Same for others.
+At last we will print dp[N][M] as our answer.
+Code:
+
+import java.util.*;
+
+class TUF{
+static int lcs(String s1, String s2) {
+    
+    int n=s1.length();
+    int m=s2.length();
+
+    int dp[][]=new int[n+1][m+1];
+    for(int rows[]: dp)
+    Arrays.fill(rows,-1);
+    
+    for(int i=0;i<=n;i++){
+        dp[i][0] = 0;
+    }
+    for(int i=0;i<=m;i++){
+        dp[0][i] = 0;
+    }
+    
+    for(int ind1=1;ind1<=n;ind1++){
+        for(int ind2=1;ind2<=m;ind2++){
+            if(s1.charAt(ind1-1)==s2.charAt(ind2-1))
+                dp[ind1][ind2] = 1 + dp[ind1-1][ind2-1];
+            else
+                dp[ind1][ind2] = 0 + Math.max(dp[ind1-1][ind2],dp[ind1][ind2-1]);
+        }
+    }
+    
+    return dp[n][m];
+}
+
+public static void main(String args[]) {
+
+  String s1= "acd";
+  String s2= "ced";
+                                 
+  System.out.println("The Length of Longest Common Subsequence is "+lcs(s1,s2));
+}
+}
+Output:
+
+The Length of Longest Common Subsequence is 2
+
+Time Complexity: O(N*M)
+
+Reason: There are two nested loops
+
+Space Complexity: O(N*M)
+
+Reason: We are using an external array of size ‘N*M)’. Stack Space is eliminated.
+
+Part 3: Space Optimization
+If we closely we are using two rows: dp[ind1-1][ ], dp[ind][ ],
+
+So we are not required to contain an entire array, we can simply have two rows prev and cur where prev corresponds to dp[ind-1] and cur to dp[ind].
+
+After declaring prev and cur, replace dp[ind-1] to prev and dp[ind] with cur and after the inner loop executes,
+we will set prev = cur, so that the cur row can serve as prev for the next index.
+
+Code:
+
+import java.util.*;
+
+class TUF{
+static int lcs(String s1, String s2) {
+    
+    int n=s1.length();
+    int m=s2.length();
+    
+    // Base Case is covered as we have initialized the prev and cur to 0.
+    int prev[]=new int[m+1];
+    int cur[]=new int[m+1];
+    for(int ind1=1;ind1<=n;ind1++){
+        for(int ind2=1;ind2<=m;ind2++){
+            if(s1.charAt(ind1-1)==s2.charAt(ind2-1))
+                cur[ind2] = 1 + prev[ind2-1];
+            else
+                cur[ind2] = 0 + Math.max(prev[ind2],cur[ind2-1]);
+        }
+        prev=(int[])(cur.clone());
+    }
+    
+    return prev[m];
+}
+
+public static void main(String args[]) {
+
+  String s1= "acd";
+  String s2= "ced";
+                                 
+  System.out.println("The Length of Longest Common Subsequence is "+lcs(s1,s2));
+}
+}
+Output:
+
+The Maximum price generated is 12
+
+Time Complexity: O(N*M)
+
+Reason: There are two nested loops.
+
+Space Complexity: O(M)
+
+Reason: We are using an external array of size ‘M+1’ to store only two rows.
+
+============================================================================================================================================
+
+//https://leetcode.com/problems/longest-common-subsequence/discuss/351689/JavaPython-3-Two-DP-codes-of-O(mn)-and-O(min(m-n))-spaces-w-picture-and-analysis
+
+Update:
+Q & A:
+
+Q1: What is the difference between [[0] * m] * n and [[0] * m for _ in range(n)]? Why does the former update all the rows of that column when 
+I try to update one particular cell ?
+A1: [[0] * m] * n creates n references to the exactly same list objet: [0] * m; In contrast: [[0] * m for _ in range(n)] creates n different
+list objects that have same value of [0] * m.
+
+End of Q & A
+
+Please refer to my solution Java/Python 3 2 Clean DP codes of O(m * n) & O(min(m, n)) space w/ breif explanation and
+analysis of a similar problem: 1458. Max Dot Product of Two Subsequences
+
+More similar LCS problems:
+1092. Shortest Common Supersequence and Solution
+1062. Longest Repeating Substring (Premium).
+516. Longest Palindromic Subsequence
+1312. Minimum Insertion Steps to Make a String Palindrome
+
+Find LCS;
+Let X be “XMJYAUZ” and Y be “MZJAWXU”. The longest common subsequence between X and Y is “MJAU”.
+The following table shows the lengths of the longest common subsequences between prefixes of X and Y. 
+The ith row and jth column shows the length of the LCS between X_{1..i} and Y_{1..j}.
+
+
+Method 1:
+
+    public int longestCommonSubsequence(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+        for (int i = 0; i < s1.length(); ++i)
+            for (int j = 0; j < s2.length(); ++j)
+                if (s1.charAt(i) == s2.charAt(j)) dp[i + 1][j + 1] = 1 + dp[i][j];
+                else dp[i + 1][j + 1] =  Math.max(dp[i][j + 1], dp[i + 1][j]);
+        return dp[s1.length()][s2.length()];
+    }
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        dp = [[0] * (len(text2) + 1) for _ in range(len(text1) + 1)]
+        for i, c in enumerate(text1):
+            for j, d in enumerate(text2):
+                dp[i + 1][j + 1] = 1 + dp[i][j] if c == d else max(dp[i][j + 1], dp[i + 1][j])
+        return dp[-1][-1]
+Analysis:
+
+Time & space: O(m * n)
+
+Method 2:
+
+Space Optimization
+
+
+Obviously, the code in method 1 only needs information of previous row to update current row. So we just use a two-row 2D array to save and 
+update the matching results for chars in s1 and s2.
+
+Note: use k ^ 1 and k ^= 1 to switch between dp[0] (row 0) and dp[1] (row 1).
+
+    public int longestCommonSubsequence(String s1, String s2) {
+        int m = s1.length(), n = s2.length();
+        if (m < n)  return longestCommonSubsequence(s2, s1);
+        int[][] dp = new int[2][n + 1];
+        for (int i = 0, k = 1; i < m; ++i, k ^= 1)
+            for (int j = 0; j < n; ++j)
+                if (s1.charAt(i) == s2.charAt(j)) dp[k][j + 1] = 1 + dp[k ^ 1][j];
+                else dp[k][j + 1] = Math.max(dp[k ^ 1][j + 1], dp[k][j]);
+        return dp[m % 2][n];
+    }
+Note: use 1 - i % 2 and i % 2 to switch between dp[0] (row 0) and dp[1] (row 1).
+
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        m, n = len(text1), len(text2)
+        if m < n:
+            tex1, tex2 = text2, text1
+        dp = [[0] * (n + 1) for _ in range(2)]
+        for i, c in enumerate(text1):
+            for j, d in enumerate(text2):
+                dp[1 - i % 2][j + 1] = 1 + dp[i % 2][j] if c == d else max(dp[i % 2][j + 1], dp[1 - i % 2][j])
+        return dp[m % 2][-1]
+Further Space Optimization to save half space - credit to @survive and @lenchen1112.
+
+Obviously, the above code in method 2 only needs information of previous and current columns of previous row to update current row. 
+So we just use a 1-row 1D array and 2 variables to save and update the matching results for chars in text1 and text2.
+
+    public int longestCommonSubsequence(String text1, String text2) {
+        int m = text1.length(), n = text2.length();
+        if (m < n) {
+            return longestCommonSubsequence(text2, text1);
+        }
+        int[] dp = new int[n + 1];
+        for (int i = 0; i < text1.length(); ++i) {
+            for (int j = 0, prevRow = 0, prevRowPrevCol = 0; j < text2.length(); ++j) {
+                prevRowPrevCol = prevRow;
+                prevRow = dp[j + 1];
+                dp[j + 1] = text1.charAt(i) == text2.charAt(j) ? prevRowPrevCol + 1 : Math.max(dp[j], prevRow);
+            }
+        }
+        return dp[n];
+    }
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        m, n = map(len, (text1, text2))
+        if m < n:
+            tex1, tex2 = text2, text1
+        dp = [0] * (n + 1)
+        for c in text1:
+            prevRow, prevRowPrevCol = 0, 0
+            for j, d in enumerate(text2):
+                prevRow, prevRowPrevCol = dp[j + 1], prevRow
+                dp[j + 1] = prevRowPrevCol + 1 if c == d else max(dp[j], prevRow)
+        return dp[-1]
+Analysis:
+
+Time: O(m * n). space: O(min(m, n)).
+
+===============================================
+
+class Solution {
+    // Tabulation (DP) #9 ms
+    public int longestCommonSubsequence(String text1, String text2) {
+        int n = text1.length();
+        int m = text2.length();
+        
+        int[][] dp = new int[n + 1][m + 1];
+        
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= m; j++) {
+                if (text1.charAt(i -1) == text2.charAt(j - 1)) {
+                    dp[i][j] = 1 + dp[i - 1][j - 1];
+                } else {
+                     dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        
+        
+        return dp[n][m];
+    }
+    
+    // Memoization (DP) using Matrix #15 ms
+    int lcsDP(String text1, String text2, int n, int m, int[][] dp) {
+        // base case
+        if (n == 0 || m == 0)
+            return 0;
+        
+        if (dp[n][m] != -1)
+            return dp[n][m];
+        
+        int lcs = 0;
+        if (text1.charAt(n - 1) == text2.charAt(m - 1)) {
+            lcs = 1 + lcsDP(text1, text2, n - 1, m - 1, dp);
+        } else {
+            lcs = Math.max(lcsDP(text1, text2, n - 1, m, dp), lcsDP(text1, text2, n, m - 1, dp));
+        }
+        
+        return dp[n][m] = lcs;
+    }
+    
+    
+    // Memoization (DP) using Map #247 ms
+    int lcsDP(String text1, String text2, int n, int m, Map<String, Integer> map) {
+        // base case
+        if (n == 0 || m == 0)
+            return 0;
+        
+        String key = n + "," + m;
+        
+        if (map.containsKey(key))
+            return map.get(key);
+        
+        int lcs = 0;
+        if (text1.charAt(n - 1) == text2.charAt(m - 1)) {
+            lcs = 1 + lcsDP(text1, text2, n - 1, m - 1, map);
+        } else {
+            lcs = Math.max(lcsDP(text1, text2, n - 1, m, map), lcsDP(text1, text2, n, m - 1, map));
+        }
+        
+        map.put(key, lcs);
+        
+        return lcs;
+    }
+    
+    // Recursive #TLE
+    int lcs(String text1, String text2, int n, int m) {
+        if (n == 0 || m == 0)
+            return 0;
+        
+        if (text1.charAt(n - 1) == text2.charAt(m - 1))
+            return 1 + lcs(text1, text2, n - 1, m - 1);
+        
+        return Math.max(lcs(text1, text2, n - 1, m), lcs(text1, text2, n, m - 1));
+    }
+    
+    
+}
+
+===================================
+Method 1: Brute Force (Time Limit Exceeded)
+
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        return count(text1, text2, text1.length()-1, text2.length()-1);
+    }
+    public int count(String text1, String text2, int len1, int len2) {
+        if(len1 < 0 || len2 < 0)
+            return 0;
+        if(text1.charAt(len1) == text2.charAt(len2))
+            return 1 + count(text1.substring(0,len1), text2.substring(0,len2), len1-1, len2-1);
+        else 
+            return Math.max(count(text1.substring(0, len1), text2, len1-1, len2), count(text1, text2.substring(0,len2), len1, len2-1));                  
+    }
+}
+Method 2 : Recursion With Memoization
+
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        Integer [][] dp = new Integer [text1.length()][text2.length()];
+        return count(text1, text2, text1.length()-1, text2.length()-1, dp);
+    }
+    public int count(String text1, String text2, int len1, int len2, Integer [][] dp) {
+        if(len1 < 0 || len2 < 0)
+            return 0;
+        if(dp[len1][len2] != null)
+            return dp[len1][len2];
+        if(text1.charAt(len1) == text2.charAt(len2))
+            return dp[len1][len2] = 1 + count(text1.substring(0,len1), text2.substring(0,len2), len1-1, len2-1, dp);
+        else 
+            return dp[len1][len2] = Math.max(count(text1.substring(0, len1), text2, len1-1, len2, dp), count(text1, text2.substring(0,len2), len1, len2-1,dp));       
+    }
+}
+Method 3 : 2D Dynamic Programming
+
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        int [][] dp = new int [text1.length()+1][text2.length()+1];
+        for(int i=1;i<dp.length;i++) {
+            for(int j=1;j<dp[0].length;j++) {
+                if(text1.charAt(i-1) == text2.charAt(j-1))
+                    dp[i][j] = 1 + dp[i-1][j-1];
+                else 
+                    dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+            }
+        }
+        return dp[text1.length()][text2.length()];
+    }
+}
+
+
+==============================
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        char[] chars1 = text1.toCharArray();
+        char[] chars2 = text2.toCharArray();
+        int[][] dp = new int[chars1.length + 1][chars2.length + 1];
+        for (int i = 0; i < chars1.length; i++) {
+            for (int j = 0; j < chars2.length; j++)
+                dp[i+1][j+1] = chars1[i] == chars2[j]? dp[i][j] + 1 : Math.max(dp[i][j+1], dp[i+1][j]);
+        }
+        return dp[chars1.length][chars2.length];
+    }
+}
+
+
+====================================
+
+Approach 1->
+
+we can solve this question in recursvie manner where we start comparing from i=0 and j=0 of string s1 and s2.
+if s1 and s2 ith and jth character matches it means we can increase length counter.
+if they did not match we need to try with both i,j+1 and i+1,j indexes combination to find best length. i.e. keep the maximum of both results as length.
+the breaking condition would be if any of the string is exhausted.
+/**
+	 * return length of lcs of s1 and s2.
+	 */
+	public int bruteForce(String s1, String s2) {
+		return bruteForceLCS(s1, 0, s2, 0);
+	}
+
+	private int bruteForceLCS(String s1, int i, String s2, int j) {
+		if (i == s1.length() || s2.length() == j) {
+			return 0;
+		}
+		if (s1.charAt(i) == s2.charAt(j)) {
+			return 1 + bruteForceLCS(s1, i + 1, s2, j + 1);
+		}
+		return Math.max(bruteForceLCS(s1, i + 1, s2, j), bruteForceLCS(s1, i, s2, j + 1));
+	}
+Approach 2->top down DP
+Above approach will take exponential time as we are trying every possible combination of including a character in a length and excluding also. so every character has two options.
+if we can store result of previous computation we can remove all the repeated calls. just check if for particualr i and j index data is already present in result[i][j] if yes use it. else call the method.
+
+public int topDown(String s1, String s2) {
+		return topDownLCS(s1, 0, s2, 0, new int[s1.length()][s2.length()]);
+	}
+
+	private int topDownLCS(String s1, int i, String s2, int j, int[][] output) {
+		if (i == s1.length() || s2.length() == j) {
+			return 0;
+		}
+		if (output[i][j] != 0) {
+			return output[i][j];
+		}
+
+		if (s1.charAt(i) == s2.charAt(j)) {
+			return 1 + topDownLCS(s1, i + 1, s2, j + 1, output);
+		}
+
+		int res = Math.max(topDownLCS(s1, i + 1, s2, j, output), topDownLCS(s1, i, s2, j + 1, output));
+		output[i][j] = res;
+		return res;
+	}
+TC and SC : o(nm)
+
+Approach 3- bottom up dp
+we can see in top down approach we are making call twice. 
+first going to the depth of the stack till base case reached and then coming back to the stack to get the desired answer.
+we can use iterative approch and keep on building the solution starting from character by character.
+output[0][0] will be the answer
+
+public int bottomUpLCS(String s1, String s2) {
+		int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+		for (int i = s1.length() - 1; i >= 0; i--) {
+			for (int j = s2.length() - 1; j >= 0; j--) {
+				if (s1.charAt(i) == s2.charAt(j)) {
+					dp[i][j] = 1 + dp[i + 1][j + 1];
+				} else {
+					dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+				}
+			}
+		}
+		return dp[0][0];
+	}
+TC and SC : o(nm)
+
+
+=======================================================
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        int n = text1.length();
+        int m = text2.length();
+        int[][] t = new int[n+1][m+1];
+        
+        for(int i = 0; i < n+1; i++){
+            for(int j = 0; j < m+1; j++){
+                if(i == 0 || j == 0){
+                    t[i][j] = 0;
+                }
+            }
+        }
+        
+        for(int i = 1; i < n+1; i++){
+            for(int j = 1; j < m+1; j++){
+                if(text1.charAt(i-1) == text2.charAt(j-1)){
+                    t[i][j] = 1 + t[i-1][j-1];
+                }
+                else{
+                    t[i][j] = Math.max(t[i-1][j], t[i][j-1]);
+                }
+            }
+        }
+        return t[n][m];
+    }
+}
+
+=========================================================
+class LongestCommonSubsequenceTabulationDPSolution
+{
+    //Function to find the length of longest common subsequence in two strings.
+    static int lcs(int x, int y, String s1, String s2)
+    {
+        // your code here
+
+        //Every element of this matrix denotes that for a String S1 till i and
+        //String S2 till j => this value is the length of the longest common
+        //subsequence.
+        int[][] dp = new int[x+1][y+1];
+
+        //We are considering string to be in 1-based index. So, A[0][j] represents
+        //that S1's relevant part is empty and S2's relevant part is till j. Since
+        //one of them is empty => longest common subsequence between them will be 0
+        fillZerosInFirstRowAndColumn(dp, x+1, y+1);
+
+        int i, j;
+        int topResult, leftResult, diagonalResult;
+        //We are filling this matrix row by row. Why? Because, to fill answer for
+        //any element, we need 3 things - element just above it, element just left to it,
+        //and element just above it on diagonal.
+        for(i=1; i<=x; i++) {
+            for(j=1; j<=y; j++) {
+
+                //Check if last characters of 2 strings are same. While checking this,
+                //we'll have to use 0-based index because methods like charAt etc -
+                //they only work on 0-based indexing. 1-based indexing is for us only
+                //for our dp matrix.
+                if(s1.charAt(i-1) == s2.charAt(j-1)) {
+                    diagonalResult = dp[i-1][j-1];
+                    dp[i][j] = diagonalResult+1;
+                } else {
+                    //Calculate x and y. Maximum of them is the answer for our i and j
+                    topResult = dp[i-1][j];
+                    leftResult = dp[i][j-1];
+
+                    dp[i][j] = Math.max(topResult, leftResult);
+                }
+            }
+        }
+
+        return dp[x][y];
+    }
+
+    private static void fillZerosInFirstRowAndColumn(int[][] dp, int maxRows, int maxCols) {
+        int i, j;
+
+        //Fill first row. Since it is first row, i will always be 0
+        for(j=0; j<maxCols; j++) {
+            dp[0][j] = 0;
+        }
+
+        //Fill first column. Since it is first column, j will always be 0
+        for(i=0; i<maxRows; i++) {
+            dp[i][0] = 0;
+        }
+    }
+
+}
+
+Space Optimized Code
+
+class LongestCommonSubsequenceBottomUpSpaceOptimizationSolution
+{
+    //Function to find the length of longest common subsequence in two strings.
+    static int lcs(int x, int y, String s1, String s2)
+    {
+        // your code here
+        //Previous array holds the results for S1 shrunk by 1 character and S2
+        //ranging from empty to full length.
+        int[] previous = new int[y+1];
+
+        //Current array holds the results for S1 at a particular length and S2
+        //ranging from empty to full length.
+        int[] current = new int[y+1];
+
+        //Initially, for first row, every element will be 0 since S1's relevant part
+        //is empty
+        int j;
+        for(j=0; j<=y; j++) {
+            previous[j] = 0;
+        }
+
+        //This will iterate over length of relevant part of S1. It will range from
+        //1 to x. In every iteration, for that particular length of S1, we'll fill
+        //current array. Therefore, we'll have answers for all possible lengths of
+        //S2 against this length of S1 in current array.
+        int i;
+        for(i=1; i<=x; i++) {
+            //First element will always be 0 since first element represents that
+            //relevant part of S2 is empty.
+            current[0] = 0;
+
+            //Filling current array now
+            for(j=1; j<=y; j++) {
+
+                //Checking if two characters are equal
+                if(s1.charAt(i-1) == s2.charAt(j-1)) {
+                    //DiagonalResult + 1
+                    current[j] = previous[j-1] + 1;
+                } else {
+                    //Max of top and left results
+                    current[j] = Math.max(previous[j], current[j-1]);
+                }
+            }
+
+            //Now this current will serve as previous in next iteration.
+            //Note that we cannot directly do previous = current because that will
+            //lead to both previous and current pointing to same memory block
+            //while we want them to hold 2 separate informations.
+            copyCurrentToPrevious(current, previous, y+1);
+        }
+
+        return previous[y];
+    }
+
+    private static void copyCurrentToPrevious(int[] current, int[] previous, int maxCols) {
+        int j;
+
+        for(j=0; j<maxCols; j++) {
+            previous[j] = current[j];
+        }
+    }
+}
+
+================================================
+Memoization
+Let the two strings be x and y. 
+
+Let x(i) be the substring of x from index 0 to index i. 
+
+Let c[i, j] be the length of the longest common subsequence of strings x(i) and y(j).
+
+Then the recurrence relation to find c[i, j] is as follows:
+
+We can use this relation to write a simple recursive program but instead of recomputing the results of subproblems,
+compute them just once and store their results in a lookup table (Hashmap).
+Then whenever we would need to find the result of a subproblem, first we'll look for it in our table,
+if it's present then simply return it, otherwise use recursion to find the answer and then store it in the table.
+
+Time Complexity
+O(m * n), where m and n are the lengths of each string
+
+We are maintaining a lookup table of size (m*n) and we will fill each cell of this table exactly once. Hence, total operations will be (m*n) 
+
+Space Complexity
+O(m * n), where m and n are the lengths of each string
+
+We are creating a lookup table of size (m*n)
+
+
+/*
+    Time Complexity - O(N * M)
+    Space Complexity - O(N * M)
+    where N and M are the lengths of str1 and str2 respectively.
+ */
+
+import java.util.Arrays;
+
+public class Solution {
+    public static int lcs(String str1, String str2) {
+        int[][] dp = new int[str1.length()][str2.length()];
+
+        // Fill the dp Array with -1 which signifies none of the states have been computed.
+        for (int i = 0; i < str1.length(); i++) {
+            Arrays.fill(dp[i], -1);
+        }
+
+        return lcsHelper(str1, str1.length(), str2, str2.length(), dp);
+    }
+
+    private static int lcsHelper(String str1, int n, String str2, int m, int[][] dp) {
+        // If the length of first string is zero, we don't have any common subsequence
+        if (m == 0) {
+            return 0;
+        }
+
+        // If the length of second string is zero, we don't have any common subsequence
+        if (n == 0) {
+            return 0;
+        }
+
+        // If already computed the answer for this state, we simply return it.
+        if (dp[n - 1][m - 1] != -1) {
+            return dp[n - 1][m - 1];
+        }
+
+        if (str1.charAt(n - 1) != str2.charAt(m - 1)) {
+            /*
+                 If the mth character of str1 is not equal to the nth character of str2,
+                 we return the maximum of answers obtained by
+                 1. Ignoring the nth character in the first string
+                 2. Ignoring the mth character in the second string
+            */
+            return dp[n - 1][m - 1] = Math.max(
+                    lcsHelper(str1, n - 1, str2, m, dp),
+                    lcsHelper(str1,  n, str2,m - 1, dp));
+        } else {
+            /*
+                 If the nth character of str1 is equal to the mth character of str2,
+                 this character will be included in the subsequence.
+                 Hence, we will add 1 to the length of lcs obtained
+                 removing the mth character from the first string and the
+                 nth character from the second string.
+             */
+            return dp[n - 1][m - 1] =
+                    1 + lcsHelper(str1, n - 1, str2,  m - 1, dp);
+        }
+    }
+}
+
+=====================
+
+Iterative DP
+Let the two strings be x and y. 
+
+Let x(i) be the substring of x from index 0 to index i. 
+
+Let c[i, j] be the length of the longest common subsequence of strings x(i) and y(j).
+
+Then the recurrence relation to find c[i, j] is as follows:
+
+Instead of making a lookup table and using recursion, make a 2D array, 'dp', of size (m + 1)  * (n + 1) where, dp[i][j] 
+will store the length of the LCS when you consider the first 'i' letters of the first string and first 'j' letters of the second string. 
+Now, instead of getting results of subproblems from a lookup table, you can get them from the 2D array itself since you'll be filling it up, 
+as you compute dp[m][n] starting from dp[0][0]
+
+Time Complexity
+O(m*n) as there are m*n states of dp and we are filling each one of them exactly one time.
+
+Space Complexity
+O(m*n) because we created an 2-D dp of m*n size.
+
+/*
+    Time Complexity - O(N * M)
+    Space Complexity - O(N * M)
+    where N and M are lengths of str1 and str2 respectively.
+
+*/
+
+public class Solution {
+    public static int lcs(String str1, String str2) {
+        return lcsHelper(str1, str2, str1.length(), str2.length());
+    }
+
+    private static int lcsHelper(String str1, String str2, int m, int n) {
+        int[][] dp = new int[m + 1][n + 1];
+
+        // First row
+        for(int j = 0; j <= n; j++) {
+            dp[0][j] = 0;
+        }
+
+        // First col
+        for(int i = 0; i <= m; i++) {
+            dp[i][0] = 0;
+        }
+
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+
+                if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                    dp[i][j] = 1 + dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.max(dp[i][j - 1], dp[i - 1][j]);
+                }
+
+            }
+        }
+
+        return dp[m][n];
+    }
+
+}
+
+=============================
+
+2 Rows Approach
+In each iteration of the outer loop in iterative ‘DP’ we only, need values from all columns of the previous row so instead 
+of making an ('M' + 1) * ('N' + 1) sized array (referred to as the original array), just make a 2 * ('M' + 1) sized array (referred to as the new array). 
+
+ 
+
+When you compute the third row of the original array, copy its contents to the first row of the new array.
+Similarly, when you're computing the fourth row of the original array, copy its contents to the second row of the new array and so on.
+
+Time Complexity
+ O(M * N), Where ‘M’ and ‘N’ are the lengths of each string.
+
+ 
+
+Since we are traversing each of the element in both the string for each character of the other string. Thus the time complexity will be O(M * N).
+
+Space Complexity
+O(M), Where ‘M’ is the length of the second string.
+
+ 
+
+Since we are storing the array/list for the second string. Thus the space complexity will be O(M).
+
+/*
+    Time Complexity - O(N * M)
+    Space Complexity - O(N)
+    where N and M are the lengths of strings str1 and str2.
+*/
+
+public class Solution {
+    public static int lcs(String str1, String str2) {
+        return LCSHelper(str1, str1.length(), str2, str2.length());
+    }
+
+    private static int LCSHelper(String str1, int n, String str2, int m) {
+        int[][] dp = new int[2][m + 1];
+
+        int currRowParity = 0;
+        for (int i = 0; i <= n; i++) {
+            currRowParity = i % 2;
+
+            for (int j = 0; j <= m; j++) {
+                if (i == 0 || j == 0) {
+                    dp[currRowParity][j] = 0;
+                } else if (str1.charAt(i - 1) != str2.charAt(j - 1)) {
+                    /*
+                         If the ith character of str1 is not equal to the jth character of str2,
+                         we return the maximum of answers obtained by
+                         1. Ignoring the ith character in the first string
+                         2. Ignoring the jth character in the second string
+                     */
+
+                    dp[currRowParity][j] = Math.max(
+                            dp[1 - currRowParity][j],
+                            dp[currRowParity][j - 1]);
+                } else {
+                    /*
+                         If the ith character of str1 is equal to the nth character of str2,
+                         this character will be included in the subsequence.
+                         Hence, we will add 1 to the length of lcs obtained
+                         removing the mth character from the first string and the
+                         nth character from the second string.
+                     */
+                    dp[currRowParity][j] = dp[1 - currRowParity][j - 1] + 1;
+                }
+            }
+        }
+
+        return dp[currRowParity][m];
+    }
+}
+
+
+
+
+
+
+
