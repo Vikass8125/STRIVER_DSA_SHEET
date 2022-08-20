@@ -1,0 +1,649 @@
+Given an integer array nums, return the length of the longest strictly increasing subsequence.
+
+A subsequence is a sequence that can be derived from an array by deleting some or no elements without changing the order of the remaining elements. 
+For example, [3,6,2,7] is a subsequence of the array [0,3,1,6,2,2,7].
+
+ 
+
+Example 1:
+
+Input: nums = [10,9,2,5,3,7,101,18]
+Output: 4
+Explanation: The longest increasing subsequence is [2,3,7,101], therefore the length is 4.
+Example 2:
+
+Input: nums = [0,1,0,3,2,3]
+Output: 4
+Example 3:
+
+Input: nums = [7,7,7,7,7,7,7]
+Output: 1
+ 
+
+Constraints:
+
+1 <= nums.length <= 2500
+-104 <= nums[i] <= 104
+ 
+
+Follow up: Can you come up with an algorithm that runs in O(n log(n)) time complexity?
+
+
+MY_SOLUTION
+
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        int n = nums.length;
+
+		// dp[i] represents i+1'th length LIS ending at minimum integer dp[i]
+		int dp[] = new int[n];
+
+		// Base case
+		dp[0] = 1;
+		int ans = 1;
+
+		for (int i = 1; i < n; i++) 
+		{
+			int maxVal = 0;
+
+			for (int j = 0; j < i; j++) 
+			{
+				if (nums[i] > nums[j]) 
+				{
+					maxVal = Math.max(maxVal, dp[j]);
+				}
+			}
+
+			dp[i] = maxVal + 1;
+			ans = Math.max(ans, dp[i]);
+		}
+
+		return ans;
+
+        
+    }
+}
+
+
+==================================================================================
+
+Recursive Approach
+We will write a recursive algorithm that will try all the possibilities.
+The argument of recursive function will be the current index and what was the previous number used for LIS. Initially, we will be passing the previous number as the minimum number of an integer and starting index as 0.
+The base case would be when we reach index n,i.e we have exhausted the array elements so return 0 because there is no more element to contribute anything.
+Inside each function call, we consider two cases: The current element is larger than the previous element included in the LIS. In this case, we can include the current element in the LIS. Thus, we find out the length of the LIS obtained by including it.
+Further, we also find out the length of LIS possible by not including the current element in the LIS. The value returned by the current function call is, thus, the maximum out of the two lengths.
+So here is our recurrence relation:
+if (arr[curPosition] > prev)
+{
+	taken = 1 + lisHelper(arr[curPosition], curPosition + 1);
+}
+
+int notTaken = lisHelper(prev,curPosition + 1); 
+//we can always skip the current element
+Finally, the answer will be max(taken, notTaken)
+Time Complexity
+O(2 ^ N), where N is the size of the array.
+
+ 
+
+Since every element it will be either used or not so the size of the recursion tree will be 2 ^ N.
+
+Space Complexity
+O(N), where N is the size of the array.
+
+ 
+
+For stack space in recursion.
+
+
+/*
+    Time Complexity : O(2 ^ N)
+    Space Complexity : O(N)
+
+    Where N is the size of the array
+*/
+
+public class Solution 
+{
+	private static int longestIncreasingSubsequenceHelper(int arr[], int prevPosition, int curPosition, int n) 
+    {
+        // Base case
+	    if (curPosition == n) 
+        {
+	        return 0;
+	    }
+
+	    int taken = 0;
+
+        // Taking the current element
+	    if (prevPosition < 0 || arr[curPosition] > arr[prevPosition]) 
+        {
+	        taken = 1 + longestIncreasingSubsequenceHelper(arr, curPosition, curPosition + 1, n);
+	    }
+
+        // Not Taking the current element
+	    int notTaken = longestIncreasingSubsequenceHelper(arr, prevPosition, curPosition + 1, n);
+
+	    return Math.max(taken, notTaken);
+	}
+
+	public static int longestIncreasingSubsequence(int arr[]) 
+    {
+
+		int n = arr.length;
+
+	    int ans = longestIncreasingSubsequenceHelper(arr, -1, 0, n);
+
+	    return ans;
+	}
+
+}
+===================================
+Memoization
+We will write a recursive algorithm that will try all the possibilities and then memorize them.
+The argument of recursive function will be the current index and what was the previous index of the array whose element is used for LIS. Initially, we will be passing the previous index as -1 and starting index as 0.
+The base case would be when we reach index n,i.e we have exhausted the array elements so return 0 because there is no more element to contribute anything.
+Before calling the recursive function check in the dp array if we have calculated this state before if yes return it’s value otherwise calculate.
+Inside each function call, we consider two cases: The current element is larger than the previous element included in the LIS. In this case, we can include the current element in the LIS. Thus, we find out the length of the LIS obtained by including it.
+Further, we also find out the length of LIS possible by not including the current element in the LIS. The value returned by the current function call is, thus, the maximum out of the two lengths.
+So here is our recurrence relation:
+if (curPosition==0 || arr[curPosition] > arr[prevPosition])
+    {
+    	taken = 1 + longestIncreasingSubsequenceHelper(      
+  			curPosition, curPosition + 1);
+    }
+        
+    //we can always skip the current element
+    int notTaken = 	longestIncreasingSubsequenceHelper(prevPosition, curPosition + 1); 
+    
+     //Now memoize it at 
+     dp[prevPosition+1][curPosition] = max(taken, notTaken)
+Now return this value.
+Time Complexity
+O(N ^ 2), Where N is the size of the array.
+
+ 
+
+Because now the size of the recursion tree will be reduced to O(N ^ 2) because of storing the unique state in dp array which will reduce the redundancy.
+
+Space Complexity
+O(N ^ 2), Where N is the size of the array.
+
+ 
+
+As the 2-Dimensional array is used of size N * N.
+
+/*
+    Time Complexity : O(N ^ 2)
+    Space Complexity : O(N ^ 2)
+
+    Where N is the size of the array
+*/
+
+public class Solution 
+{
+	private static int longestIncreasingSubsequenceHelper(int arr[], int prevPosition, int curPosition, int n, int[][] dp) 
+	{
+		// Base case.
+		if (curPosition == n) 
+		{
+			return 0;
+		}
+
+		// Already computed.
+		if (dp[prevPosition + 1][curPosition] >= 0) 
+		{
+			return dp[prevPosition + 1][curPosition];
+		}
+
+		int taken = 0;
+
+		// Taking the current element.
+		if (prevPosition < 0 || arr[curPosition] > arr[prevPosition]) 
+		{
+			taken = 1 + longestIncreasingSubsequenceHelper(arr, curPosition, curPosition + 1, n, dp);
+		}
+
+		// Not Taking the current element.
+		int notTaken = longestIncreasingSubsequenceHelper(arr, prevPosition, curPosition + 1, n, dp);
+
+		dp[prevPosition + 1][curPosition] = Math.max(taken, notTaken);
+
+		return dp[prevPosition + 1][curPosition];
+	}
+
+	public static int longestIncreasingSubsequence(int arr[]) 
+	{
+
+		int n = arr.length;
+
+		int[][] dp = new int[n + 1][n + 1];
+
+		for (int i = 0; i <= n; i++) 
+		{
+			for (int j = 0; j <= n; j++) 
+			{
+				dp[i][j] = -1;
+			}
+		}
+
+		int ans = longestIncreasingSubsequenceHelper(arr, -1, 0, n, dp);
+
+		return ans;
+	}
+
+}
+
+
+==================================
+
+Iterative DP
+dp[i] stores the max length of the LIS ending at position ‘i’.
+In order to find out dp[i + 1], we need to try to append the current element in every possible increasing subsequence up to the i’th index, such that the new sequence formed by adding the current element is also an increasing subsequence.
+Thus, we can easily determine dp[i] using:
+dp[i + 1] = max(dp[j]) + 1, ∀ 0 ≤ j <= i and arr[i + 1] > arr[j]
+3. In the end, the maximum out of all the dp[i]'s to determine the final result.
+Time Complexity
+O(N ^ 2), Where N is the size of the array.
+
+ 
+
+Because we are running two nested loops of size N.
+
+Space Complexity
+O(N), Where N is the size of the array.
+
+ 
+
+As an array is used of size N.
+
+/*
+    Time Complexity : O(N ^ 2)
+    Space Complexity : O(N)
+
+    Where N is the size of the array
+*/
+
+public class Solution 
+{
+	public static int longestIncreasingSubsequence(int arr[]) 
+	{
+		int n = arr.length;
+
+		// dp[i] represents i+1'th length LIS ending at minimum integer dp[i]
+		int dp[] = new int[n];
+
+		// Base case
+		dp[0] = 1;
+		int ans = 0;  //int ans = 1;
+
+		for (int i = 1; i < n; i++) 
+		{
+			int maxVal = 0;
+
+			for (int j = 0; j < i; j++) 
+			{
+				if (arr[i] > arr[j]) 
+				{
+					maxVal = Math.max(maxVal, dp[j]);
+				}
+			}
+
+			dp[i] = maxVal + 1;
+			ans = Math.max(ans, dp[i]);
+		}
+
+		return ans;
+	}
+
+}
+
+=============================
+
+
+Binary Search + DP
+In this approach, we scan the array from left to right. We also make use of a dp array. This dp array is meant to store the increasing subsequence formed by including the currently encountered element.
+That is dp[i] represents i + 1’th length LIS ending at a minimum element dp[i].
+While traversing the array, we keep on filling the dp array with the elements encountered so far. For the element corresponding to the jth index, we determine its correct position in the dp array by making use of Binary Search(which can be used since the dp array is storing increasing subsequence) and also insert it at the correct position.
+An important point to be noted is that for Binary Search, we consider only that portion of the dp array in which we have made the updates by inserting some elements at their correct positions(which remains always sorted). Thus, only the elements up to the i’th index in the dp array can determine the position of the current element in it.
+Since the element enters its correct position in ascending order in the dp array, the subsequence formed so far in it is surely an increasing subsequence. Whenever this position index i becomes equal to the length of the LIS formed so far let’s say L, it means, we need to update the L as L = L + 1.
+In the end, L will be the answer
+Time Complexity
+O(N * logN), Where N is the size of the array.
+
+ 
+
+For every index, we are performing a binary search that takes O(logN).
+
+Space Complexity
+O(N), Where N is the size of the array.
+
+ 
+
+As an array is used of size N.
+
+/*
+    Time Complexity : O(N * log(N))
+    Space Complexity : O(N)
+
+    Where N is the size of the array
+*/
+
+public class Solution 
+{
+	private static int lowerBound(int[] a, int low, int high, int element) 
+	{
+		while (low < high) 
+		{
+			int middle = low + (high - low) / 2;
+			if (element > a[middle]) 
+			{
+				low = middle + 1;
+			} else 
+			{
+				high = middle;
+			}
+		}
+
+		return low;
+	}
+	public static int longestIncreasingSubsequence(int arr[]) 
+	{
+		int n = arr.length;
+
+		// dp[i] represents i+1'th length LIS ending at minimum integer dp[i]
+		int dp[] = new int[n];
+		int ans = 0;
+
+		for (int i = 0; i < n; i++) 
+		{
+			/*
+			    Since dp array stores elements in the sorted order therefore
+			    we can use binary search to find the correct position for
+			    arr[i] to be placed.
+			    And elements are present in the dp array from 0 to ans-1 position
+			    So we will be doing the binary search in this range.
+			*/
+			int position = lowerBound(dp, 0, ans, arr[i]);
+			dp[position] = arr[i];
+
+			if (position == ans) 
+			{
+				ans++;
+			}
+		}
+
+		return ans;
+	}
+
+}
+
+=========================================================
+
+tails is an array storing the smallest tail of all increasing subsequences with length i+1 in tails[i].
+For example, say we have nums = [4,5,6,3], then all the available increasing subsequences are:
+
+len = 1   :      [4], [5], [6], [3]   => tails[0] = 3
+len = 2   :      [4, 5], [5, 6]       => tails[1] = 5
+len = 3   :      [4, 5, 6]            => tails[2] = 6
+We can easily prove that tails is a increasing array. Therefore it is possible to do a binary search in tails array to find the one needs update.
+
+Each time we only do one of the two:
+
+(1) if x is larger than all tails, append it, increase the size by 1
+(2) if tails[i-1] < x <= tails[i], update tails[i]
+Doing so will maintain the tails invariant. The the final answer is just the size.
+
+Java
+
+public int lengthOfLIS(int[] nums) {
+    int[] tails = new int[nums.length];
+    int size = 0;
+    for (int x : nums) {
+        int i = 0, j = size;
+        while (i != j) {
+            int m = (i + j) / 2;
+            if (tails[m] < x)
+                i = m + 1;
+            else
+                j = m;
+        }
+        tails[i] = x;
+        if (i == size) ++size;
+    }
+    return size;
+}
+// Runtime: 2 ms
+=========================================
+
+
+public class Solution {
+    public int lengthOfLIS(int[] nums) {            
+        int[] dp = new int[nums.length];
+        int len = 0;
+
+        for(int x : nums) {
+            int i = Arrays.binarySearch(dp, 0, len, x);
+            if(i < 0) i = -(i + 1);
+            dp[i] = x;
+            if(i == len) len++;
+        }
+
+        return len;
+    }
+}
+
+
+==========================================
+This solution uses Binary Search + DP
+
+1, traverse from 0 to len-1, the DP array keep the longest sequence.
+2, if the val is bigger than largest in the dp array, add it to the end;
+3, if it is among the sequence, return the pos that bigger than pres, update the array with this position if val is smaller than dp[pos];
+This is to keep the sequence element with the smallest number.
+For example:
+
+10, 9, 2, 5, 3, 7, 101, 18
+
+10 
+9
+2
+2,5
+2,3
+2,3,7
+2,3,7,101
+2,3,7,18
+The follow is the solution:
+
+public class Solution {
+    public int lengthOfLIS(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        int[] dp = new int[nums.length];
+        dp[0] = nums[0];
+        int len = 0;
+        for (int i = 1; i < nums.length; i++) {
+            int pos = binarySearch(dp,len,nums[i]);
+            if (nums[i] < dp[pos]) dp[pos] = nums[i];
+            if (pos > len) {
+                len = pos;
+                dp[len] = nums[i];
+            }
+        }
+        return len+1;
+    }
+    private int binarySearch(int[] dp, int len, int val) {
+        int left = 0;
+        int right = len;
+        while(left+1 < right) {
+            int mid = left + (right-left)/2;
+            if (dp[mid] == val) {
+                return mid;
+            } else {
+                if (dp[mid] < val) {
+                    left = mid;
+                } else {
+                    right = mid;
+                }
+            }
+        }
+        if (dp[right] < val) return len+1;
+        else if (dp[left] >= val) return left;
+        else return right;
+    }
+}
+
+===========================
+public int lengthOfLIS(int[] nums) {
+    if(nums==null || nums.length==0){
+        return 0;
+    }
+    int[] dp = new int[nums.length];
+    int max = 1;
+    for(int index=0; index<nums.length;index++){
+        dp[index]=1;
+        for(int dpIndex=0; dpIndex<index; dpIndex++){
+            if(nums[dpIndex]<nums[index]){
+                dp[index]=Math.max(dp[index],dp[dpIndex]+1);
+                max=Math.max(dp[index],max);
+            }
+        }
+    }
+    return max;
+}
+===============================
+I use an array dp[] to store the largest elements in the increasing subsequences and the array's index is the length of the subsequence (since this, we can make sure that the array dp[] is in-order). The idea is keep checking if nums[i] is bigger than dp[len] or not: nums[i] > dp[len] means we can retrieve a longer subsequence by adding the current element nums[i] into the result, so we just increase the pointer 'len' by one and put the current element into the new index; otherwise we need to do a binary search to find out the index of the largest element st. dp[index] < nums[i] && dp[index + 1] > nums[i] and update the dp[index] with value nums[i].
+
+Let's see an example:
+intput: 2 4 9 3 7 8
+
+The array 'dp' looks like these in first two iterations:
+
+2 4 0 0 0 (len = 1)
+
+2 4 9 0 0 (len = 2)
+
+In the third iteration, we notice that dp[len] ('9' here) > nums[i] ('3' here), so we update the dp[index] with value '3', then we got:
+
+2 3 9 0 0 (len = 2) <---- Attention here, this array doesn't mean we can retrieve subsequence [2,3,9], it only means the largest element in a length 1 subsequence is '2' ([2]), the largest element in a length 2 subsequence is '3' ([2,3]) and the largest element in a length 3 subsequence is '9' ([2,4,9]) by far.
+
+In next iteration, we update the dp[index] with value '7' again and we got:
+2 3 7 0 0 (len = 2)
+
+In the final round, obviously dp[len] (7) < nums[i] (8) so we increase the 'len' by one and put '8' into dp[3] then we got:
+2 3 7 8 0 (len = 3)
+
+Clearly len + 1 = 4 is our result : )
+
+PS: Keep in mind that 'len' always indicate the length of the longest increasing subsequence in each iteration.
+
+public int lengthOfLIS(int[] nums) {
+    if(nums == null || nums.length == 0) {
+        return 0;
+    }
+    int[] dp = new int[nums.length];
+    dp[0] = nums[0];
+    int len = 0;
+    for(int i = 1; i < nums.length; i++) {
+        if(nums[i] > dp[len]) {
+            dp[++len] = nums[i];
+        }
+        else {
+            int index = search(dp, len, nums[i]);
+            dp[index] = nums[i];
+        }
+    }
+    return len + 1;
+}
+
+private int search(int[] dp, int len, int val) {
+    int start = 0;
+    while(start <= len) {
+        int mid = start + (len - start) / 2;
+        if(dp[mid] == val) {
+            return mid;
+        }
+        else if(dp[mid] < val) {
+            start = mid + 1;
+        }
+        else {
+            len = mid - 1;
+        }
+    }
+    return start;
+}
+
+=========================
+
+// https://leetcode.com/problems/longest-increasing-subsequence/discuss/1595288/Java-%2B-Dynamic-Programming-%2B-O(n2)-and-O(nlogn)-%2B-With-explanation
+
+
+==========================
+Approach 1, using DP
+
+// O(N^2) Time | O(N) Space
+public static int lengthOfLIS1(int[] nums) {
+
+	int[] dp = new int[nums.length];
+	Arrays.fill(dp, 1);
+	int ans = 1;
+
+	for (int i = 1; i < dp.length; i++) {
+
+		for (int j = 0; j < i; j++) {
+		
+			if (nums[i] > nums[j]) {
+				dp[i] = Math.max(dp[i], dp[j] + 1);
+			}
+			ans = Math.max(ans, dp[i]);
+		}
+	}
+	return ans;
+}
+Approach 2, using Binary search
+
+// O(NlogN) Time | O(N) Space
+public int lengthOfLIS(int[] nums) {
+
+	ArrayList<Integer> sublist = new ArrayList<>();
+	sublist.add(nums[0]);
+
+	for (int i = 1; i < nums.length; i++) {
+
+		int curr = nums[i];
+
+		// if current element is greater than max value in sublist, add it in sublist
+		if (curr > sublist.get(sublist.size() - 1)) {
+			sublist.add(curr);
+		} else {
+			// replace with smallest element that is greater than or equal to curr
+			int positionToInsert = binarySearch(sublist, curr);
+			sublist.set(positionToInsert, curr);
+		}
+	}
+
+	return sublist.size();
+}
+
+private int binarySearch(ArrayList<Integer> sublist, int curr) {
+	int left = 0, right = sublist.size() - 1;
+
+	while (left < right) {
+
+		int mid = left + (right - left) / 2;
+
+		if (sublist.get(mid) == curr) {
+			return mid;
+		}
+
+		if (sublist.get(mid) > curr) {
+			right = mid;
+		} else {
+			left = mid + 1;
+		}
+	}
+	return left;
+}
+
