@@ -595,3 +595,332 @@ public class Solution
 		return ans;
 	}
 }
+==============================================================================================
+
+Let following be the function definition :-
+
+f(i, j) := minimum cost (or steps) required to convert first i characters of word1 to first j characters of word2
+
+Case 1: word1[i] == word2[j], i.e. the ith the jth character matches.
+
+f(i, j) = f(i - 1, j - 1)
+
+Case 2: word1[i] != word2[j], then we must either insert, delete or replace, whichever is cheaper
+
+f(i, j) = 1 + min { f(i, j - 1), f(i - 1, j), f(i - 1, j - 1) }
+
+f(i, j - 1) represents insert operation
+f(i - 1, j) represents delete operation
+f(i - 1, j - 1) represents replace operation
+Here, we consider any operation from word1 to word2. It means, when we say insert operation, we insert a new character after word1 that matches the jth character of word2. So, now have to match i characters of word1 to j - 1 characters of word2. Same goes for other 2 operations as well.
+
+Note that the problem is symmetric. The insert operation in one direction (i.e. from word1 to word2) is same as delete operation in other. So, we could choose any direction.
+
+Above equations become the recursive definitions for DP.
+
+Base Case:
+
+f(0, k) = f(k, 0) = k
+
+Below is the direct bottom-up translation of this recurrent relation. It is only important to take care of 0-based index with actual code :-
+
+public class Solution {
+    public int minDistance(String word1, String word2) {
+        int m = word1.length();
+        int n = word2.length();
+        
+        int[][] cost = new int[m + 1][n + 1];
+        for(int i = 0; i <= m; i++)
+            cost[i][0] = i;
+        for(int i = 1; i <= n; i++)
+            cost[0][i] = i;
+        
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                if(word1.charAt(i) == word2.charAt(j))
+                    cost[i + 1][j + 1] = cost[i][j];
+                else {
+                    int a = cost[i][j];
+                    int b = cost[i][j + 1];
+                    int c = cost[i + 1][j];
+                    cost[i + 1][j + 1] = a < b ? (a < c ? a : c) : (b < c ? b : c);
+                    cost[i + 1][j + 1]++;
+                }
+            }
+        }
+        return cost[m][n];
+    }
+}
+Time complexity : If n is the length of word1, m of word2, because of the two indented loops, it is O(nm)
+
+
+=====================================================================================
+public class Solution {
+    int[][] dp;
+    
+    public int minDistance(String word1, String word2) {
+	dp = new int[word1.length()][word2.length()];
+	    
+        return minDistanceHelper(word1, word2, 0, 0);
+    }
+    
+    private int minDistanceHelper(String word1, String word2, int index1, int index2) {
+        if (index1 == word1.length()) return word2.length() - index2;
+        if (index2 == word2.length()) return word1.length() - index1;
+	    
+	if (dp[index1][index2] > 0) return dp[index1][index2];
+        
+        int result;
+        if (word1.charAt(index1) == word2.charAt(index2)) {
+            result = minDistanceHelper(word1, word2, index1+1, index2+1);
+        } else {
+            // replace char
+            result = 1 + minDistanceHelper(word1, word2, index1+1, index2+1);
+            
+            // delete char from word1
+            result = Math.min(result, 1 + minDistanceHelper(word1, word2, index1+1, index2));
+            
+            // delete char from word2
+            result = Math.min(result, 1 + minDistanceHelper(word1, word2, index1, index2+1));
+        }
+        
+	dp[index1][index2] = result;
+	return result;
+    }
+}
+
+=============================================================================
+We only need to edit one word because insert a char to word1 is equivalent to delete a char in word2 and vise versa. Replace a char in word1 is equivalent to replace a char in word2.
+
+O(3^max(n1,n2)) We edit word 1 only and there are 3 operations
+c++
+    int minDistance(string word1, string word2) {
+        return minDistance(0,0,word1,word2);
+    }
+    int minDistance(int p1, int p2, string &word1, string &word2) {
+        if(p1==word1.size()) return word2.size()-p2; //dist between a string and an empty string
+        if(p2==word2.size()) return word1.size()-p1;
+        if(word1[p1]==word2[p2]) return minDistance(p1+1,p2+1,word1,word2);
+        int ins = minDistance(p1,p2+1,word1,word2);
+        int del = minDistance(p1+1,p2,word1,word2);
+        int rpl = minDistance(p1+1,p2+1,word1,word2);
+        return min(ins,min(del,rpl))+1;
+    }
+java
+	public int minDistance(String word1, String word2) {
+        return minDist(0,0,word1,word2);  
+    }
+    private int minDist(int p1, int p2, String word1, String word2) {
+        int s1=word1.length(),s2=word2.length();
+        if(p1==s1) return s2-p2; //We only edit word1, but since both insert and delete are allowed, word1 may not finish first
+        if(p2==s2) return s1-p1; //The two ternimation checks make sure both indexes are valid
+        if(word1.charAt(p1)==word2.charAt(p2)) 
+            return minDist(p1+1,p2+1,word1,word2);
+        int ins = minDist(p1,p2+1,word1,word2);
+        int del = minDist(p1+1,p2,word1,word2);
+        int rep = minDist(p1+1,p2+1,word1,word2);
+        return Math.min(ins, Math.min(del, rep))+1;
+    }
+}
+O(n1n2) memorization
+c++
+    int minDistance(string word1, string word2) {
+        vector<vector<int>> mem(word1.size(),vector<int>(word2.size(),-1));
+        return minDistance(0,0,word1,word2,mem);
+    }
+    int minDistance(int p1, int p2, string &word1, string &word2,vector<vector<int>>& mem) {
+        if(p1==word1.size()) return word2.size()-p2;
+        if(p2==word2.size()) return word1.size()-p1;
+        if(mem[p1][p2]>=0) return mem[p1][p2];
+        if(word1[p1]==word2[p2]) return mem[p1][p2]=minDistance(p1+1,p2+1,word1,word2,mem);
+        int ins = minDistance(p1,p2+1,word1,word2,mem);
+        int del = minDistance(p1+1,p2,word1,word2,mem);
+        int rpl = minDistance(p1+1,p2+1,word1,word2,mem);
+        return mem[p1][p2] = min(ins,min(del,rpl))+1;
+    }
+java
+	public int minDistance(String word1, String word2) {
+        Integer[][] mem=new Integer[word1.length()][word2.length()];
+        return minDist(0,0,word1,word2,mem);  
+    }
+    private int minDist(int p1, int p2, String word1, String word2, Integer[][] mem) {
+        int s1=word1.length(),s2=word2.length();
+        if(p1==s1) return s2-p2; //We only edit word1, but since both insert and delete are allowed, word1 may not finish first
+        if(p2==s2) return s1-p1; //The two ternimation checks make sure both indexes are valid
+        if(mem[p1][p2]!=null) return mem[p1][p2];
+        if(word1.charAt(p1)==word2.charAt(p2)) 
+            return mem[p1][p2]=minDist(p1+1,p2+1,word1,word2,mem);
+        int ins = minDist(p1,p2+1,word1,word2,mem);
+        int del = minDist(p1+1,p2,word1,word2,mem);
+        int rep = minDist(p1+1,p2+1,word1,word2,mem);
+        return mem[p1][p2]=Math.min(ins, Math.min(del, rep))+1;
+    }
+O(n1n2) dp
+c++
+    int minDistance(string word1, string word2) {
+        int n1 = word1.size(),n2=word2.size();
+        vector<vector<int>> dp(n1+1,vector<int>(n2+1));
+        for(int i=0;i<n1;i++) dp[i][n2] = n1-i;
+        for(int j=0;j<n2;j++) dp[n1][j] = n2-j;
+        for(int i=n1-1;i>=0;i--)
+            for(int j=n2-1;j>=0;j--) 
+                dp[i][j] = word1[i]==word2[j]? dp[i+1][j+1] : min(min(dp[i][j+1],dp[i+1][j]),dp[i+1][j+1])+1;
+        return dp[0][0];
+    }
+java
+	public int minDistance(String word1, String word2) {
+        int n1=word1.length(), n2=word2.length();
+        int[][] dp=new int[n1+1][n2+1];
+        for(int i=0;i<n1;i++) dp[i][n2]=n1-i;
+        for(int i=0;i<n2;i++) dp[n1][i]=n2-i;
+        for(int i=n1-1;i>=0;i--)
+            for(int j=n2-1;j>=0;j--) {
+                if(word1.charAt(i)==word2.charAt(j))
+                    dp[i][j]=dp[i+1][j+1];
+                else {
+                    dp[i][j]=Math.min(dp[i][j+1],Math.min(dp[i+1][j],dp[i+1][j+1]))+1;
+                }
+            }
+        return dp[0][0];  
+    }
+linear space dp
+    int minDistance(string word1, string word2) {
+        int s1=word1.size(),s2=word2.size();
+        vector<int> dp(s1+1);
+        iota(dp.rbegin(),dp.rend(),0);
+        for(int i=s2-1;i>=0;i--) {
+            int i1j1 = dp[s1];
+            dp[s1] = s2-i;
+            for(int j=s1-1;j>=0;j--) {
+                int temp=dp[j];
+                dp[j]=min(dp[j+1]+1,min(dp[j]+1,i1j1+(word2[i]!=word1[j])));
+                i1j1=temp;
+            }
+        }
+        return dp[0];
+    }
+    
+    
+ ====================================================
+ Firstly go and read the code this is further explaination to my code you will get the explaination better after reading the code once
+and this explaination is also covering the aswer to the comment .
+
+i m just checking at every index whether that character is equal or not, if equal I just have to move further , but in case characters are not equal we can have 3 operations, ins, del, replace. and we are storing the minimum out of these three in the DP array.
+
+let's say s1 as "abc" and s2 as "abd" ,and we are at index 2, always if found both characters are different
+
+// Insertion (dp[i][j-1])
+I m always inserting at the right of the current char
+
+s1 - "abc" s2 - "abd"
+i is at c in s1
+j is at d in s2.
+
+after insertion
+s1 become "abcd", s2 remain the same "abd" ,
+i is currently at c in s1
+and j is currently at d in s2 , but as we have inserted a 'd' in s1 we have to decrement j , i remains the same
+i = I; j = j-1;
+
+// deletion ( dp[i-1][j] )
+
+if I chooses to delete c , instead of inserting d , in this case if I m deleting c then I have to decrement i , but j remains the same.
+s1 - "abc" s2 - "abd"
+i is at c in s1
+j is at d in s2
+
+after deletion s1 - "ab" s2 - "abd"
+as we have deleted c from s1 we should decrement i , but we will only decrement j once we found character equal to d in s1
+I = i-1 , j = j;
+
+// replace (dp[i-1][j-1])
+
+if I choose to replace i m making the current characters equal then I need to decrement both indices , I, j , because current characters are equal
+now we only have to check for remaining string
+
+ex ----- s1 - "abc" s2 - "abd"
+if I choose to replace 'c' by 'd' then both the strings become
+s1 ---- "abd" s2 ---- "abd"
+as i is at d in s1
+and also j is at d in s2 , and both the characters are equal we just have to decrement both.
+I = i-1 , j = j-1;
+
+Note we are decrementing j only when both the character matches**
+
+//	if character matches then just decrement both the index , but if they don't matches then store the minimum possibl;e value by applying
+	// each operation at that particular index.
+	
+	Java code
+		
+		class Solution {
+			public int minDistance(String s1, String s2) {
+				int n = s1.length();
+				int m = s2.length();
+				int[][] dp = new int[n+1][m+1];
+				
+				// base cases will contain the length of string which is not empty
+				//because to convert empty string to another string we need no of operations = length of string
+				for(int i=0;i<=n;i++){
+					dp[i][0] = i;
+				}
+				for(int i=0;i<=m;i++){
+					dp[0][i] = i;
+				}
+
+				for(int i=1;i<=n;i++){
+					for(int j=1;j<=m;j++){
+						if(s1.charAt(i-1) == s2.charAt(j-1)){
+						//as characters are the same we are just decreasing the index
+							dp[i][j] = dp[i-1][j-1];
+						}else{
+						//chars are not the same now we have to put the minimum ans out of ans obtained by  insertion,deletion,replace  
+							//	minimum answer              min(insertion , deletion )          min(deletion,replace)             
+							dp[i][j] = 1 + Math.min( Math.min(dp[i][j-1] ,dp[i-1][j]) , Math.min(dp[i-1][j] ,dp[i-1][j-1]) );
+						}
+					}
+				}
+				return dp[n][m];
+			}
+		}
+		
+			
+		//If the post was helpful please upvote , any query can be asked in the comments
+		//thankyou for your upvote
+C++ Code --------- Logic is same in both only difference is in syntax............
+
+//	if character matches then just decrement both the index , but if they don't matches then store the minimum possibl;e value by applying
+	// each operation at that particular index.
+
+	class Solution {
+	public:
+		int minDistance(string s1, string s2) {
+			int n = s1.length();
+			int m = s2.length();
+			int dp[n+1][m+1];
+
+				// base cases will contain the length of string which is not empty
+				//because to convert empty string to another string we need no of operations = length of string
+				
+			for(int i=0;i<=n;i++){
+				dp[i][0] = i;
+			}
+			for(int i=0;i<=m;i++){
+				dp[0][i] = i;
+			}
+			for(int i=1;i<=n;i++){
+				for(int j =1;j<=m;j++){
+				//as characters are the same we are just decreasing the index
+					if(s1[i-1] == s2[j-1]){
+						dp[i][j] = dp[i-1][j-1];
+					}else{
+//chars are not the same now we have to put the minimum ans out of ans obtained by  insertion,deletion,replace 
+//	minimum answer    =          min(  min(insertion , deletion )  ,  min(deletion,replace)   )          
+						dp[i][j] = 1+ min(min(dp[i][j-1] , dp[i-1][j]) , min(dp[i-1][j-1] , dp[i-1][j-1]));
+					}
+				}
+			}
+			return dp[n][m];
+
+		}
+	};
+==============================================
